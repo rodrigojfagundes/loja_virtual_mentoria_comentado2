@@ -23,7 +23,7 @@ public class PessoaFisica extends Pessoa {
 	private String cpf;
 	
 	@Temporal(TemporalType.DATE)
-	private Date dataNasimento;
+	private Date dataNascimento;
 
 	public String getCpf() {
 		return cpf;
@@ -33,12 +33,12 @@ public class PessoaFisica extends Pessoa {
 		this.cpf = cpf;
 	}
 
-	public Date getDataNasimento() {
-		return dataNasimento;
+	public Date getDataNascimento() {
+		return dataNascimento;
 	}
 
-	public void setDataNasimento(Date dataNasimento) {
-		this.dataNasimento = dataNasimento;
+	public void setDataNascimento(Date dataNascimento) {
+		this.dataNascimento = dataNascimento;
 	}
 		
 	

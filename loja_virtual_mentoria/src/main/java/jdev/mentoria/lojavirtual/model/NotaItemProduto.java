@@ -27,7 +27,9 @@ public class NotaItemProduto implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE,
 	generator = "seq_nota_item_produto")
+	
 	private Long id;
+	
 	@Column(nullable = false)
 	private Double quantity;
 	
