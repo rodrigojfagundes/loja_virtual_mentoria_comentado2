@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.springframework.lang.Nullable;
+
 import org.springframework.security.core.GrantedAuthority;
 
 //entidade/classe de acesso/role
