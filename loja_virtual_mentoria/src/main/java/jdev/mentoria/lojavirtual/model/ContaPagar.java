@@ -49,6 +49,7 @@ public class ContaPagar implements Serializable {
 	//1 PESSOA pd ter MTO CONTAPAGAR...... e 1 CONTAPAGAR tem 1 PESSOA
 	//
 	//na pessoa a baixo mostra o nome do devedor
+	//o TARGETENTITY e pq o PESSOA.CLASS e um class abstrata
 	@ManyToOne(targetEntity = Pessoa.class)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 

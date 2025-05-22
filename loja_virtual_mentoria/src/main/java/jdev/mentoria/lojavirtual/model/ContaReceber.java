@@ -53,6 +53,7 @@ public class ContaReceber implements Serializable {
 	private BigDecimal valorDesconto;
 	
 	//1 PESSOA pd ter MTO CONTARECEBER...... e 1 CONTARECEBER tem 1 PESSOA
+	//o TARGETENTITY e pq PESSOA.CLASS é uma class abstrata
 	@ManyToOne(targetEntity = Pessoa.class)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 

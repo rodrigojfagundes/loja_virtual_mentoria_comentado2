@@ -2,7 +2,6 @@ package jdev.mentoria.lojavirtual.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -14,38 +13,50 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-//criando a class/entidade NotaItemProduto
 @Entity
-@Table(name="nota_item_produto")
-@SequenceGenerator(name = "seq_nota_item_produto", 
-sequenceName = "seq_nota_item_produto", allocationSize = 1, initialValue = 1)
-public class NotaItemProduto implements Serializable {
-	
+@Table(name="avaliacao_produto")
+@SequenceGenerator(name = "seq_avaliacao_produto", 
+sequenceName = "seq_avaliacao_produto", allocationSize = 1, initialValue = 1)
+public class AvaliacaoProduto implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_nota_item_produto")
+	generator = "seq_avaliacao_produto")
 	private Long id;
-	@Column(nullable = false)
-	private Double quantity;
 	
-	//MUITAS NOTAITEMPRODUTO para 1 NOTAFISCALCOMPRA
-	@ManyToOne
-	@JoinColumn(name = "nota_fiscal_compra_id", nullable = false,
+	private Integer nota;
+	
+	private String descricao;
+	
+	//qm pd avaliar o produto e qm comprou, entao uma pessoa
+	//
+	//MUITAS AVALIACAOPRODUTO para 1 PESSOA
+	//o TARGETENTITY e pq PESSOA.CLASS é uma class abstrata
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "nota_fiscal_compra_fk"))	
-	private NotaFiscalCompra notaFiscalCompra;
-		
-	//MUITAS NOTAITEMPRODUTO para 1 PRODUTO
+	name = "pessoa_fk"))
+	private Pessoa pessoa;
+	
+	//e qm vai ter essa avaliacao e um produto...
+	//
+	//MUITOS AVALIACAOPRODUTO para 1 PRODUTO
 	@ManyToOne
 	@JoinColumn(name = "produto_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "produto_fk"))
 	private Produto produto;
-
 	
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
+	
+	public String getDescricao() {
+		return descricao;
+	}
+
 	public Long getId() {
 		return id;
 	}
@@ -54,20 +65,20 @@ public class NotaItemProduto implements Serializable {
 		this.id = id;
 	}
 
-	public Double getQuantity() {
-		return quantity;
+	public Integer getNota() {
+		return nota;
 	}
 
-	public void setQuantity(Double quantity) {
-		this.quantity = quantity;
+	public void setNota(Integer nota) {
+		this.nota = nota;
 	}
 
-	public NotaFiscalCompra getNotaFiscalCompra() {
-		return notaFiscalCompra;
+	public Pessoa getPessoa() {
+		return pessoa;
 	}
 
-	public void setNotaFiscalCompra(NotaFiscalCompra notaFiscalCompra) {
-		this.notaFiscalCompra = notaFiscalCompra;
+	public void setPessoa(Pessoa pessoa) {
+		this.pessoa = pessoa;
 	}
 
 	public Produto getProduto() {
@@ -77,8 +88,8 @@ public class NotaItemProduto implements Serializable {
 	public void setProduto(Produto produto) {
 		this.produto = produto;
 	}
-	
 
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -95,7 +106,7 @@ public class NotaItemProduto implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NotaItemProduto other = (NotaItemProduto) obj;
+		AvaliacaoProduto other = (AvaliacaoProduto) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -103,7 +114,6 @@ public class NotaItemProduto implements Serializable {
 			return false;
 		return true;
 	}
-	
 	
 	
 	

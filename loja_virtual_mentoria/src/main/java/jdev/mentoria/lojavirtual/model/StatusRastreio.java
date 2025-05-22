@@ -2,7 +2,6 @@ package jdev.mentoria.lojavirtual.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -14,13 +13,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-//criando a class/entidade NotaItemProduto
+//criando a class/entidade StatusRastreio
 @Entity
-@Table(name="nota_item_produto")
-@SequenceGenerator(name = "seq_nota_item_produto", 
-sequenceName = "seq_nota_item_produto", allocationSize = 1, initialValue = 1)
-public class NotaItemProduto implements Serializable {
-	
+@Table(name="status_rastreio")
+@SequenceGenerator(name = "seq_status_rastreio", 
+sequenceName = "seq_status_rastreio", allocationSize = 1, initialValue = 1)
+public class StatusRastreio implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	
 	
@@ -28,57 +27,53 @@ public class NotaItemProduto implements Serializable {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE,
 	generator = "seq_nota_item_produto")
 	private Long id;
-	@Column(nullable = false)
-	private Double quantity;
 	
-	//MUITAS NOTAITEMPRODUTO para 1 NOTAFISCALCOMPRA
+	private String centroDistribuicao;
+	private String cidade;
+	private String estado;
+	private String status;
+	
+	//MUITOS STATUSRASTREIO para 1 VENDACOMPRALOJAVIRTUAL
 	@ManyToOne
-	@JoinColumn(name = "nota_fiscal_compra_id", nullable = false,
+	@JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "nota_fiscal_compra_fk"))	
-	private NotaFiscalCompra notaFiscalCompra;
-		
-	//MUITAS NOTAITEMPRODUTO para 1 PRODUTO
-	@ManyToOne
-	@JoinColumn(name = "produto_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "produto_fk"))
-	private Produto produto;
-
+	name = "venda_compra_loja_virtual_fk"))	
+	private VendaCompraLojaVirtual vendaCompraLojaVirtual;
+	
+	
 	
 	public Long getId() {
 		return id;
 	}
-
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-	public Double getQuantity() {
-		return quantity;
+	public String getCentroDistribuicao() {
+		return centroDistribuicao;
 	}
-
-	public void setQuantity(Double quantity) {
-		this.quantity = quantity;
+	public void setCentroDistribuicao(String centroDistribuicao) {
+		this.centroDistribuicao = centroDistribuicao;
 	}
-
-	public NotaFiscalCompra getNotaFiscalCompra() {
-		return notaFiscalCompra;
+	public String getCidade() {
+		return cidade;
 	}
-
-	public void setNotaFiscalCompra(NotaFiscalCompra notaFiscalCompra) {
-		this.notaFiscalCompra = notaFiscalCompra;
+	public void setCidade(String cidade) {
+		this.cidade = cidade;
 	}
-
-	public Produto getProduto() {
-		return produto;
+	public String getEstado() {
+		return estado;
 	}
-
-	public void setProduto(Produto produto) {
-		this.produto = produto;
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -86,7 +81,6 @@ public class NotaItemProduto implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -95,7 +89,7 @@ public class NotaItemProduto implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NotaItemProduto other = (NotaItemProduto) obj;
+		StatusRastreio other = (StatusRastreio) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
