@@ -119,7 +119,7 @@ SET default_with_oids = false;
 
 CREATE TABLE public.acesso (
     id bigint NOT NULL,
-    descricacao character varying(255) NOT NULL
+    descricao character varying(255) NOT NULL
 );
 
 
