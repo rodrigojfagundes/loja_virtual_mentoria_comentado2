@@ -25,7 +25,7 @@ public class Acesso implements GrantedAuthority {
 
 	// descricao e o nome da ROLE EX: ROLE_ADMIN, ROLE_DEV, etc...
 	@Column(nullable = false)
-	private String descricacao;
+	private String descricao;
 
 	// esse metodo vai retornar a STRING DESCRICAO que é o TIPO de
 	// ACESSO/ROLE/PERMISSAO... EX: ROLE_ADMIN, ROLE_DEV
@@ -33,7 +33,7 @@ public class Acesso implements GrantedAuthority {
 	@Override
 	public String getAuthority() {
 		// TODO Auto-generated method stub
-		return this.descricacao;
+		return this.descricao;
 	}
 
 	public Long getId() {
@@ -44,12 +44,12 @@ public class Acesso implements GrantedAuthority {
 		this.id = id;
 	}
 
-	public String getDescricacao() {
-		return descricacao;
+	public String getDescricao() {
+		return descricao;
 	}
 
-	public void setDescricacao(String descricacao) {
-		this.descricacao = descricacao;
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
 	}
 
 	@Override
