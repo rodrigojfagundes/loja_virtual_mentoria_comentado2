@@ -28,9 +28,12 @@ import com.sun.jersey.api.client.WebResource;
 import jdev.mentoria.lojavirtual.enums.ApiTokenIntegracao;
 import jdev.mentoria.lojavirtual.model.AccessTokenJunoAPI;
 import jdev.mentoria.lojavirtual.model.BoletoJuno;
+import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 import jdev.mentoria.lojavirtual.model.dto.AsaasApiPagamentoStatus;
 import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
+import jdev.mentoria.lojavirtual.model.dto.CartaoCreditoApiAsaas;
+import jdev.mentoria.lojavirtual.model.dto.CartaoCreditoAsaasHolderInfo;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaApiAsaasCartao;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
@@ -167,6 +170,70 @@ public class PagamentoController implements Serializable {
 		cobrancaApiAsaasCartao.setBillingType(AsaasApiPagamentoStatus.CREDIT_CARD);
 		cobrancaApiAsaasCartao.setDescription("Venda realizada para cliente por cartão de crédito: ID Venda ->" + idVendaCampo);
 		
+		
+		
+		//parcelas
+		//
+		//SE a quatidade de parcela for 1
+		//entao o valor da cobranca sera o valor da venda
+		//ou seja uma parcela so com o valor total do produto
+		//
+		//
+		//se for parcelado vamos dividir o valor TOTAL
+		//pela quantidade de parcelas
+		if (qtdparcela == 1) {					
+			cobrancaApiAsaasCartao.setInstallmentValue(vendaCompraLojaVirtual.getValorTotal().floatValue());
+		}else {
+			BigDecimal valorParcela = vendaCompraLojaVirtual.getValorTotal()
+					  			.divide(BigDecimal.valueOf(qtdparcela), RoundingMode.DOWN)
+					            .setScale(2, RoundingMode.DOWN);
+			
+			cobrancaApiAsaasCartao.setInstallmentValue(valorParcela.floatValue());
+		}
+		
+		//passando para o OBJ/VAR COBRANCAAPIASAASCARTAO
+		//q e um OBJ/VAR do TIPO COBRANCAAPIASAASCARTAO
+		//O VALOR da PARCELA... escolhido acima....
+		//e a data...
+		cobrancaApiAsaasCartao.setInstallmentCount(qtdparcela);
+		cobrancaApiAsaasCartao.setDueDate(new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime()));
+		
+		
+		/*Dados cartão de crédito*/
+		//instanciando um OBJ/VAR do tipo CARTAOCREDITOAPIASAAS de nome
+		//CREDITCARD e pegando os dados q foram passados
+		//la em cima no metodo FINALIZARCOMPRACARTAO e passando para
+		//o OBJ/VAR CREDITCARD
+		CartaoCreditoApiAsaas creditCard = new CartaoCreditoApiAsaas();
+		creditCard.setCcv(securityCode);
+		creditCard.setExpiryMonth(expirationMonth);
+		creditCard.setExpiryYear(expirationYear);
+		creditCard.setHolderName(holderName);
+		creditCard.setNumber(cardNumber);
+		
+		//passando para o OBJ/VAR COBRANCAAPIASAASCARTAO
+		//os dados q foram instanciado no obj/var CREDITCARD acima...
+		cobrancaApiAsaasCartao.setCreditCard(creditCard);
+		
+		//instanciando um OBJ/VAR do tipo PESSOAFISICA com o valor q
+		//vai vim do GETPESSOA q esta no obj/var VENDACOMPRALOJAVIRTUAL
+		//ou seja e a pessoa q comprou o produto... pegando as info
+		//q ta nos atributos/var/obj dela e passando para o obj/var
+		//PESSOAFISICA do tipo PESSOAFISICA
+		PessoaFisica pessoaFisica = vendaCompraLojaVirtual.getPessoa();
+		
+		//instanciando um obj/var do tipo CARTAOCREDITOASAASHOLDERINFO
+		//de nome CREDITCARDHOLDERINFO... Q vai receber as informacoes
+		//como nome, telefone, cpf q estao no OBJ/VAR PESSOAFISICA acima...
+		CartaoCreditoAsaasHolderInfo creditCardHolderInfo = new CartaoCreditoAsaasHolderInfo();
+		creditCardHolderInfo.setName(pessoaFisica.getNome());
+		creditCardHolderInfo.setEmail(pessoaFisica.getEmail());
+		creditCardHolderInfo.setCpfCnpj(pessoaFisica.getCpf());
+		creditCardHolderInfo.setPostalCode(cep);
+		creditCardHolderInfo.setAddressNumber(numero);
+		creditCardHolderInfo.setAddressComplement(null);
+		creditCardHolderInfo.setPhone(pessoaFisica.getTelefone());
+		creditCardHolderInfo.setMobilePhone(pessoaFisica.getTelefone());
 		
 	}
 	
