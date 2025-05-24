@@ -25,7 +25,7 @@ public class TesteJunoBoleto extends TestCase {
 		dados.setPayerName("alex fernando egidio");
 		dados.setPayerCpfCnpj("05916564937");
 		dados.setPayerPhone("45999795800");
-		dados.setIdVenda(22L);
+		dados.setIdVenda(27L);
 		
 		String retorno = serviceJunoBoleto.gerarCarneApiAsaas(dados);
 		
