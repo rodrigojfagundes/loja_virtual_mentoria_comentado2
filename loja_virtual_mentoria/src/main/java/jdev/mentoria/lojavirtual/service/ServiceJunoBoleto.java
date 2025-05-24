@@ -37,6 +37,7 @@ import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
 import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
 import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoQrCodePixAsaas;
 import jdev.mentoria.lojavirtual.repository.AccesTokenJunoRepository;
 import jdev.mentoria.lojavirtual.repository.BoletoJunoRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
@@ -479,10 +480,17 @@ public class ServiceJunoBoleto implements Serializable {
 
 			//boletoJuno.setIdPix(c.getPix().getId());
 			
-			//ObjetoQrCodePixAsaas codePixAsaas = this.buscarQrCodeCodigoPix(data.getId());
+			//criando um OBJ/VAR de nome CODEPIXASAAS do tipo
+			//OBJETOQRCODEPIXASAAS
+			//q vai ficar salvo o QRCODE PIX gerado pela ASAAS
+			ObjetoQrCodePixAsaas codePixAsaas = this.buscarQrCodeCodigoPix(data.getId());
 			
-			//boletoJuno.setPayloadInBase64(codePixAsaas.getPayload());
-			//boletoJuno.setImageInBase64(codePixAsaas.getEncodedImage());
+			//associando ao OBJ/VAR BOLETOJUNO o 
+			//payload q e o codigo copia e cola do pix gerado pela asaas
+			boletoJuno.setPayloadInBase64(codePixAsaas.getPayload());
+			//associando a var/obj BOLETOJUNO uma imagem de QRCODE
+			//do pix q a asaas gerou
+			boletoJuno.setImageInBase64(codePixAsaas.getEncodedImage());
 			
 			boletoJunos.add(boletoJuno);
 			recorrencia ++;
@@ -494,13 +502,38 @@ public class ServiceJunoBoleto implements Serializable {
 		return boletoJunos.get(0).getCheckoutUrl();
 		
 		
-		
-		
-		
 	}
 	
-	
-	
+	//metodo de nome BUSCARQRCODECODIGOPIX... Q recebe
+	//um ID de cobranca
+	//e a aprtir disso vai retornar o qrcode gerado pela asaas
+	public ObjetoQrCodePixAsaas buscarQrCodeCodigoPix(String idCobranca) throws Exception {
+		
+		//informando q pd ignorar ssl
+		Client client = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+		//informando o link da api da asaas
+		WebResource webResource = client.resource(AsaasApiPagamentoStatus.URL_API_ASAAS + "payments/"+idCobranca +"/pixQrCode");
+		
+		//preenchendo cabecalho, e aparentemente vai fazer uma requisicao
+		//para a asaas informando um CODIGO de venda dai a asaas
+		//retorna o qrcode PIX  de acordo com o codigo de venda passado...
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+				.get(ClientResponse.class);
+		
+		String stringRetorno = clientResponse.getEntity(String.class);
+		clientResponse.close();
+		
+		ObjetoQrCodePixAsaas codePixAsaas = new ObjetoQrCodePixAsaas();
+		
+		LinkedHashMap<String, Object> parser = new JSONParser(stringRetorno).parseObject();
+		codePixAsaas.setEncodedImage(parser.get("encodedImage").toString());
+		codePixAsaas.setPayload(parser.get("payload").toString());
+		
+		return codePixAsaas;
+	}
 	
 	
 	
