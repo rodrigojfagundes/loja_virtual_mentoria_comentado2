@@ -7,6 +7,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
 import jdev.mentoria.lojavirtual.model.Endereco;
+import jdev.mentoria.lojavirtual.model.ItemVendaLoja;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.model.dto.ItemVendaDTO;
 import jdev.mentoria.lojavirtual.model.dto.VendaCompraLojaVirtualDTO;
 import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
@@ -42,8 +46,11 @@ public class Vd_Cp_loja_Virt_Controller {
 	@PostMapping(value = "**/salvarVendaLoja")
 	public ResponseEntity<VendaCompraLojaVirtualDTO> salvarVendaLoja(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) throws ExceptionMentoriaJava {
 		
-		
-		
+		//como o valor nao vem montado pelo JSON... Nos precisamos
+		//acessar os OBJ/atributos e instanciar eles
+		//tipo no JSON vem a EMPRESA mas ela nao ta instanciado na 
+		//VENDACOMPRALOJAVIRTUAL... Dai nos temos q instanciar objeto
+		//por objeto
 		vendaCompraLojaVirtual.getPessoa().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
 		PessoaFisica pessoaFisica = pessoaController.salvarPf(vendaCompraLojaVirtual.getPessoa()).getBody();
 		vendaCompraLojaVirtual.setPessoa(pessoaFisica);
@@ -59,6 +66,21 @@ public class Vd_Cp_loja_Virt_Controller {
 		vendaCompraLojaVirtual.setEnderecoEntrega(enderecoEntrega);
 		
 		vendaCompraLojaVirtual.getNotaFiscalVenda().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+		
+		
+		//fazendo associacao de objeto
+		//
+		//meio q estamos pegando PRODUTO por PRODUTO da VENDACOMPRALOJAVIRTUAL
+		//e esses PRODUTOS estao dentro do ITEMVENDALOJAS
+		for(int i = 0; i < vendaCompraLojaVirtual.getItemVendaLojas().size(); i++) {
+			vendaCompraLojaVirtual.getItemVendaLojas()
+			.get(i).setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+			
+			vendaCompraLojaVirtual.getItemVendaLojas()
+			.get(i).setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+		}
+		
+		
 		/*Salva primeiro a venda e todo os dados*/
 		vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.saveAndFlush(vendaCompraLojaVirtual);
 		
@@ -68,11 +90,98 @@ public class Vd_Cp_loja_Virt_Controller {
 		/*Persiste novamente as nota fiscal novamente pra ficar amarrada na venda*/
 		notaFiscalVendaRepository.saveAndFlush(vendaCompraLojaVirtual.getNotaFiscalVenda());
 		
+		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
 		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
 		compraLojaVirtualDTO.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
 		
+		compraLojaVirtualDTO.setPessoa(vendaCompraLojaVirtual.getPessoa());
+		
+		compraLojaVirtualDTO.setEntrega(
+				vendaCompraLojaVirtual.getEnderecoEntrega());
+		
+		compraLojaVirtualDTO.setCobranca(
+				vendaCompraLojaVirtual.getEnderecoCobranca());
+		
+		
+		compraLojaVirtualDTO.setValorDesc(
+				vendaCompraLojaVirtual.getValorDesconto());
+		
+		compraLojaVirtualDTO.setValorFrete(
+				vendaCompraLojaVirtual.getValorFret());
+
+		compraLojaVirtualDTO.setId(vendaCompraLojaVirtual.getId());
+		
+		for (ItemVendaLoja item: vendaCompraLojaVirtual
+				.getItemVendaLojas()) {
+						
+			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+			
+			itemVendaDTO.setQuantidade(item.getQuantidade());
+			itemVendaDTO.setProduto(item.getProduto());
+			
+			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			
+		}
+		
+		
 		return new ResponseEntity<VendaCompraLojaVirtualDTO>(compraLojaVirtualDTO, HttpStatus.OK);
 	}
+	
+	
+	@ResponseBody
+	@GetMapping(value = "**/consultaVendaId/{id}")
+	public ResponseEntity<VendaCompraLojaVirtualDTO> consultaVendaId(@PathVariable("id") Long idVenda){
+		
+		
+		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
+		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
+		//com o nome de VENDACOMPRALOJAVIRTUAL
+		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+				.findById(idVenda).orElse(new VendaCompraLojaVirtual());
+		
+
+		//convertendo para DTO
+		
+		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
+		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+		compraLojaVirtualDTO.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
+		
+		compraLojaVirtualDTO.setPessoa(vendaCompraLojaVirtual.getPessoa());
+		
+		compraLojaVirtualDTO.setEntrega(
+				vendaCompraLojaVirtual.getEnderecoEntrega());
+		
+		compraLojaVirtualDTO.setCobranca(
+				vendaCompraLojaVirtual.getEnderecoCobranca());
+		
+		
+		compraLojaVirtualDTO.setValorDesc(
+				vendaCompraLojaVirtual.getValorDesconto());
+		
+		compraLojaVirtualDTO.setValorFrete(
+				vendaCompraLojaVirtual.getValorFret());
+		
+		compraLojaVirtualDTO.setId(vendaCompraLojaVirtual.getId());
+		
+		
+		for (ItemVendaLoja item: vendaCompraLojaVirtual
+				.getItemVendaLojas()) {
+						
+			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+			
+			itemVendaDTO.setQuantidade(item.getQuantidade());
+			itemVendaDTO.setProduto(item.getProduto());
+			
+			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			
+		}
+
+		
+		return new ResponseEntity<VendaCompraLojaVirtualDTO>
+		(compraLojaVirtualDTO, HttpStatus.OK);
+		
+	}
+	
 
 
 }

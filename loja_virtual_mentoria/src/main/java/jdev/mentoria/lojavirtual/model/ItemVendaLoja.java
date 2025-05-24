@@ -28,7 +28,7 @@ public class ItemVendaLoja implements Serializable{
 	private Long id;
 	
 	@Column(nullable = false)
-	private Double quantity;
+	private Double quantidade;
 	
 	//MUITOS ITEMVENDALOJA para 1 PRODUTO
 	@ManyToOne
@@ -71,12 +71,12 @@ public class ItemVendaLoja implements Serializable{
 		this.id = id;
 	}
 
-	public Double getQuantity() {
-		return quantity;
+	public Double getQuantidade() {
+		return quantidade;
 	}
 
-	public void setQuantity(Double quantity) {
-		this.quantity = quantity;
+	public void setQuantidade(Double quantidade) {
+		this.quantidade = quantidade;
 	}
 
 	public Produto getProduto() {
