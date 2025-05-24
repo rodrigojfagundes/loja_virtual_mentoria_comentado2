@@ -1,10 +1,13 @@
 package jdev.mentoria.lojavirtual.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +21,7 @@ import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.model.dto.CepDTO;
 import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
+import jdev.mentoria.lojavirtual.repository.PessoaFisicaRepository;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.service.PessoaUserService;
 import jdev.mentoria.lojavirtual.util.ValidaCNPJ;
@@ -35,6 +39,75 @@ public class PessoaController {
 	
 	@Autowired
 	private EnderecoRepository enderecoRepository;
+	
+	@Autowired
+	private PessoaFisicaRepository pessoaFisicaRepository;
+	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	
+	
+	//EndPoint/metodo para buscar uma LISTA de PESSOAFISICA pelo nome
+	@ResponseBody
+	@GetMapping(value = "**/consultaPfNome/{nome}")
+	public ResponseEntity<List<PessoaFisica>> consultaPfNome(
+			@PathVariable("nome") String nome){
+		
+		List<PessoaFisica> fisicas = pessoaFisicaRepository
+				.pesquisaPorNomePF(nome.trim().toUpperCase());
+		
+		//para contar quantas pessoas chamam o metodo/funcao/endpoint CONSULTAPFNOME
+		jdbcTemplate.execute("begin; update tabela_acesso_end_potin set qtde_acesso_end_point = qtde_acesso_end_point + 1 where nome_end_point = 'END-POINT-NOME-PESSOA-FISICA'; commit");
+		
+		return new ResponseEntity<
+				List<PessoaFisica>>(fisicas, HttpStatus.OK);
+	}
+
+	
+	//EndPoint/metodo para buscar UMA PESSOAFISICA CPF
+	@ResponseBody
+	@GetMapping(value = "**/consultaPfCpf/{cpf}")
+	public ResponseEntity<List<PessoaFisica>> consultaPfCpf(
+			@PathVariable("cpf") String cpf){
+		
+		List<PessoaFisica> fisicas = pessoaFisicaRepository
+				.pesquisaPorCpfPF(cpf);
+		
+		return new ResponseEntity<
+				List<PessoaFisica>>(fisicas, HttpStatus.OK);
+	}
+	
+	
+	//EndPoint/metodo para buscar UMA PESSOAJURIDICA/EMPRESA por NOME
+	@ResponseBody
+	@GetMapping(value = "**/consultaNomePJ/{nome}")
+	public ResponseEntity<List<PessoaJuridica>> consultaNomePJ(
+			@PathVariable("nome") String nome){
+		
+		//O OBJ O PROF DEIXOU COM O NOME DE FISICAS, MAS COMO E 
+		//PESSOAJURIDICA/EMPRESA EU ACHEI MELHOR DEIXAR COMO PESSOASJURIDICAS
+		List<PessoaJuridica> pessoasJuridicas = pessoaRepository
+				.pesquisaPorNomePJ(nome.trim().toUpperCase());
+		
+		return new ResponseEntity<
+				List<PessoaJuridica>>(pessoasJuridicas, HttpStatus.OK);
+	}
+	
+	
+	//EndPoint/metodo para buscar UMA PESSOAJURIDICA/EMPRESA por CNPJ
+	@ResponseBody
+	@GetMapping(value = "**/consultaCnpjPJ/{cnpj}")
+	public ResponseEntity<List<PessoaJuridica>> consultaCnpjPJ(
+			@PathVariable("cnpj") String cnpj){
+		
+		//O OBJ O PROF DEIXOU COM O NOME DE FISICAS, MAS COMO E 
+		//PESSOAJURIDICA/EMPRESA EU ACHEI MELHOR DEIXAR COMO PESSOASJURIDICAS
+		List<PessoaJuridica> pessoasJuridicas = pessoaRepository
+				.existeCnpjCadastradoList(cnpj.trim().toUpperCase());
+		
+		return new ResponseEntity<
+				List<PessoaJuridica>>(pessoasJuridicas, HttpStatus.OK);
+	}
 	
 	@ResponseBody
 	@GetMapping(value = "**/consultaCep/{cep}")

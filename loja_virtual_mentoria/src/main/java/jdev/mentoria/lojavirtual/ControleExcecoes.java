@@ -1,9 +1,14 @@
 package jdev.mentoria.lojavirtual;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,10 +23,15 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import jdev.mentoria.lojavirtual.model.dto.ObjetoErroDTO;
+import jdev.mentoria.lojavirtual.service.ServiceSendEmail;
 
 @RestControllerAdvice
 @ControllerAdvice
 public class ControleExcecoes extends ResponseEntityExceptionHandler {
+	
+	@Autowired
+	private ServiceSendEmail serviceSendEmail;
+	
 	
 	@ExceptionHandler(ExceptionMentoriaJava.class)
 	public ResponseEntity<Object> handleExceptionCustom (ExceptionMentoriaJava ex) {
@@ -74,6 +84,19 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 		
 		ex.printStackTrace();
 		
+		//caso seja um erro desconhecido ele sera enviado por e-mail
+		//para o dev do sistema... Erro q NAO e do tipo atributos no JSON 
+		//etc...
+		try {
+			serviceSendEmail.enviarEmailHtml("Erro na loja virtual",
+					ExceptionUtils.getStackTrace(ex), 
+					"rodrigojosefagundes@gmail.com");
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		return new ResponseEntity<Object>(
 				objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
@@ -107,6 +130,19 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 		objetoErroDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());		
 		
 		ex.printStackTrace();
+		
+		//caso seja um erro desconhecido ele sera enviado por e-mail
+		//para o dev do sistema... Erro q NAO e do tipo atributos no JSON, 
+		//etc...
+		try {
+			serviceSendEmail.enviarEmailHtml("Erro na loja virtual",
+					ExceptionUtils.getStackTrace(ex), 
+					"rodrigojosefagundes@gmail.com");
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 		return new ResponseEntity<Object>(
 				objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
