@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 
+import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.LojaVirtualMentoriaApplication;
 import jdev.mentoria.lojavirtual.controller.CupDescontoController;
 import jdev.mentoria.lojavirtual.controller.FormaPagamentoController;
 import jdev.mentoria.lojavirtual.controller.PessoaController;

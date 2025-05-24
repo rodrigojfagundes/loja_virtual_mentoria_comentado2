@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -28,6 +29,7 @@ import jdev.mentoria.lojavirtual.model.BoletoJuno;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 import jdev.mentoria.lojavirtual.model.dto.AsaasApiPagamentoStatus;
 import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
+import jdev.mentoria.lojavirtual.model.dto.ClienteAsaasApiPagamento;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
 import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
@@ -35,6 +37,7 @@ import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
 import jdev.mentoria.lojavirtual.repository.AccesTokenJunoRepository;
 import jdev.mentoria.lojavirtual.repository.BoletoJunoRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
+import jdev.mentoria.lojavirtual.util.ValidaCPF;
 
 //criando um service para criacao de boleto, e pix e cartao
 //
@@ -121,14 +124,104 @@ public class ServiceJunoBoleto implements Serializable {
 		//ou seja se o cliente existe ou nao
 		//
 		Integer total = Integer.parseInt(
-				parser.get("totalParser").toString());
+				parser.get("totalCount").toString());
 		
 		//se o total de cliente com esse e-mail for MENOR OU IGUAL A 0
 		//entao tem q criar esse CLIENTE
 		
 		/*criar cliente*/
 		if(total <= 0) {
+			//se o cliente nao existir, vamos criar ele, 
+			//passando os dados para o OBJ/VAR de nome 
+			//CLIENTEASAASAPIPAGAMENTO
+			ClienteAsaasApiPagamento clienteAsaasApiPagamento = new ClienteAsaasApiPagamento();
 			
+			//verificando se o CPF e valido
+			//se os dados q estamos recebendo GETPAYERCPFCNPJ
+			//(PAYERCPFCNPJ = pessoa q vai pagar/cliente) do obj/var
+			//DADOS tem um CPF valido
+			if (!ValidaCPF.isCPF(dados.getPayerCpfCnpj())) {
+				//se caso venha um cpf invalido, nos vamos usar
+				//o cpf aleartorio a baixo 600...
+				clienteAsaasApiPagamento.setCpfCnpj("60051803046");
+			}else {
+				//se o CPF for valido o CLIENTEASAASAPIPAGAMENTO
+				//vai receber os dados do GETPAYERCPFCNPJ do DADOS
+				clienteAsaasApiPagamento.setCpfCnpj(dados.getPayerCpfCnpj());
+			}
+			
+			//como o CPF e valido vamos passar os outros dados
+			//
+			clienteAsaasApiPagamento.setEmail(dados.getEmail());
+			clienteAsaasApiPagamento.setName(dados.getPayerName());
+			clienteAsaasApiPagamento.setPhone(dados.getPayerPhone());
+			
+			
+			
+			// instanciando um CLIENT2 do tipo CLIENT
+			//
+			// informando q a url da API do ASAAS nao precisa de 
+			//certificado ssl
+			Client client2 = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+			
+			// criando um var/obj dotipo WEBRESOURCE de nome WEBRESORUCE
+			// q recebe a URL/LINK de onde deve ser feita a solicitacao
+			//
+			WebResource webResource2 = client2.
+					resource(
+							AsaasApiPagamentoStatus.URL_API_ASAAS + "customers");
+			
+									
+			// criando um CLIENTRESPONSE2 do tipo CLIENTRESPONSE
+			// q vai receber o retorno do metodo ACCEPT do WEBRESOURCE2
+			// metodo no qual passamos
+			// informando o tipo de formatacao, e montando o cabecalho
+			// para fazer as requisicoes a API da Asaas
+			// tbm informando o nosso token gerado pela asaas e tals
+			// NAOSEI SE e um BEARER_TOKEN, mas e um token q a ASAAS GEROU
+			// e tbm informamos para qual URL da asaas vai ser feita a
+			// requisicao
+			//
+			//dai nos fazemos um POST informando o CLIENTRESPONSE q
+			//e onde ta armazenado os cabecalhos, tokens, etc...
+			//e informamos tbm o CLIENTEASAASAPIPAGAMENTO
+			//q e onde tem as informacoes email, cpf, telefone do
+			//cliente para a ASAAS pd associar uma COBRANCA a um CLIENTE
+			//ou seja e enviado um JSON com as info do CLIENTE para a ASAAS
+			ClientResponse clientResponse2 = webResource2.accept("application/json;charset=UTF-8")
+					.header("Content-Type", "application/json")
+					.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+					.post(ClientResponse.class, new ObjectMapper().writeValueAsBytes(clienteAsaasApiPagamento));
+			
+			
+			//criando um LINKEDHAHMAP q vai retornar uma CHAVE e um OBJECT
+			//para gente... Uma lista com chaves e valores
+			//
+			//no CLIENTEPARSE2 vai ter o retorno do cliente criado
+			//na asaas
+			LinkedHashMap<String, Object> parser2 = new JSONParser(clientResponse2.getEntity(String.class)).parseObject();
+			clientResponse2.close();
+			
+			//pegando o ID do cliente q foi CRIADO na ASAAS
+			//dai vamos associar o id a uma cobranca...
+			customer_id = parser2.get("id").toString();
+			
+		}
+		else {
+			/*Já tem cliente cadastrado*/
+			//
+			//pegando a resposta do parser q é onde ta salvo
+			//se existe ou nao cliente q vai ta dentro do DATA
+			//dentro do parser... o DATA e um ARRAY...
+			//vamos usar o LIST<OBJECT> para converter ele de ARRAY
+			//para LIST de OBJECT
+			//
+			List<Object> data = (List<Object>) parser.get("data");
+			//pegando o primeiro valor q no caso e o ID
+			//do cliente na ASAAS... removendo as "" ASPAS
+			customer_id = new Gson().toJsonTree(data.get(0))
+					.getAsJsonObject().get("id").toString()
+					.replaceAll("\"", "");
 		}
 		
 		return customer_id;

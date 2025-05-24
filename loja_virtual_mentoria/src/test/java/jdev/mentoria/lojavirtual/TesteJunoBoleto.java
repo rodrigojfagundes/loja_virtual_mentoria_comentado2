@@ -1,20 +1,23 @@
-package jdev.mentoria.lojavirtual;
+package lojavirtual;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 
+import jdev.mentoria.lojavirtual.LojaVirtualMentoriaApplication;
 import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
-import jdev.mentoria.lojavirtual.service.ServiceJunoBoleto;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
 import junit.framework.TestCase;
 
 @Profile("dev")
 @SpringBootTest(classes = LojaVirtualMentoriaApplication.class)
-public class ServiceJunoBoleto extends TestCase {
+public class TesteJunoBoleto extends TestCase {
 	
 	@Autowired
-	private ServiceJunoBoleto serviceJunoBoleto;
+	private TesteJunoBoleto serviceJunoBoleto;
 	
 	//testar passando um cliente para ver se busca
 	@Test

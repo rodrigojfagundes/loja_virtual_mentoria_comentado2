@@ -1,4 +1,4 @@
-package jdev.mentoria.lojavirtual;
+package lojavirtual;
 
 import java.util.Calendar;
 import java.util.List;
@@ -24,6 +24,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.LojaVirtualMentoriaApplication;
 import jdev.mentoria.lojavirtual.controller.AcessoController;
 import jdev.mentoria.lojavirtual.model.Acesso;
 import jdev.mentoria.lojavirtual.repository.AcessoRepository;
