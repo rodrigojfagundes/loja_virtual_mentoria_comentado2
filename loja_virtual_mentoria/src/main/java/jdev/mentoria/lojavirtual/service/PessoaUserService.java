@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.model.Usuario;
+import jdev.mentoria.lojavirtual.model.dto.CepDTO;
 import jdev.mentoria.lojavirtual.repository.PessoaFisicaRepository;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.repository.UsuarioRepository;
@@ -187,6 +189,15 @@ public class PessoaUserService {
 		return pessoaFisica;
 		
 		
+	}
+	
+	
+	public CepDTO consultaCep(String cep) {
+		
+		//passando um numero de CEP q esta no atributo CEP para o VIACEP.COM.BR
+		//e esperando receber um CEPDTO.CLASS
+		return new RestTemplate().getForEntity(
+				"https://viacep.com.br/ws/" + cep +"/json/", CepDTO.class).getBody();
 	}
 	
 }
