@@ -19,26 +19,52 @@ public class TesteAPIMelhorEnvio {
 
 	public static void main(String[] args) throws Exception {
 		
-		//5 - Faz impressao das etiquetas (pede para a API do
-		//MELHORENVIO gerar um link com a etiqueta
 		
+		//6 - traz uma lista de agency (agencias) de transportadoras
+		//tipo tem uma AGENCIA da TRANSPORTADORA JDLOG em TIJUCAS
+		//uma em SAO JOSE, etc... Agencia e meio como loja...
+		//
 		OkHttpClient client = new OkHttpClient();
 
-		MediaType mediaType = MediaType.parse("application/json");
-		RequestBody body = RequestBody.create(mediaType, "{\"mode\":\"private\",\"orders\":[\"9e55f440-38c6-4491-8884-18dae893ae58\"]}");
 		Request request = new Request.Builder()
-		  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/print")
-		  .post(body)
-		  .addHeader("Accept", "application/json")
-		  .addHeader("Content-Type", "application/json")
-		  .addHeader("Authorization", "Bearer Token_Melhor_Envio")
+		  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=SC&city=Joinville")
+		  .get()
+		  .addHeader("accept", "application/json")
 		  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
 		  .build();
 
 		Response response = client.newCall(request).execute();
 		
-		
 		System.out.println(response.body().string());
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		//5 - Faz impressao das etiquetas (pede para a API do
+		//MELHORENVIO gerar um link com a etiqueta
+		//
+		//OkHttpClient client = new OkHttpClient();
+		//
+		//MediaType mediaType = MediaType.parse("application/json");
+		//RequestBody body = RequestBody.create(mediaType, "{\"mode\":\"private\",\"orders\":[\"9e55f440-38c6-4491-8884-18dae893ae58\"]}");
+		//Request request = new Request.Builder()
+		  //.url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/print")
+		  //.post(body)
+		  //.addHeader("Accept", "application/json")
+		  //.addHeader("Content-Type", "application/json")
+		  //.addHeader("Authorization", "Bearer Token_Melhor_Envio")
+		  //.addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+		  //.build();
+
+		//Response response = client.newCall(request).execute();
+		
+		
+		//System.out.println(response.body().string());
 		
 		
 		
