@@ -35,8 +35,10 @@ import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
 import jdev.mentoria.lojavirtual.model.dto.CartaoCreditoApiAsaas;
 import jdev.mentoria.lojavirtual.model.dto.CartaoCreditoAsaasHolderInfo;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaApiAsaasCartao;
+import jdev.mentoria.lojavirtual.model.dto.CobrancaGeradaCartaoCreditoAsaas;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
+import jdev.mentoria.lojavirtual.model.dto.ErroResponseApiAsaas;
 import jdev.mentoria.lojavirtual.model.dto.ErroResponseApiJuno;
 import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
 import jdev.mentoria.lojavirtual.model.dto.PagamentoCartaoCredito;
@@ -289,9 +291,30 @@ public class PagamentoController implements Serializable {
 				   boletoJunoRepository.flush();
 				}
 			}
-						
-			return new ResponseEntity<String>("Erro ao efetuar cobrança: ", HttpStatus.OK);
+			
+			//criando um OBJ/VAR de nome APIASAAS do tipo 
+			//ERRORESPONSEAPIASAAS
+			//
+			//q o OBJECTMAPPER vai transformar o erro retornado
+			//pela API da ASAAS
+			//q esta no na VAR/OBJ STRINGRETORNO em um obj/var
+			//do tipo ERRORESPONSEAPIASAAS
+			ErroResponseApiAsaas apiAsaas = objectMapper
+					.readValue(stringRetorno, new TypeReference<ErroResponseApiAsaas>() {});
+			
+			return new ResponseEntity<String>("Erro ao efetuar cobrança: " + apiAsaas.listaErros(), HttpStatus.OK);
 		}
+		
+		//SE NAO DER ERRO...
+		//entao...
+		//criando um obj/var de nome CARTAOCREDITO do tipo
+		//COBRANCAGERADACARTAOCREDITOASAAS q basicamente
+		//vai armazenar o RETORNO da API ASAAS
+		//apos fazermos o PAGAMENTO por CARTAO... Esse retorno
+		//ta na var/obj STRINGRETORNO
+		CobrancaGeradaCartaoCreditoAsaas cartaoCredito = objectMapper.
+				readValue(stringRetorno,  new TypeReference<CobrancaGeradaCartaoCreditoAsaas>() {});
+
 		
 		
 	}
