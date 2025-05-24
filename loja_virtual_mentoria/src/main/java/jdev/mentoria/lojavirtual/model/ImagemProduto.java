@@ -15,6 +15,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 //classe/entidade IMAGEMPRODUTO
 @Entity
@@ -39,7 +40,7 @@ public class ImagemProduto implements Serializable {
 	private String imagemMiniatura;
 	
 	//MUITAS IMAGENS para 1 PRODUTO
-	@JsonIgnore
+	@JsonIgnoreProperties(allowGetters = true)
 	@ManyToOne
 	@JoinColumn(name = "produto_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
@@ -48,7 +49,7 @@ public class ImagemProduto implements Serializable {
 	
 	
 	//MTAS IMAGEMPRODUTO para 1 EMPRESA/PESSOAJURIDICA
-	@JsonIgnore
+	@JsonIgnoreProperties(allowGetters = true)
 	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
