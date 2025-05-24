@@ -13,6 +13,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name="avaliacao_produto")
@@ -27,21 +32,23 @@ public class AvaliacaoProduto implements Serializable {
 	generator = "seq_avaliacao_produto")
 	private Long id;
 	
+	@Min(value = 1, message = "A nota deve ser pelo menos 1")
+	@Max(value = 10, message = "A nota maxima e 10")
 	@Column(nullable = false)
 	private Integer nota;
 	
+	@NotEmpty(message = "Informe uma descricao para a avaliacao produto")
 	@Column(nullable = false)
 	private String descricao;
 	
 	//qm pd avaliar o produto e qm comprou, entao uma pessoa
 	//
-	//MUITAS AVALIACAOPRODUTO para 1 PESSOA
-	//o TARGETENTITY e pq PESSOA.CLASS é uma class abstrata
-	@ManyToOne(targetEntity = Pessoa.class)
+	//MUITAS AVALIACAOPRODUTO para 1 PESSOAFISICA
+	@ManyToOne(targetEntity = PessoaFisica.class)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "pessoa_fk"))
-	private Pessoa pessoa;
+	private PessoaFisica pessoa;
 	
 	//e qm vai ter essa avaliacao e um produto...
 	//
@@ -52,20 +59,19 @@ public class AvaliacaoProduto implements Serializable {
 	name = "produto_fk"))
 	private Produto produto;
 	
-	//MTAS AVALIACAOPRODUTO para 1 EMPRESA 
-	//(e EMPRESA e uma PESSOA do tipo juridica)
-	@ManyToOne(targetEntity = Pessoa.class)
+	//MTAS AVALIACAOPRODUTO para 1 EMPRESA/PESSOAJURIDICA
+	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "empresa_id_fk"))
-	private Pessoa empresa;
+	private PessoaJuridica empresa;
 
 	
-	public Pessoa getEmpresa() {
+	public PessoaJuridica getEmpresa() {
 		return empresa;
 	}
 
-	public void setEmpresa(Pessoa empresa) {
+	public void setEmpresa(PessoaJuridica empresa) {
 		this.empresa = empresa;
 	}
 
@@ -93,11 +99,11 @@ public class AvaliacaoProduto implements Serializable {
 		this.nota = nota;
 	}
 
-	public Pessoa getPessoa() {
+	public PessoaFisica getPessoa() {
 		return pessoa;
 	}
 
-	public void setPessoa(Pessoa pessoa) {
+	public void setPessoa(PessoaFisica pessoa) {
 		this.pessoa = pessoa;
 	}
 
