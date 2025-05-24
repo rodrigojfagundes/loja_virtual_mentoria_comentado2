@@ -1,0 +1,255 @@
+JSON Compra Frete
+
+public class TesteAPIMelhorEnvio {
+
+	public static void main(String[] args) throws Exception {
+		
+		//COMPRA DE FRETES
+		//
+		OkHttpClient client = new OkHttpClient();
+		//
+		MediaType mediaType = MediaType.parse("application/json");
+		RequestBody body = RequestBody.create(mediaType, "{\"orders\":[\"9e55f440-38c6-4491-8884-18dae893ae58\"]}");
+		Request request = new Request.Builder()
+		.url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/checkout")
+		.post(body)
+		.addHeader("Accept", "application/json")
+		.addHeader("Content-Type", "application/json")
+		.addHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5NTYiLCJqdGkiOiIxYTNiZjY5MGFjYmUxZjczZTBhNzc1ZmYzNDM0NmM5YzAyYmFjNDY3MmM3NDBkNDkzMGYzYWM1MjNjMTUzZDEzMzQ0NDQyMzM3ZjFhNGIwYiIsImlhdCI6MTc0MDMzMTIyMC4wNDY3NzEsIm5iZiI6MTc0MDMzMTIyMC4wNDY3NzMsImV4cCI6MTc3MTg2NzIyMC4wMjQ4OTMsInN1YiI6IjllNDgwODhhLWRiNzMtNDkwZS04NDM1LTEyMWMzYzI5OGZmYiIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIiwiY29tcGFuaWVzLXJlYWQiLCJjb21wYW5pZXMtd3JpdGUiLCJjb3Vwb25zLXJlYWQiLCJjb3Vwb25zLXdyaXRlIiwibm90aWZpY2F0aW9ucy1yZWFkIiwib3JkZXJzLXJlYWQiLCJwcm9kdWN0cy1yZWFkIiwicHJvZHVjdHMtZGVzdHJveSIsInByb2R1Y3RzLXdyaXRlIiwicHVyY2hhc2VzLXJlYWQiLCJzaGlwcGluZy1jYWxjdWxhdGUiLCJzaGlwcGluZy1jYW5jZWwiLCJzaGlwcGluZy1jaGVja291dCIsInNoaXBwaW5nLWNvbXBhbmllcyIsInNoaXBwaW5nLWdlbmVyYXRlIiwic2hpcHBpbmctcHJldmlldyIsInNoaXBwaW5nLXByaW50Iiwic2hpcHBpbmctc2hhcmUiLCJzaGlwcGluZy10cmFja2luZyIsImVjb21tZXJjZS1zaGlwcGluZyIsInRyYW5zYWN0aW9ucy1yZWFkIiwidXNlcnMtcmVhZCIsInVzZXJzLXdyaXRlIiwid2ViaG9va3MtcmVhZCIsIndlYmhvb2tzLXdyaXRlIiwid2ViaG9va3MtZGVsZXRlIiwidGRlYWxlci13ZWJob29rIl19.YzcVLme1YLCrDJdGQlG9kjGJwSgy8Ba42GlHTlzlaqHQ957gWpepw4M0burx3ejdrXThuUuMNycLFxrSqaTTiolJqN7XSnlegTLbJ_NGAzQn7QTxaG-o4shLFWtPXVfY6toIxwu0RzoXuRdg9ZFIIKPojwWj0O0TiXAOiI1VIGs-fV_wb5eLxm8bNpWMYGF6qcOdG3MJk3Gt5phkDcUlTjJegqrieJhps4ZW6a_EM3HGI6iNecaies4hVZjfqurGyXwLKK5VChNZLWaHcjhe0ReS0zDHod3zYw1a_zyqVgHnPIfIdOI2MYqDhXLP2w6OYEiAwnZiNaoiM8qdEgcFsSKZA1SlJnpB2fXEK0Tb1KZLJuI9BSKTMvrsAClUMS0QnvptRLEsvgkbiIYlutQNiWIFc_6MIS9YWyn7mgc9ZAKXnlonCyWzMg4yp8RrrKr7Cb7SkU3vzYyuDCjhJfGtf4DtsS5q9sMhYTurJJZ9T1y1_8Hpktz3bZ2AGbhYiDr4FHkE_QhFFr_REl0Y_w5cfXNSVNCENz8aXmKBIL6N0IQI3M622KB4T2FFe9xasejLQlvPeAvNpr1V-GWIWvQDZwEl7I6N9LB3dC9-Hdu6hPn4W0mxCAn0cBYFcr1dQrsmFAyADvDG9QCVt5IDPFtsT_0uTjia-vj9du8M_Nh7mkM")
+		.addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+		.build();
+
+		Response response = client.newCall(request).execute();
+		   
+		System.out.println(response.body().string());
+		
+		}
+	}
+
+
+
+
+RETORNO
+
+{
+   "digitable":null,
+   "redirect":null,
+   "message":null,
+   "token":null,
+   "payment_id":null,
+   "purchase":{
+      "id":"9e55f5fd-8924-4e4f-b982-d6dcea961c86",
+      "protocol":"PUR-20250350515",
+      "total":466.85,
+      "discount":0,
+      "status":"paid",
+      "paid_at":"2025-03-02 12:59:24",
+      "canceled_at":null,
+      "created_at":"2025-03-02 12:59:24",
+      "updated_at":"2025-03-02 12:59:24",
+      "payment":null,
+      "transactions":[
+         {
+            "id":"9e55f5fd-ab0f-4c13-92a1-8166c5525153",
+            "protocol":"TRN-202503101367",
+            "value":466.85,
+            "type":"debit",
+            "status":"authorized",
+            "description":"Pagamento de envios (PUR-20250350515)",
+            "description_internal":null,
+            "created_at":"2025-03-02 12:59:24",
+            "reserved_at":null,
+            "authorized_at":"2025-03-02 12:59:24",
+            "unauthorized_at":null,
+            "canceled_at":null,
+            "reason":{
+               "id":7,
+               "label":"Pagamento de envios",
+               "description":""
+            }
+         }
+      ],
+      "orders":[
+         {
+            "id":"9e55f440-38c6-4491-8884-18dae893ae58",
+            "service_id":3,
+            "agency_id":49,
+            "protocol":"ORD-202503228815",
+            "contract":null,
+            "service_code":null,
+            "quote":466.85,
+            "price":466.85,
+            "coupon":null,
+            "discount":0,
+            "delivery_min":7,
+            "delivery_max":8,
+            "status":"released",
+            "reminder":null,
+            "insurance_value":1000,
+            "weight":null,
+            "width":null,
+            "height":null,
+            "length":null,
+            "diameter":null,
+            "format":"box",
+            "billed_weight":20,
+            "receipt":false,
+            "own_hand":false,
+            "collect":false,
+            "reverse":1,
+            "non_commercial":true,
+            "authorization_code":null,
+            "tracking":null,
+            "self_tracking":null,
+            "delivery_receipt":null,
+            "additional_info":null,
+            "cte_key":null,
+            "collect_scheduled_at":null,
+            "paid_at":"2025-03-02 12:59:24",
+            "generated_at":null,
+            "posted_at":null,
+            "delivered_at":null,
+            "canceled_at":null,
+            "suspended_at":null,
+            "expired_at":null,
+            "created_at":"2025-03-02 12:54:32",
+            "updated_at":"2025-03-02 12:59:24",
+            "parse_pi_at":null,
+            "received_at":null,
+            "from":{
+               "name":"teste",
+               "phone":"77",
+               "email":null,
+               "document":"27804561083",
+               "company_document":null,
+               "state_register":null,
+               "postal_code":"88200000",
+               "address":"iji",
+               "location_number":null,
+               "complement":null,
+               "district":null,
+               "city":"tijucas",
+               "state_abbr":"SC",
+               "country_id":"BR",
+               "latitude":null,
+               "longitude":null,
+               "note":null,
+               "economic_activity_code":null
+            },
+            "to":{
+               "name":"oooo",
+               "phone":"567576",
+               "email":"rodrigojosefagundes@gmail.com",
+               "document":"09187210916",
+               "company_document":null,
+               "state_register":null,
+               "postal_code":"75830112",
+               "address":"joijoij",
+               "location_number":null,
+               "complement":null,
+               "district":null,
+               "city":"curitiba",
+               "state_abbr":"GO",
+               "country_id":"BR",
+               "latitude":null,
+               "longitude":null,
+               "note":null,
+               "economic_activity_code":null
+            },
+            "service":{
+               "id":3,
+               "name":".Package",
+               "status":"available",
+               "type":"normal",
+               "range":"interstate",
+               "restrictions":"{\"insurance_value\":{\"min\":0,\"max\":29900,\"max_dec\":1000},\"formats\":{\"box\":{\"weight\":{\"min\":0.001,\"max\":120},\"width\":{\"min\":1,\"max\":105},\"height\":{\"min\":1,\"max\":100},\"length\":{\"min\":1,\"max\":181},\"sum\":386}}}",
+               "requirements":"[\"names\",\"phones\",\"addresses\",\"documents\",\"invoice\"]",
+               "optionals":"[]",
+               "company":{
+                  "id":2,
+                  "name":"Jadlog",
+                  "tracking_link":"https:\/\/www.melhorrastreio.com.br\/rastreio\/",
+                  "has_grouped_volumes":1,
+                  "status":"available",
+                  "picture":"\/images\/shipping-companies\/jadlog.png",
+                  "use_own_contract":false,
+                  "batch_size":1
+               }
+            },
+            "agency":{
+               "id":49,
+               "company_id":2,
+               "ownership":null,
+               "type":"normal",
+               "name":"CO MIRASSOL 01 ",
+               "initials":"CO-MSL-01",
+               "code":"1008588",
+               "status":"available",
+               "company_name":"RODOZELLI EXPRESS LTDA ME",
+               "email":"bozelli.msl@jadlog.com.br",
+               "note":null,
+               "created_at":"2017-09-11 17:47:14",
+               "updated_at":"2018-03-12 23:48:11",
+               "address":{
+                  "id":49,
+                  "label":"Ag\u00eancia JadLog",
+                  "postal_code":"15130000",
+                  "address":"Rua Frei Antonio Zimmermann 2020",
+                  "number":null,
+                  "complement":null,
+                  "district":"Jardim Alvorada",
+                  "latitude":-20.8201453,
+                  "longitude":-49.4951883,
+                  "agency_id":null,
+                  "confirmed_at":null,
+                  "created_at":"2017-09-11 17:47:14",
+                  "updated_at":"2017-10-19 16:47:34",
+                  "city":{
+                     "id":5047,
+                     "city":"Mirassol",
+                     "state":{
+                        "id":25,
+                        "state":"S\u00e3o Paulo",
+                        "state_abbr":"SP",
+                        "country":{
+                           "id":"BR",
+                           "country":"Brazil"
+                        }
+                     }
+                  }
+               },
+               "phone":{
+                  "id":49,
+                  "country_id":"BR",
+                  "label":"Ag\u00eancia JadLog",
+                  "phone":"1732532042",
+                  "type":"fixed",
+                  "confirmed_at":null,
+                  "created_at":"2017-09-11 17:47:14",
+                  "updated_at":"2017-09-11 17:47:14"
+               },
+               "companies":[
+                  {
+                     "id":2,
+                     "name":"Jadlog",
+                     "tracking_link":"https:\/\/www.melhorrastreio.com.br\/rastreio\/",
+                     "has_grouped_volumes":1,
+                     "status":"available",
+                     "picture":"\/images\/shipping-companies\/jadlog.png",
+                     "use_own_contract":false,
+                     "batch_size":1
+                  }
+               ]
+            },
+            "invoice":null,
+            "tags":[
+               
+            ],
+            "products":[
+               
+            ]
+         }
+      ]
+   },
+   "conciliation_group":null
+}

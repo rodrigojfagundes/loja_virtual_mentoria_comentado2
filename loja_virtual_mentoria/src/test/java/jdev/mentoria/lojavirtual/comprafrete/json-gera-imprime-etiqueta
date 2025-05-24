@@ -1,0 +1,68 @@
+		//GERACAO DA ETIQUETA
+		//
+		OkHttpClient client = new OkHttpClient();
+
+		MediaType mediaType = MediaType.parse("application/json");
+		RequestBody body = RequestBody.create(mediaType, "{\"orders\":[\"9e55f440-38c6-4491-8884-18dae893ae58\"]}");
+		Request request = new Request.Builder()
+		  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/generate")
+		  .post(body)
+		  .addHeader("Accept", "application/json")
+		  .addHeader("Content-Type", "application/json")
+		  .addHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5NTYiLCJqdGkiOiIxYTNiZjY5MGFjYmUxZjczZTBhNzc1ZmYzNDM0NmM5YzAyYmFjNDY3MmM3NDBkNDkzMGYzYWM1MjNjMTUzZDEzMzQ0NDQyMzM3ZjFhNGIwYiIsImlhdCI6MTc0MDMzMTIyMC4wNDY3NzEsIm5iZiI6MTc0MDMzMTIyMC4wNDY3NzMsImV4cCI6MTc3MTg2NzIyMC4wMjQ4OTMsInN1YiI6IjllNDgwODhhLWRiNzMtNDkwZS04NDM1LTEyMWMzYzI5OGZmYiIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIiwiY29tcGFuaWVzLXJlYWQiLCJjb21wYW5pZXMtd3JpdGUiLCJjb3Vwb25zLXJlYWQiLCJjb3Vwb25zLXdyaXRlIiwibm90aWZpY2F0aW9ucy1yZWFkIiwib3JkZXJzLXJlYWQiLCJwcm9kdWN0cy1yZWFkIiwicHJvZHVjdHMtZGVzdHJveSIsInByb2R1Y3RzLXdyaXRlIiwicHVyY2hhc2VzLXJlYWQiLCJzaGlwcGluZy1jYWxjdWxhdGUiLCJzaGlwcGluZy1jYW5jZWwiLCJzaGlwcGluZy1jaGVja291dCIsInNoaXBwaW5nLWNvbXBhbmllcyIsInNoaXBwaW5nLWdlbmVyYXRlIiwic2hpcHBpbmctcHJldmlldyIsInNoaXBwaW5nLXByaW50Iiwic2hpcHBpbmctc2hhcmUiLCJzaGlwcGluZy10cmFja2luZyIsImVjb21tZXJjZS1zaGlwcGluZyIsInRyYW5zYWN0aW9ucy1yZWFkIiwidXNlcnMtcmVhZCIsInVzZXJzLXdyaXRlIiwid2ViaG9va3MtcmVhZCIsIndlYmhvb2tzLXdyaXRlIiwid2ViaG9va3MtZGVsZXRlIiwidGRlYWxlci13ZWJob29rIl19.YzcVLme1YLCrDJdGQlG9kjGJwSgy8Ba42GlHTlzlaqHQ957gWpepw4M0burx3ejdrXThuUuMNycLFxrSqaTTiolJqN7XSnlegTLbJ_NGAzQn7QTxaG-o4shLFWtPXVfY6toIxwu0RzoXuRdg9ZFIIKPojwWj0O0TiXAOiI1VIGs-fV_wb5eLxm8bNpWMYGF6qcOdG3MJk3Gt5phkDcUlTjJegqrieJhps4ZW6a_EM3HGI6iNecaies4hVZjfqurGyXwLKK5VChNZLWaHcjhe0ReS0zDHod3zYw1a_zyqVgHnPIfIdOI2MYqDhXLP2w6OYEiAwnZiNaoiM8qdEgcFsSKZA1SlJnpB2fXEK0Tb1KZLJuI9BSKTMvrsAClUMS0QnvptRLEsvgkbiIYlutQNiWIFc_6MIS9YWyn7mgc9ZAKXnlonCyWzMg4yp8RrrKr7Cb7SkU3vzYyuDCjhJfGtf4DtsS5q9sMhYTurJJZ9T1y1_8Hpktz3bZ2AGbhYiDr4FHkE_QhFFr_REl0Y_w5cfXNSVNCENz8aXmKBIL6N0IQI3M622KB4T2FFe9xasejLQlvPeAvNpr1V-GWIWvQDZwEl7I6N9LB3dC9-Hdu6hPn4W0mxCAn0cBYFcr1dQrsmFAyADvDG9QCVt5IDPFtsT_0uTjia-vj9du8M_Nh7mkM")
+		  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+		  .build();
+
+		Response response = client.newCall(request).execute();
+		
+		System.out.println(response.body().string());
+
+
+RETORNO JSON da geracao de etiquetas
+
+
+{
+   "9e55f440-38c6-4491-8884-18dae893ae58":{
+      "message":"A declara\u00e7\u00e3o de conte\u00fado precisa ser preenchida. Clique na seta ao lado do envio e depois em Editar declara\u00e7\u00e3o de conte\u00fado.",
+      "status":false
+   }
+}
+
+
+
+
+####################
+
+
+Impressao das etiquetas
+
+
+OkHttpClient client = new OkHttpClient();
+
+MediaType mediaType = MediaType.parse("application/json");
+RequestBody body = RequestBody.create(mediaType, "{\"mode\":\"private\",\"orders\":[\"9e55f440-38c6-4491-8884-18dae893ae58\"]}");
+Request request = new Request.Builder()
+  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/print")
+  .post(body)
+  .addHeader("Accept", "application/json")
+  .addHeader("Content-Type", "application/json")
+  .addHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5NTYiLCJqdGkiOiIxYTNiZjY5MGFjYmUxZjczZTBhNzc1ZmYzNDM0NmM5YzAyYmFjNDY3MmM3NDBkNDkzMGYzYWM1MjNjMTUzZDEzMzQ0NDQyMzM3ZjFhNGIwYiIsImlhdCI6MTc0MDMzMTIyMC4wNDY3NzEsIm5iZiI6MTc0MDMzMTIyMC4wNDY3NzMsImV4cCI6MTc3MTg2NzIyMC4wMjQ4OTMsInN1YiI6IjllNDgwODhhLWRiNzMtNDkwZS04NDM1LTEyMWMzYzI5OGZmYiIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIiwiY29tcGFuaWVzLXJlYWQiLCJjb21wYW5pZXMtd3JpdGUiLCJjb3Vwb25zLXJlYWQiLCJjb3Vwb25zLXdyaXRlIiwibm90aWZpY2F0aW9ucy1yZWFkIiwib3JkZXJzLXJlYWQiLCJwcm9kdWN0cy1yZWFkIiwicHJvZHVjdHMtZGVzdHJveSIsInByb2R1Y3RzLXdyaXRlIiwicHVyY2hhc2VzLXJlYWQiLCJzaGlwcGluZy1jYWxjdWxhdGUiLCJzaGlwcGluZy1jYW5jZWwiLCJzaGlwcGluZy1jaGVja291dCIsInNoaXBwaW5nLWNvbXBhbmllcyIsInNoaXBwaW5nLWdlbmVyYXRlIiwic2hpcHBpbmctcHJldmlldyIsInNoaXBwaW5nLXByaW50Iiwic2hpcHBpbmctc2hhcmUiLCJzaGlwcGluZy10cmFja2luZyIsImVjb21tZXJjZS1zaGlwcGluZyIsInRyYW5zYWN0aW9ucy1yZWFkIiwidXNlcnMtcmVhZCIsInVzZXJzLXdyaXRlIiwid2ViaG9va3MtcmVhZCIsIndlYmhvb2tzLXdyaXRlIiwid2ViaG9va3MtZGVsZXRlIiwidGRlYWxlci13ZWJob29rIl19.YzcVLme1YLCrDJdGQlG9kjGJwSgy8Ba42GlHTlzlaqHQ957gWpepw4M0burx3ejdrXThuUuMNycLFxrSqaTTiolJqN7XSnlegTLbJ_NGAzQn7QTxaG-o4shLFWtPXVfY6toIxwu0RzoXuRdg9ZFIIKPojwWj0O0TiXAOiI1VIGs-fV_wb5eLxm8bNpWMYGF6qcOdG3MJk3Gt5phkDcUlTjJegqrieJhps4ZW6a_EM3HGI6iNecaies4hVZjfqurGyXwLKK5VChNZLWaHcjhe0ReS0zDHod3zYw1a_zyqVgHnPIfIdOI2MYqDhXLP2w6OYEiAwnZiNaoiM8qdEgcFsSKZA1SlJnpB2fXEK0Tb1KZLJuI9BSKTMvrsAClUMS0QnvptRLEsvgkbiIYlutQNiWIFc_6MIS9YWyn7mgc9ZAKXnlonCyWzMg4yp8RrrKr7Cb7SkU3vzYyuDCjhJfGtf4DtsS5q9sMhYTurJJZ9T1y1_8Hpktz3bZ2AGbhYiDr4FHkE_QhFFr_REl0Y_w5cfXNSVNCENz8aXmKBIL6N0IQI3M622KB4T2FFe9xasejLQlvPeAvNpr1V-GWIWvQDZwEl7I6N9LB3dC9-Hdu6hPn4W0mxCAn0cBYFcr1dQrsmFAyADvDG9QCVt5IDPFtsT_0uTjia-vj9du8M_Nh7mkM")
+  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+  .build();
+
+	Response response = client.newCall(request).execute();
+
+
+	System.out.println(response.body().string());
+
+
+
+RETORNO EM JSON com o LINK para IMPRIMIR as ETIQUETAS
+
+{
+  "url": "https://sandbox.melhorenvio.com.br/imprimir/rtspDFGtiJwk"
+}
+
+
+
+
