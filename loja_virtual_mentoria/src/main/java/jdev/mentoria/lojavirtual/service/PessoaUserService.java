@@ -1,15 +1,82 @@
 package jdev.mentoria.lojavirtual.service;
 
+import java.util.Calendar;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jdev.mentoria.lojavirtual.model.PessoaJuridica;
+import jdev.mentoria.lojavirtual.model.Usuario;
+import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.repository.UsuarioRepository;
 
 @Service
 public class PessoaUserService {
-	
+
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	
+	@Autowired
+	private PessoaRepository pessoaRepository;
+	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	
+	public PessoaJuridica salvarPessoaJuridica(PessoaJuridica juridica) {
+		
+	//	juridica = pessoaRepository.save(juridica);
+		
+		
+		for (int i = 0; i< juridica.getEnderecos().size(); i++) {
+			juridica.getEnderecos().get(i).setPessoa(juridica);
+			juridica.getEnderecos().get(i).setEmpresa(juridica);
+		}
+		
+		juridica = pessoaRepository.save(juridica);
+		
+		//verificando se ja existe um usuario para essa PESSOAJURIDICA,
+		//usuario com USERNAME e PASSWORD... Iremos consultar por ID e 
+		//e-mail/login
+		Usuario usuarioPj = usuarioRepository
+				.findUserByPessoa(juridica.getId(), juridica.getEmail());
+		
+		
+		//se nao tiver usuario para essa PESSOAJURIDICA, vamos fazer o cadastro
+		if (usuarioPj == null) {
+			
+			String constraint = usuarioRepository.
+					consultaConstraintAcesso();
+			
+			if (constraint != null) {
+				jdbcTemplate.execute("begin; alter table usuarios_acesso drop constraint " + constraint +"; commit;");
+			}
+			
+			//criando um novo usuario para cadastrar a pessoa juridica
+			//pois qd cad uma pessoa juridica é criado automaticamente um
+			//usuario para acessar o sistema
+			usuarioPj = new Usuario();
+			usuarioPj.setDataAtualSenha(Calendar.getInstance().getTime());
+			usuarioPj.setEmpresa(juridica);
+			usuarioPj.setPessoa(juridica);
+			usuarioPj.setLogin(juridica.getEmail());
+			
+			//a senha gerada aleartoriamente é a data e os min atual
+			String senha = "" + Calendar.getInstance().getTimeInMillis();
+			String senhaCript = new BCryptPasswordEncoder().encode(senha);
+			
+			usuarioPj.setSenha(senhaCript);
+			
+			usuarioPj = usuarioRepository.save(usuarioPj);
+			
+			usuarioRepository.insereAcessoUserPj(usuarioPj.getId());
+		}
+		
+		
+		//se tiver usuario para essa PJ dai vamos retornar 
+		//a pessoa juridica
+		return juridica;
+	}
 	
 }

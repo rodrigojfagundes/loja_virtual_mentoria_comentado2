@@ -1,10 +1,13 @@
 package jdev.mentoria.lojavirtual;
 
+import java.util.Calendar;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 
+import jdev.mentoria.lojavirtual.controller.PessoaController;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
@@ -16,37 +19,30 @@ import junit.framework.TestCase;
 public class TestePessoaUsuario extends TestCase {
 	
 	@Autowired
-	private PessoaUserService pessoaUserService;
+	private PessoaController pessoaController;
 	
-	@Autowired
-	private PessoaRepository pessoaRepository;
+//	@Autowired
+//	private PessoaUserService pessoaUserService;
 	
 	
 	@Test
-	public void testCadPessoaFisica() {
+	public void testCadPessoaFisica() throws ExceptionMentoriaJava {
 		
 		//antes de cad uma pessoa fisica temos q cad uma pessoa juridica
 		PessoaJuridica pessoaJuridica = new PessoaJuridica();
-		pessoaJuridica.setCnpj("865545598956556");
-		pessoaJuridica.setNome("Alex Fernando");
-		pessoaJuridica.setEmail("alex.fernando.egidio@gmail.com");
-		pessoaJuridica.setTelefone("45999795800");
-		pessoaJuridica.setInscEstadual("65565");
-		pessoaJuridica.setInscMunicipal("54445");
-		pessoaJuridica.setNomeFantasia("739279832");
-		pessoaJuridica.setRazaoSocial("648236847");
+		pessoaJuridica.setCnpj("" + Calendar.getInstance().getTimeInMillis());
+		pessoaJuridica.setNome("Alex Fando");
+		pessoaJuridica.setEmail("rodrigo@gmail.com");
+		pessoaJuridica.setTelefone("459977975800");
+		pessoaJuridica.setInscEstadual("6565");
+		pessoaJuridica.setInscMunicipal("5445");
+		pessoaJuridica.setNomeFantasia("73979832");
+		pessoaJuridica.setRazaoSocial("64826847");
 		
-		pessoaRepository.save(pessoaJuridica);
+		pessoaController.salvarPj(pessoaJuridica);
+		//pessoaJuridica = pessoaUserService
+			//	 .salvarPessoaJuridica(pessoaJuridica);
 		
-		
-		/*
-		PessoaFisica pessoaFisica = new PessoaFisica();
-		pessoaFisica.setCpf("0597975788");
-		pessoaFisica.setNome("Alex Fernando");
-		pessoaFisica.setEmail("alex.fernando.egidio@gmail.com");
-		pessoaFisica.setTelefone("45999795800");
-		pessoaFisica.setEmpresa(pessoaFisica);
-		*/
 	}
 	
 	
