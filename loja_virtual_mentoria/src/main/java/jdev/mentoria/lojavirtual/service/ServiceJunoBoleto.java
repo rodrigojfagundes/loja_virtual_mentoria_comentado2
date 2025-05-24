@@ -373,6 +373,40 @@ public class ServiceJunoBoleto implements Serializable {
 		cobrancaApiAsaas.getInterest().setValue(1F);
 		cobrancaApiAsaas.getFine().setValue(1F);
 		
+		
+		//convertendo o OBJ/VAR COBRANCAAPIASSAS para um JSON
+		//para podermos enviar para API da ASAAS
+		//
+		//para isso vamos chamar METODO WRITEVALUEASSTRING do 
+		//OBJECTMAPPER e passar para ele o
+		//obj/var COBRANCAAPIASAAS o retorno vai ficar salva no
+		//STRING de nome JSON
+		//
+		String json  = new ObjectMapper().writeValueAsString(cobrancaApiAsaas);
+		//pelo o q eu entendi e para ignorar o SSL
+		Client client = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+		//URL/LINK onde da API da ASAAS para GERAR CARNE/COBRANCA/PAGAMENTOS
+		WebResource webResource = client.resource(AsaasApiPagamentoStatus.URL_API_ASAAS + "payments");
+		
+		
+		//criando um CLIENTRESPONSE do tipo CLIENTRESPONSE q recebe
+		//o var/obj WEBRESOURCE criado acima... e a ele atribuindo
+		//alguns cabecalhos tipo FORMATACAO UTF8, FORMATO JSON
+		//passando o TOKEN gerado pela ASAAS, e tbm
+		//vamos passar o COBRANCAAPIASAAS CONVERTIDO para JSON
+		//ficando como STRING JSON...
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+				.post(ClientResponse.class, json);
+		
+		//aqui vamos armazenar o RETORNO da API ASAAS apos o POST da linha
+		//acima
+		String stringRetorno = clientResponse.getEntity(String.class);
+		clientResponse.close();
+		
+		
 		return "";
 		
 	}

@@ -1,13 +1,13 @@
 package jdev.mentoria.lojavirtual;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 
-import jdev.mentoria.lojavirtual.LojaVirtualMentoriaApplication;
 import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
 import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
+import jdev.mentoria.lojavirtual.service.ServiceJunoBoleto;
 import junit.framework.TestCase;
 
 @Profile("dev")
@@ -15,9 +15,23 @@ import junit.framework.TestCase;
 public class TesteJunoBoleto extends TestCase {
 	
 	@Autowired
-	private TesteJunoBoleto serviceJunoBoleto;
+	private ServiceJunoBoleto serviceJunoBoleto;
 	
-	//testar passando um cliente para ver se busca
+	@Test
+	public void testgerarCarneApiAsaas() throws Exception {
+		
+		ObjetoPostCarneJuno dados = new ObjetoPostCarneJuno();
+		dados.setEmail("alex.fernando.egidio@gmail.com");
+		dados.setPayerName("alex fernando egidio");
+		dados.setPayerCpfCnpj("05916564937");
+		dados.setPayerPhone("45999795800");
+		dados.setIdVenda(22L);
+		
+		String retorno = serviceJunoBoleto.gerarCarneApiAsaas(dados);
+		
+		System.out.println(retorno);
+	}
+	
 	@Test
 	public void testbuscaClientePessoaApiAsaas()  throws Exception{
 		
@@ -27,19 +41,20 @@ public class TesteJunoBoleto extends TestCase {
 		dados.setPayerCpfCnpj("05916564937");
 		dados.setPayerPhone("45999795800");
 		
-		String  customer_id =serviceJunoBoleto.testbuscaClientePessoaApiAsaas();;
+		String  customer_id =serviceJunoBoleto.buscaClientePessoaApiAsaas(dados);
 		
 		assertEquals("cus_000055741916", customer_id);
 	}
 	
-	
 	@Test
 	public void testcriarChavePixAsaas() throws Exception {
-		String chaveApi = serviceJunoBoleto.testcriarChavePixAsaas();;
 		
-		System.out.println("Chave Asaas API" + chaveApi);
+		String chaveAPi = serviceJunoBoleto.criarChavePixAsaas();
 		
+		System.out.println("Chave Asass API" + chaveAPi);
 	}
+	
+	
 	
 	@Test
 	public void deleteWebHook() throws Exception {
