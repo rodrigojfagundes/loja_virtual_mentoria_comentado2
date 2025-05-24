@@ -26,7 +26,6 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -134,6 +133,19 @@ public class VendaCompraLojaVirtual implements Serializable {
 	@OneToMany(mappedBy = "vendaCompraLojaVirtual", orphanRemoval = true,
 			cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<ItemVendaLoja> itemVendaLojas = new ArrayList<ItemVendaLoja>();
+	
+	//ele sera utilizado para a EXCLUCAO LOGICA... Ou seja
+	//na VDD nao foi DELETADO continua no BANCO so q nao aparece mais
+	//quando da um GET... Ou seja ta oculto...
+	private Boolean excluido = Boolean.FALSE;
+	
+	public void setExcluido(Boolean excluido) {
+		this.excluido = excluido;
+	}
+	
+	public Boolean getExcluido() {
+		return excluido;
+	}
 	
 	
 	public void setItemVendaLojas(List<ItemVendaLoja> itemVendaLojas) {
