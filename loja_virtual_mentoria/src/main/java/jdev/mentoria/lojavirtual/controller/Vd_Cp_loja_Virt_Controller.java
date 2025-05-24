@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -24,7 +25,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.enums.ApiTokenIntegracao;
 import jdev.mentoria.lojavirtual.enums.StatusContaReceber;
 import jdev.mentoria.lojavirtual.model.ContaReceber;
 import jdev.mentoria.lojavirtual.model.Endereco;
@@ -32,6 +37,8 @@ import jdev.mentoria.lojavirtual.model.ItemVendaLoja;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.StatusRastreio;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.model.dto.ConsultaFreteDTO;
+import jdev.mentoria.lojavirtual.model.dto.EmpresaTransporteDTO;
 import jdev.mentoria.lojavirtual.model.dto.ItemVendaDTO;
 import jdev.mentoria.lojavirtual.model.dto.VendaCompraLojaVirtualDTO;
 import jdev.mentoria.lojavirtual.repository.ContaReceberRepository;
@@ -41,6 +48,10 @@ import jdev.mentoria.lojavirtual.repository.StatusRastreioRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
 import jdev.mentoria.lojavirtual.service.ServiceSendEmail;
 import jdev.mentoria.lojavirtual.service.VendaService;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 @RestController
@@ -539,6 +550,127 @@ public class Vd_Cp_loja_Virt_Controller {
 		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
 	}
 	
+	//metodo q vai receber as INFORMACOES como PRODUTOS, Tamanhos
+	//Pesos, etc... E vai passar para a API do MELHORENVIO
+	//q ira nos retornar as transportadoras e o preco, tempo, etc...
+	@ResponseBody
+	@PostMapping(value = "**/consultarFreteLojaVirtual")
+	public ResponseEntity<List<EmpresaTransporteDTO>> consultaFrete(
+			@RequestBody @Valid ConsultaFreteDTO consultaFreteDTO) throws Exception {
+		
+		
+		//instanciando um obj/var do TIPO OBJECTMAPPER e de nome
+		//OBJECTMAPPER...
+		//
+		//dps criamos uma VAR do TIPO STRING de nome JSON q ira
+		//receber o retorno da funcao WEITEVALUEASSTRING do OBJECTMAPPER
+		//apos ela receber o OBJ/VAR CONSULTAFRETEDTO q é um OBJ
+		//q e passado pelo FRONTEND/POSTMAN e tem o CEP de ORIGEM
+		//e DESTINO... Alem de uma LISTA DE PRODUTOS... com as
+		//caracteristicas deles...
+		ObjectMapper objectMapper = new ObjectMapper();
+		String json = objectMapper.writeValueAsString(consultaFreteDTO);
+		
+		
+
+		//instanciando um obj/var do tipo OKHTTPCLIENT de nome CLIENT
+		OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+		//Estamos enviando um JSON q esta na VAR/OBJ BODY com 1 CEP de
+		//ORIGEM e um CEP de DESTINO e 3 PRODUTOS para
+		//o LINK da API do MELHORENVIO,junto com isso estamos enviando
+		//o nosso TOKEN de autenticacao na API do MELHORENVIO
+		//dai a API do melhor ENVIO ve as INFORMACOES q estao no
+		//BODY(JSON) como produtos, destino, quantidade, etc...
+		//e retorna um var/obj REPONSE em JSON com as INFORMACOES como PRECO
+		//para fazer a entrega em cada transportadora etc...
+		okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
+		okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, json);
+		okhttp3.Request request = new okhttp3.Request.Builder()
+		  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/calculate")
+		  .method("POST", body)
+		  //.post(body)
+		  .addHeader("Accept", "application/json")
+		  .addHeader("Content-Type", "application/json")
+		  .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+		  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+		  .build();
+
+		okhttp3.Response response = client.newCall(request).execute();
+		
+		//System.out.println(response.body().string());
+		
+		
+		
+		//criando uma var/obj do tipo JSONNODE de nome jsonnode
+		//q e onde vai ficar salvo o retorno em JSON da API
+		//do MELHORENVIO apos nos passarmos acima os PRODUTOS e a
+		//ORIGEM e DESTINO... Dai dessa forma conseguimos ter os
+		//dados em um FORMATO com ID e VALOR...
+		//tipo ID 1 = nome, tempo, preco para o SEDEX transportar
+		//ID 2 = nome, tempo, preco para a JadLog transportar... etc...
+		JsonNode jsonNode = new ObjectMapper()
+				.readTree(response.body().string());
+		
+		//varrendo as informacoes em JSON q foram retornadas
+		//pela API do MELHORENVIO e ITERANDO/VARRENDO ela...
+		//
+		Iterator<JsonNode> iterator = jsonNode.iterator();
+		
+		//criando uma LISTA do TIPO EMPRESATRANSPORTEDTO de nome
+		//EMPRESATRANSPORTEDTOS...
+		//pois o MELHORENVIO retorna um JSON com UMA LISTA de EMPRESAS
+		//q fazem determinado TRANSPORTE... Com o ID, NOME, PRECO, etc...
+		//
+		List<EmpresaTransporteDTO> empresaTransporteDTOs = new ArrayList<EmpresaTransporteDTO>();
+		
+		//usando o while para pecorrer o iterator q é onde ta
+		//q tem os dados do JSONNODE (q possui o retorno em JSON da
+		//API do MELHORENVIO)
+		//
+		while(iterator.hasNext()) {
+			JsonNode node = iterator.next();
+			
+		
+			//pegando os campos q sao retornados no JSON e estao no
+			//NODE q e um OBJ do tipo JSONNODE... e passando essas
+			//informacoes para o nosso DTO q e um OBJ do tipo
+			//EMPRESATRANSPORTEDTO
+			//
+			EmpresaTransporteDTO empresaTransporteDTO = new EmpresaTransporteDTO();
+			if(node.get("id") != null) {
+				empresaTransporteDTO.setId(node.get("id").asText());
+				
+			}
+
+			//se no JSON retornado pela API do MELHORENVIO o ATRIBUTO/CAMPO
+			//NAME NAO for NULL... Dai vamos pegar o valor q ta em NAME
+			//e passar para o atributo NOME do nosso OBJ EMPRESATRANSPORTEDTO
+			if(node.get("name") != null) {
+				empresaTransporteDTO.setNome(node.get("name").asText());
+			}					
+			
+			if(node.get("price") != null) {
+			empresaTransporteDTO.setValor(node.get("price").asText());
+		}
+			
+			if(node.get("company") != null) {				
+			empresaTransporteDTO.setEmpresa(node.get("company").asText());
+			empresaTransporteDTO.setPicture(node.get("company").get("picture").asText());
+		}
+			
+			//SE todos os DADOS acima estiverem OK, ou seja NADA estiver
+			//NULL... Dai vamos ADD essa EMPRESATRANSPORTEDTO a LISTA
+			//EMPRESATRANSPORTESDTOS
+			if(empresaTransporteDTO.dadosOK()) {
+				empresaTransporteDTOs.add(empresaTransporteDTO);
+			}	
+	}
+
+		return new ResponseEntity<List<EmpresaTransporteDTO>>(
+				empresaTransporteDTOs, HttpStatus.OK);
+	}
+		
+	}
 	
-	
-}
+
