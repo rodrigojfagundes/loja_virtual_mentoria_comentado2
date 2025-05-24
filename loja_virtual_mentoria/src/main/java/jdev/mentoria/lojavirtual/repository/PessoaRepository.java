@@ -13,6 +13,11 @@ public interface PessoaRepository extends CrudRepository<PessoaJuridica, Long> {
 	//com um valor de CNPJ ja cadastrado
 	@Query(value = "select pj from PessoaJuridica pj where pj.cnpj = ?1")
 	public PessoaJuridica existeCnpjCadastrado(String cnpj);
+
 	
+	//metodo q usa uma query para buscar se ja existe pessoa juridica (EMPRESA)
+	//com um valor de INSCRICAO ESTADUAL ja cadastrado
+	@Query(value = "select pj from PessoaJuridica pj where pj.inscEstadual = ?1")
+	public PessoaJuridica existeInsEstadualCadastrado(String inscEstadual);
 	
 }

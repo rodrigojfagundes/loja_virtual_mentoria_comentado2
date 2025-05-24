@@ -74,11 +74,14 @@ public class PessoaUserService {
 			usuarioPj = usuarioRepository.save(usuarioPj);
 			
 			usuarioRepository.insereAcessoUserPj(usuarioPj.getId());
+			//inserindo PJ/EMPRESA com ROLE/ACESSO DINAMICO no caso "ROLE_ADMIN"
+			//alem do ROLE_USER q e o padrao...
+			usuarioRepository.insereAcessoUserPj(usuarioPj.getId(), "ROLE_ADMIN");
 			
 			StringBuilder menssagemHtml = new StringBuilder();
 			
-			menssagemHtml.append("<b>Segue a baixo seus dados de acesso para a loja virtual </b>");
-			menssagemHtml.append("<b>Login: </b>"+juridica.getEmail() +"</b> <br />");
+			menssagemHtml.append("<b>Segue a baixo seus dados de acesso para a loja virtual </b><br />");
+			menssagemHtml.append("<b>Login: </b>"+juridica.getEmail() +"<br />");
 			menssagemHtml.append("<b>Senha: </b>").append(senha).append("<br /><br />");
 			menssagemHtml.append("<b>Obrigado! </b>");
 			

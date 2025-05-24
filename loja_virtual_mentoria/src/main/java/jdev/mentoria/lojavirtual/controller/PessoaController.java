@@ -40,6 +40,15 @@ public class PessoaController {
 					+ "Ja existe CNPJ cadastrado com o numero: " + pessoaJuridica.getCnpj());
 		}
 		
+		//verificando se ja tem PESSOAJURIDICA(EMPRESA) com essa INSCRICAO ESTADUAL
+		if (pessoaJuridica.getId() == null && pessoaRepository
+				.existeInsEstadualCadastrado(pessoaJuridica.getInscEstadual()) != null) {
+			
+			throw new ExceptionMentoriaJava(""
+					+ "Ja existe Inscricao Estadual cadastrado com o numero: " + pessoaJuridica.getInscEstadual());
+		}
+		
+		
 		//chamando o service para salvar a pessoa juridica
 		 pessoaJuridica = pessoaUserService
 				 .salvarPessoaJuridica(pessoaJuridica);

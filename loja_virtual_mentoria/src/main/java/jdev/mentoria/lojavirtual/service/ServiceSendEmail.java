@@ -24,7 +24,7 @@ public class ServiceSendEmail {
 
     @Async
     public void enviarEmailHtml(String assunto, String textoMensagem, String emailDestino) throws MessagingException, UnsupportedEncodingException {
-        //password = System.getenv("SENHA_APP_GOOGLE_EMAIL");
+        
         Properties properties = new Properties();
 
         // Alex porque o envio dele parou de funcionar
