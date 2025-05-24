@@ -65,6 +65,80 @@ public class PagamentoController implements Serializable {
 	@Autowired
 	private BoletoJunoRepository boletoJunoRepository; 
 	
+	
+	
+	//metodo de nome FINALIZARCOMPRACARTAOASAAS para
+	//fazer pagamento de compras na ASAAS a partir do CARTAO
+	@RequestMapping(method = RequestMethod.POST, value = "**/finalizarCompraCartao")
+	public ResponseEntity<String> finalizarCompraCartaoAsaas(
+			//pegando os paramametros q sao passados
+			//e atribuindo eles a atributos/vars
+			@RequestParam("cardNumber") String cardNumber,
+			@RequestParam("holderName") String holderName,
+			@RequestParam("securityCode") String securityCode,
+			@RequestParam("expirationMonth") String expirationMonth,
+			@RequestParam("expirationYear") String expirationYear,
+			@RequestParam("idVendaCampo") Long idVendaCampo,
+			@RequestParam("cpf") String cpf,
+			@RequestParam("qtdparcela") Integer qtdparcela,
+			@RequestParam("cep") String cep,
+			@RequestParam("rua") String rua,
+			@RequestParam("numero") String numero,
+			@RequestParam("estado") String estado,
+			@RequestParam("cidade") String cidade) throws Exception{
+		
+		//pesquisando a venda... para associar a venda ao pagamento
+		//por cartao, para assim sabermos o preco, comprador, produto, etc...
+		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.
+                findById(idVendaCampo).orElse(null);
+		
+		
+		
+		//se o id da venda nao for valido...
+		if (vendaCompraLojaVirtual == null) {
+			return new ResponseEntity<String>("Código da venda não existe!", HttpStatus.OK);
+		}
+		
+		//limpando cpf
+		String cpfLimpo =  cpf.replaceAll("\\.", "").replaceAll("\\-", "");
+		
+		
+		if (!ValidaCPF.isCPF(cpfLimpo)) {
+			return new ResponseEntity<String>("CPF informado é inválido.", HttpStatus.OK);
+		}
+		
+		
+		//ver quantide de parcelas
+		if (qtdparcela > 12 || qtdparcela <= 0) {
+			return new ResponseEntity<String>("Quantidade de parcelar deve ser de  1 até 12.", HttpStatus.OK);
+		}
+		
+		if (vendaCompraLojaVirtual.getValorTotal().doubleValue() <= 0) {
+			return new ResponseEntity<String>("Valor da venda não pode ser Zero(0).", HttpStatus.OK);
+		}
+		
+
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//criando um metodo de nome PAGAMENTO do tipo 
 	//GET na url pagamento/idvendacompra
 	//o retorno dele e do tipo MODELANDVIEW, pois sera exibido em uma
