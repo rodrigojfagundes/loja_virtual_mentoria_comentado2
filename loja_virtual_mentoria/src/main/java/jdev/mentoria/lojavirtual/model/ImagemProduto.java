@@ -42,6 +42,24 @@ public class ImagemProduto implements Serializable {
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "produto_fk"))
 	private Produto produto;
+	
+	
+	//MTAS IMAGEMPRODUTO para 1 EMPRESA
+	//(e EMPRESA e uma PESSOA do tipo juridica)
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false,
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
+	name = "empresa_id_fk"))
+	private Pessoa empresa;
+	
+
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
 
 	public Long getId() {
 		return id;

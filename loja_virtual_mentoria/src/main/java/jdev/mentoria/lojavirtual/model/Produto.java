@@ -4,10 +4,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import javax.persistence.Column;
+import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -66,6 +70,23 @@ public class Produto implements Serializable {
 	
 	private Integer qtdeClique = 0;
 	
+	
+	//MTAS PRODUTO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false,
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
+	name = "empresa_id_fk"))
+	private Pessoa empresa;
+
+	
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
+
 	public void setAtivo(Boolean ativo) {
 		this.ativo = ativo;
 	}

@@ -1,10 +1,12 @@
 package jdev.mentoria.lojavirtual;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import jdev.mentoria.lojavirtual.repository.AcessoRepository;
 import jdev.mentoria.lojavirtual.service.AcessoService;
 import junit.framework.TestCase;
 
+@Profile("test")
 @SpringBootTest(classes = LojaVirtualMentoriaApplication.class)
 public class LojaVirtualMentoriaApplicationTests extends TestCase {
 
@@ -50,7 +53,7 @@ public class LojaVirtualMentoriaApplicationTests extends TestCase {
 		
 		Acesso acesso = new Acesso();
 		
-		acesso.setDescricao("ROLE_COMPRADOR");
+		acesso.setDescricao("ROLE_COMPRADOR" + Calendar.getInstance().getTimeInMillis());
 		
 		ObjectMapper objectMapper = new ObjectMapper();
 		
@@ -224,8 +227,10 @@ public class LojaVirtualMentoriaApplicationTests extends TestCase {
 	@Test
 	public void testCadastraAcesso() throws ExceptionMentoriaJava {
 		
+		String descacasso = "ROLE_ADMIN" + Calendar.getInstance().getTimeInMillis();
+				
 		Acesso acesso = new Acesso();		
-		acesso.setDescricao("ROLE_ADMIN");
+		acesso.setDescricao(descacasso);
 		
 		assertEquals(true, acesso.getId() == null);
 		
@@ -233,7 +238,7 @@ public class LojaVirtualMentoriaApplicationTests extends TestCase {
 		assertEquals(true, acesso.getId() > 0);
 		
 		//validar dados salvos da forma correta
-		assertEquals("ROLE_ADMIN", acesso.getDescricao());
+		assertEquals(descacasso, acesso.getDescricao());
 		
 		//teste carregamento
 		Acesso acesso2 = acessoRepository.findById(acesso.getId()).get();
@@ -253,7 +258,7 @@ public class LojaVirtualMentoriaApplicationTests extends TestCase {
 		//teste de query
 		
 		acesso = new Acesso();
-		acesso.setDescricao("ROLE_ALUNO");
+		acesso.setDescricao("ROLE_ALUNO" + Calendar.getInstance().getTimeInMillis());
 		acesso = acessoController.salvarAcesso(acesso).getBody();
 		List<Acesso> acessos = acessoRepository.
 				buscarAcessoDesc("ALUNO".trim().toUpperCase());

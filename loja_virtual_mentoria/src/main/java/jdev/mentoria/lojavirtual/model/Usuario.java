@@ -39,7 +39,7 @@ public class Usuario implements UserDetails {
 	generator = "seq_usuario")
 	private Long id;
 	
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private String login;
 	
 	@Column(nullable = false)
@@ -55,6 +55,15 @@ public class Usuario implements UserDetails {
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "pessoa_fk"))
 	private Pessoa pessoa;
+
+	
+	//MTAS USUARIO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false,
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
+	name = "empresa_id_fk"))
+	private Pessoa empresa;
+	
 	
 	
 	//1 USUARIO tem  MTAS ACESSO/ROLE, ROLE_DEV, ROLE_ADMIN, etc...
@@ -97,6 +106,14 @@ public class Usuario implements UserDetails {
 	private List<Acesso> acessos;
 	
 	
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
+
 	//AUTORIDADE são os ACESSOS/ROLE
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

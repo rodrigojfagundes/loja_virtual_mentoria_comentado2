@@ -76,8 +76,24 @@ public class ContaPagar implements Serializable {
 	name = "pessoa_forn_fk"))
 	//na pessoa_fornecedor a baixo mostra o nome do fornecedor/recebedor
 	//qm vai RECEBER
-	private Pessoa pessoa_fornecedor;	
-		
+	private Pessoa pessoa_fornecedor;
+	
+	
+	//MTAS CONTAPAGAR para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false,
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
+	name = "empresa_id_fk"))
+	private Pessoa empresa;
+
+
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
 
 	public Long getId() {
 		return id;

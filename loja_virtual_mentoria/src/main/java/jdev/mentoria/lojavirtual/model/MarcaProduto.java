@@ -3,10 +3,14 @@ package jdev.mentoria.lojavirtual.model;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -31,24 +35,44 @@ public class MarcaProduto implements Serializable {
 	@Column(nullable = false)
 	private String nomeDesc;
 	
-	
-	public MarcaProduto(Long id, String nomeDesc) {
-		this.id = id;
-		this.nomeDesc = nomeDesc;
-	}
+
+	//MTAS MARCAPRODUTO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false,
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
+	name = "empresa_id_fk"))
+	private Pessoa empresa;
 
 	
-	public MarcaProduto() {
-		this.id = id;
-		this.nomeDesc = nomeDesc;
-	}	
 	
+//	public MarcaProduto(Long id, String nomeDesc) {
+//		this.id = id;
+//		this.nomeDesc = nomeDesc;
+//	}
+
+	
+//	public MarcaProduto() {
+//		this.id = id;
+//		this.nomeDesc = nomeDesc;
+//	}	
+	
+	
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+	
+	
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
 	
 	public Long getId() {
 		return id;
 	}
 	
 	
+
+
 	public void setId(Long id) {
 		this.id = id;
 	}
