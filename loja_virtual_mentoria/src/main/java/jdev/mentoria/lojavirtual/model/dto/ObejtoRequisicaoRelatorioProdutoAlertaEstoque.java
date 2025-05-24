@@ -4,13 +4,13 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
 
-//o nome correto ObjetoRequisicaoRelatorioProdutoCompraNotaFiscalDTO
+//o nome correto ObjetoRequisicaoRelatorioProdutoAlertaEstoque
 //mas o prof escreveu errado...
 //
 //essa classe/entity tem os atributos que vao receber os valores
 //q vem do relatorio
 //
-public class ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto implements Serializable {
+public class ObejtoRequisicaoRelatorioProdutoAlertaEstoque implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -27,9 +27,23 @@ public class ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto implements Seriali
 	private String codigoFornecedor ="";
 	private String nomeFornecedor ="";
 	private String dataCompra ="";
+	private String qtdEstoque;
+	private String qtdAlertaEstoque;
 	
 	
 	
+	public String getQtdEstoque() {
+		return qtdEstoque;
+	}
+	public void setQtdEstoque(String qtdEstoque) {
+		this.qtdEstoque = qtdEstoque;
+	}
+	public String getQtdAlertaEstoque() {
+		return qtdAlertaEstoque;
+	}
+	public void setQtdAlertaEstoque(String qtdAlertaEstoque) {
+		this.qtdAlertaEstoque = qtdAlertaEstoque;
+	}
 	public String getValorVendaProduto() {
 		return valorVendaProduto;
 	}

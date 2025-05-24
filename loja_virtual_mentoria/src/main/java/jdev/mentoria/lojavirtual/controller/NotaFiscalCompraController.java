@@ -21,6 +21,7 @@ import jdev.mentoria.lojavirtual.model.MarcaProduto;
 import jdev.mentoria.lojavirtual.model.NotaFiscalCompra;
 import jdev.mentoria.lojavirtual.model.NotaFiscalVenda;
 import jdev.mentoria.lojavirtual.model.dto.ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto;
+import jdev.mentoria.lojavirtual.model.dto.ObejtoRequisicaoRelatorioProdutoAlertaEstoque;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalCompraRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
 import jdev.mentoria.lojavirtual.service.NotaFiscalCompraService;
@@ -37,7 +38,7 @@ public class NotaFiscalCompraController {
 	@Autowired
 	private NotaFiscalCompraService notaFiscalCompraService;
 	
-	
+	//relatorio de produto comprado pela NOTAFISCAL
 	@ResponseBody
 	@PostMapping(value = "/**/relatorioProdCompradoNotaFiscal")
 	public ResponseEntity<List<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto>> relatorioProdCompradoNotaFiscal(
@@ -52,6 +53,26 @@ public class NotaFiscalCompraController {
 				objetoRequisicaoRelatorioProdutoCompraNotaFiscalDto);
 		
 		return new ResponseEntity<List<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto>>(retorno, HttpStatus.OK);
+	
+	}
+	
+	//RELATORIO PRODUTO ALERTA ESTOQUE BAIXO
+	@ResponseBody
+	@PostMapping(value = "/**/relatorioProdAlertaEstoque")
+	public ResponseEntity<List<ObejtoRequisicaoRelatorioProdutoAlertaEstoque>> relatorioProdAlertaEstoque(
+			@Valid @RequestBody ObejtoRequisicaoRelatorioProdutoAlertaEstoque 
+			obejtoRequisicaoRelatorioProdutoAlertaEstoque){
+		
+		
+		
+		List<ObejtoRequisicaoRelatorioProdutoAlertaEstoque> retorno = 
+				new ArrayList<ObejtoRequisicaoRelatorioProdutoAlertaEstoque>();
+		
+		retorno = notaFiscalCompraService.gerarRelatorioAlertaEstoque(
+				obejtoRequisicaoRelatorioProdutoAlertaEstoque);
+		
+		return new ResponseEntity<
+				List<ObejtoRequisicaoRelatorioProdutoAlertaEstoque>>(retorno, HttpStatus.OK);
 	
 	}
 	
