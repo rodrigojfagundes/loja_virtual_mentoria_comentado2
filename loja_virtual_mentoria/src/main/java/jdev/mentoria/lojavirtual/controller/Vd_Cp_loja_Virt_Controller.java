@@ -249,12 +249,13 @@ public class Vd_Cp_loja_Virt_Controller {
 		
 	}
 	
-	
+	//meio q nos passamos o ID de um produto e vamos ver
+	//quais foram as VENDASCOMPRALOJAVIRTUAL (vendacompra) q esses
+	//produto foram vendidos...
 	@ResponseBody
 	@GetMapping(value = "**/consultaVendaPorProdutoId/{id}")
 	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> consultaVendaPorProdutoId(@PathVariable("id") Long idProd){
-		
-		
+				
 		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
 		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
 		//com o nome de VENDACOMPRALOJAVIRTUAL
@@ -263,7 +264,95 @@ public class Vd_Cp_loja_Virt_Controller {
 		
 		if (vendaCompraLojaVirtual == null) {
 			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
+		}		
+		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
+		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
+		//e NAO COMPRALOJAVIRTUALDTOLIST
+		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		
+		//VCL significa VENDACOMPRALOJA
+		for(VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
+		//convertendo para DTO		
+		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
+		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+		
+		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
+		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
+		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
+		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
+		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
+		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
+		compraLojaVirtualDTO.setId(vcl.getId());
+				
+		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
+			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+			itemVendaDTO.setQuantidade(item.getQuantidade());
+			itemVendaDTO.setProduto(item.getProduto());
+			
+			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+		}		
+		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
+		}		
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
+	}
+	
+	//metodo de BUSCA POR CONSULTADINAMICA... Ou seja passando 2 parametros
+	//q podem ser mudados...
+	//
+	//com esse metodo alem de nos passarmos o valor(ID) passamos o tipo
+	//a baixo nos temos o TIPOCONSULTA... a baixo temos um IF e SE
+	//for do tipo PROD_POR_ID dai e pq o ID q estamos passando e para
+	//buscar um PRODUTO...
+	//
+	//ou tabem podemos passar um valor tipo GALAXY e o segundo parametro
+	//ser POR_NOME_PROD... Dai vai procurar pelo nome do produto
+	//
+	//
+	@ResponseBody
+	@GetMapping(value = "**/consultaVendaDinamica/{valor}/{tipoconsulta}")
+	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> 
+		consultaVendaDinamica(@PathVariable("valor") String valor,
+				@PathVariable("tipoconsulta") String tipoconsulta){
+				
+		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
+		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
+		//com o nome de VENDACOMPRALOJAVIRTUAL
+		//
+		//OBS o PROF DEIXOU O NOME DE COMPRALOJAVIRTUAL (nome do obj/var)
+		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = null;
+		
+		
+		//verificando SE o tipo da consulta é por IDPRODUTO
+		if(tipoconsulta.equalsIgnoreCase("POR_ID_PROD")) {
+		vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+		.vendaPorProduto(Long.parseLong(valor));
+		} 
+		
+		//verificando se a consulta e pelo NOMEPRODUTO
+		else if(tipoconsulta.equalsIgnoreCase("POR_NOME_PROD")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+					.vendaPorNomeProduto(valor.toUpperCase().trim());
 		}
+		
+		else if(tipoconsulta.equalsIgnoreCase("POR_NOME_CLIENTE")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+					.vendaPorNomeCliente(valor.toUpperCase().trim());
+		}
+		
+		else if(tipoconsulta.equalsIgnoreCase("POR_ENDERECO_COBRANCA")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+					.vendaPorEnderecoCobranca(valor.toUpperCase().trim());
+		}
+		
+		else if(tipoconsulta.equalsIgnoreCase("POR_ENDERECO_ENTREGA")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
+					.vendaPorEnderecoEntrega(valor.toUpperCase().trim());
+		}
+				
+		
+		if (vendaCompraLojaVirtual == null) {
+			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
+		}		
 		
 		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
 		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
@@ -275,34 +364,27 @@ public class Vd_Cp_loja_Virt_Controller {
 		//convertendo para DTO		
 		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
 		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());
 		
-		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());
-		
-		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());
-		
-		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());		
-		
-		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());
-		
-		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());
-		
+		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
+		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
+		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
+		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
+		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
+		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
 		compraLojaVirtualDTO.setId(vcl.getId());
-		
-		
-		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {
-						
+				
+		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
 			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
 			itemVendaDTO.setQuantidade(item.getQuantidade());
 			itemVendaDTO.setProduto(item.getProduto());
 			
 			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-		}
-		
+		}		
 		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
-		}
-		
+		}		
 		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
 	}
+	
+	
 	
 }

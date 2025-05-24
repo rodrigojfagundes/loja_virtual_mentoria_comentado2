@@ -28,10 +28,42 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 	
 	
 	//metodo q recebe o ID de um PRODUTO e com o ID desse PRODUTO nos buscamos
-	//os ITEMVENDA q tem esse PRODUTO e e retorna uma LISTA com o ID das 
-	//VENDACOMPRALOJAVIRTUAL q tiveram esse PRODUTO/
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o PRODUTO
+	//tenha o ID q foi PASSADO PARA Long IDPRODUTO
 	//
-	//carregando as VENDA Ligadas com o ITEMDEVENDA onde o EXCLUIDO e FALSE
 	@Query(value = "select i.vendaCompraLojaVirtual from ItemVendaLoja i where i.vendaCompraLojaVirtual.excluido = false and i.produto.id = ?1")
 	List<VendaCompraLojaVirtual> vendaPorProduto(Long idProduto);
+
+
+	//metodo q recebe o NOME de um PRODUTO e com o NOME desse PRODUTO nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o PRODUTO
+	//tenha o NOME q foi PASSADO PARA String VALOR
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i where "
+			+ " i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.produto.nome)) like %?1%")
+	List<VendaCompraLojaVirtual> vendaPorNomeProduto(String valor);
+
+
+	//metodo q recebe o NOME de um CLIENTE/PESSOA e com o NOME desse CLIENTE/PESSOA nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE/PESSOA
+	//tenha o NOME q foi PASSADO PARA String NOMEPESSOA
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.pessoa.nome)) like %?1%")
+	List<VendaCompraLojaVirtual> vendaPorNomeCliente(String nomepessoa);
+
+
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.enderecoCobranca.ruaLogra)) "
+			+ " like %?1%")	
+	List<VendaCompraLojaVirtual> vendaPorEnderecoCobranca(String enderecocobranca);
+
+
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.enderecoEntrega.ruaLogra)) "
+			+ " like %?1%")
+	List<VendaCompraLojaVirtual> vendaPorEnderecoEntrega(String enderecoentrega);
+	
+	
+	
 }
