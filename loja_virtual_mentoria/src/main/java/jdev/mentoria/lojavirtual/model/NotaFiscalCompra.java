@@ -69,6 +69,8 @@ public class NotaFiscalCompra implements Serializable {
 	//ACHO Q O CORRETO SERIA MUDARO NOME DA VAR/OBJ de PESSOA para
 	//EMPRESA2 ou ALGO ASSIM... PQ E UMA PESSOAJURIDICA....
 	//
+	//campo sera usado para FORNECEDOR do produto
+	//
 	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 

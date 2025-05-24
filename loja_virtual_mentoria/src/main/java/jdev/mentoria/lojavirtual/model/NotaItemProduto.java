@@ -16,6 +16,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 //criando a class/entidade NotaItemProduto
+//basicamente vai ser uma LISTA de NOTAFISCAL
+//tipo o PRODUTO GALAXY tem 10 fornecedores... E cada fornecedor
+//tem uma NOTAFISCAL... Dai a NOTAITEMPRODUTO vai juntar as NOTAFISCAL
+//desse TODOS os FORNECEDORES para esse PRODUTO
+//
 @Entity
 @Table(name="nota_item_produto")
 @SequenceGenerator(name = "seq_nota_item_produto", 

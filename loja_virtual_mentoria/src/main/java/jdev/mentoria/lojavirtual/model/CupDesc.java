@@ -18,6 +18,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 //criando a class/entidade cupom de desconto
 //
 @Entity
@@ -33,17 +35,18 @@ public class CupDesc implements Serializable {
 	generator = "seq_cup_desc")
 	private Long id;
 	
+	@NotEmpty(message = "Informe o codigo do desconto")
 	@Column(nullable = false)
 	private String codDesc;
-	
 	
 	private BigDecimal valorRealDesc;
 	private BigDecimal valorPorcentDesc;
 	
+	@NotEmpty(message = "Informe a data de validade do cupom")
 	@Column(nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dataValidadeCupom;
-	
+			
 	
 	//MTAS CUPDESC para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
 	@ManyToOne(targetEntity = PessoaJuridica.class)

@@ -1,12 +1,15 @@
 package jdev.mentoria.lojavirtual.controller;
 
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.enums.StatusContaReceber;
+import jdev.mentoria.lojavirtual.model.ContaReceber;
 import jdev.mentoria.lojavirtual.model.Endereco;
 import jdev.mentoria.lojavirtual.model.ItemVendaLoja;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
@@ -29,10 +34,12 @@ import jdev.mentoria.lojavirtual.model.StatusRastreio;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 import jdev.mentoria.lojavirtual.model.dto.ItemVendaDTO;
 import jdev.mentoria.lojavirtual.model.dto.VendaCompraLojaVirtualDTO;
+import jdev.mentoria.lojavirtual.repository.ContaReceberRepository;
 import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
 import jdev.mentoria.lojavirtual.repository.StatusRastreioRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
+import jdev.mentoria.lojavirtual.service.ServiceSendEmail;
 import jdev.mentoria.lojavirtual.service.VendaService;
 
 
@@ -57,9 +64,16 @@ public class Vd_Cp_loja_Virt_Controller {
 	@Autowired
 	private VendaService vendaService;
 	
+	@Autowired
+	private ContaReceberRepository contaReceberRepository;
+	
+	@Autowired
+	private ServiceSendEmail serviceSendEmail;
+	
+	
 	@ResponseBody
 	@PostMapping(value = "**/salvarVendaLoja")
-	public ResponseEntity<VendaCompraLojaVirtualDTO> salvarVendaLoja(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) throws ExceptionMentoriaJava {
+	public ResponseEntity<VendaCompraLojaVirtualDTO> salvarVendaLoja(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) throws ExceptionMentoriaJava, UnsupportedEncodingException, MessagingException {
 		
 		//como o valor nao vem montado pelo JSON... Nos precisamos
 		//acessar os OBJ/atributos e instanciar eles
@@ -155,8 +169,35 @@ public class Vd_Cp_loja_Virt_Controller {
 			
 		}
 		
+		ContaReceber contaReceber = new ContaReceber();
+		contaReceber.setDescricao("Venda da loja virtual n: " + vendaCompraLojaVirtual.getId());
+		contaReceber.setDtPagamento(Calendar.getInstance().getTime());
+		contaReceber.setDtVencimento(Calendar.getInstance().getTime());
+		contaReceber.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+		contaReceber.setPessoa(vendaCompraLojaVirtual.getPessoa());
+		contaReceber.setStatus(StatusContaReceber.QUITADA);
+		contaReceber.setValorDesconto(vendaCompraLojaVirtual.getValorDesconto());
+		contaReceber.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
+		
+		contaReceberRepository.saveAndFlush(contaReceber);
+		
+		//e-mail para comprador
+		StringBuilder msgemail = new StringBuilder();
+		msgemail.append("Ola, ").append(pessoaFisica.getNome()).append("</br>");
+		msgemail.append("Voce realizou de n: ").append(vendaCompraLojaVirtual.getId()).append("</br>");
+		msgemail.append("Na loja").append(vendaCompraLojaVirtual.getEmpresa().getNomeFantasia());
+		
+		//assunto, msg, destino
+		serviceSendEmail.enviarEmailHtml("Compra Realizada", msgemail.toString(), pessoaFisica.getEmail());
+		
+		//email para vendedor
+		msgemail = new StringBuilder();
+		msgemail.append("Voce realizou uma venda,  nº ").append(vendaCompraLojaVirtual.getId());
+		serviceSendEmail.enviarEmailHtml("Venda Realizada", msgemail.toString(), vendaCompraLojaVirtual.getEmpresa().getEmail());
+
 		
 		return new ResponseEntity<VendaCompraLojaVirtualDTO>(compraLojaVirtualDTO, HttpStatus.OK);
+	
 	}
 	
 	
