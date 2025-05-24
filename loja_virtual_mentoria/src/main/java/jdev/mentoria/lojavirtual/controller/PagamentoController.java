@@ -370,6 +370,23 @@ public class PagamentoController implements Serializable {
 		
 		//vamos, fazer a verificacao se realmente foi
 		//pago certinho para poder quitar a venda e tals...
+		//
+		//se o OBJ/VAR CARTAOCREDITO vier com a var/obj STATUS
+		//com CONFIRMED e pq deu certo...
+		if (cartaoCredito.getStatus().equalsIgnoreCase("CONFIRMED")) {
+			
+			  for (BoletoJuno boletoJuno : boletoJunos) {
+				  boletoJunoRepository.quitarBoletoById(boletoJuno.getId());
+			   }
+			   
+			  vd_Cp_Loja_virt_repository.updateFinalizaVenda(vendaCompraLojaVirtual.getId());
+			  
+			  return new ResponseEntity<String>("sucesso", HttpStatus.OK);
+		}else {
+			 return new ResponseEntity<String>("Pagamento não pode ser finalizado: Status:" + cartaoCredito.getStatus(), HttpStatus.OK);
+		}
+		
+	
 		
 	}
 	
@@ -445,7 +462,7 @@ public class PagamentoController implements Serializable {
 	//PROF FALOU ISSO na AULA 11.24... API CHECKOUT ENDPOINT MONTANDO
 	//COBRANCA PARTE 17
 	//
-	@RequestMapping(method = RequestMethod.POST, value = "**/finalizarCompraCartao")
+	@RequestMapping(method = RequestMethod.POST, value = "**/finalizarCompraCartaoJuno")
 	public ResponseEntity<String> finalizarCompraCartao(
 			@RequestParam("cardHash") String cardHash,
 			@RequestParam("cardNumber") String cardNumber,
