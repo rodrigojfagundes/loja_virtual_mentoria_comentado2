@@ -1,9 +1,18 @@
 package jdev.mentoria.lojavirtual.service;
 
 
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 
 
 @Service
@@ -12,7 +21,10 @@ public class VendaService {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
+	
+	@PersistenceContext
+	private EntityManager entityManager;
+	
 	
 	public void exclusaoTotalVendaBanco2(Long idVenda) {
 		String sql = "begin; update vd_cp_loja_virt set excluido = true where id = " + idVenda +"; commit;";
@@ -32,6 +44,8 @@ public class VendaService {
 //
 //O IDVENDA e o USUARIO q passa atraves do metodo de deletar q ta no
 //VD_CP_LOJA_VIRT_CONTROLLER.JAVA... Ou seja vem do FRONTEND
+		//
+		//codigo a baixo e em SQL
 		String value = 
 		                  " begin;"
 		      			+ " UPDATE nota_fiscal_venda set venda_compra_loja_virt_id = null where venda_compra_loja_virt_id = "+idVenda+"; "
@@ -56,5 +70,25 @@ public class VendaService {
 	}
 
 	
-	
+	//metodo q recebe 2 datas e pesquisa as VENDACOMPRALOJAVIRTUAL
+	//q aconteceram entre essas datas...
+	//
+	//recebendo 2 datas e pesquisamos dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL
+	//em q a DATA da COMPRA é MAIOR q a DATA1 e MENOR q a DATA2...
+	//
+	//meio q estamos selecionando a COLUNA/var/obj VENDACOMPRALOJAVIRTUAL
+	//q ta dentro da TABELA/CLASS ITEMVENDALOJA... Aonde o EXCLUIDO  e FALSE
+	//e a DATAVENDA dessa VENDACOMPRALOJAVIRTUAL da entre o valor da
+	//DATA1 e DATA2...
+	//
+	//codigo em JPQL...
+	@SuppressWarnings("unchecked")
+	public List<VendaCompraLojaVirtual> consultaVendaFaixaData(String data1, String data2){
+	String sql = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false "
+			+ " and i.vendaCompraLojaVirtual.dataVenda >= '" + data1 + "'"
+			+ " and i.vendaCompraLojaVirtual.dataVenda <= '" + data2 + "' ";
+		
+	return entityManager.createQuery(sql).getResultList();
+	}
 }

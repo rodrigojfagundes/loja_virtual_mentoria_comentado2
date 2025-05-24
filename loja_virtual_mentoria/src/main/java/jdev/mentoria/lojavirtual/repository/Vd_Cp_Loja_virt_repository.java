@@ -1,5 +1,6 @@
 package jdev.mentoria.lojavirtual.repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,7 +64,21 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.enderecoEntrega.ruaLogra)) "
 			+ " like %?1%")
 	List<VendaCompraLojaVirtual> vendaPorEnderecoEntrega(String enderecoentrega);
-	
+
+
+	//
+	//OBS O METODO A BAIXO O PROF TENTOU MAS NAO DEU CERTO...
+	//
+	//metodo q recebe 2 datas e pesquisa as VENDACOMPRALOJAVIRTUAL
+	//q aconteceram entre essas datas...
+	//
+	//recebendo 2 datas e pesquisamos dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL
+	//em q a DATA da COMPRA é MAIOR q a DATA1 e MENOR q a DATA2...
+	//@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+	//		+ " where i.vendaCompraLojaVirtual.excluido = false "
+	//		+ " and i.vendaCompraLojaVirtual.dataVenda >= ?1 "
+	//		+ " and i.vendaCompraLojaVirtual.dataVenda <= ?2 ")
+	//List<VendaCompraLojaVirtual> consultaVendaFaixaData(Date data1, Date data2);
 	
 	
 }

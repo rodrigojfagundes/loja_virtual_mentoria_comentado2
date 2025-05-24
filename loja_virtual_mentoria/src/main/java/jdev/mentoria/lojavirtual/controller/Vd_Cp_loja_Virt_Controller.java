@@ -1,7 +1,10 @@
 package jdev.mentoria.lojavirtual.controller;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -295,6 +298,64 @@ public class Vd_Cp_loja_Virt_Controller {
 		}		
 		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
 	}
+	
+	//metodo para pesquisar VENDACOMPRALOJAVIRTUAL entre 2 datas...
+	@ResponseBody
+	@GetMapping(value = "**/consultaVendaDinamicaFaixaData/{data1}/{data2}")
+	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> consultaVendaDinamicaFaixaData(
+			@PathVariable("data1")String data1, @PathVariable("data2") String data2) throws ParseException{
+		
+		
+		//o NOME CORRETO DO OBJ/ATRIBUTO SERIA vendaCompraLojaVirtual...
+		//mas o PROF colocou compralojavirtual...
+		List<VendaCompraLojaVirtual> compraLojaVirtual = null;
+				
+		//passando as datas q recebemos la em cima
+		compraLojaVirtual = vendaService
+				.consultaVendaFaixaData(data1, data2);
+		
+		
+		//se o retorno for uma lista null, dai vamos apenas instanciar
+		//ela para nao dar nullpointerexception
+		//
+		if(compraLojaVirtual == null) {
+			compraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
+		}
+		
+		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
+		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
+		//e NAO COMPRALOJAVIRTUALDTOLIST
+		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		
+		//VCL significa VENDACOMPRALOJA
+		for(VendaCompraLojaVirtual vcl : compraLojaVirtual) {
+		//convertendo para DTO		
+		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
+		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+		
+		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
+		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
+		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
+		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
+		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
+		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
+		compraLojaVirtualDTO.setId(vcl.getId());
+				
+		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
+			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+			itemVendaDTO.setQuantidade(item.getQuantidade());
+			itemVendaDTO.setProduto(item.getProduto());
+			
+			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+		}		
+		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
+		}
+		
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
+	}
+		
+	//}
+	
 	
 	//metodo de BUSCA POR CONSULTADINAMICA... Ou seja passando 2 parametros
 	//q podem ser mudados...
