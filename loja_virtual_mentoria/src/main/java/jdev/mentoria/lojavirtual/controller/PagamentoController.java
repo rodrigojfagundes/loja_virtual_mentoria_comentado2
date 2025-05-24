@@ -29,10 +29,13 @@ import jdev.mentoria.lojavirtual.enums.ApiTokenIntegracao;
 import jdev.mentoria.lojavirtual.model.AccessTokenJunoAPI;
 import jdev.mentoria.lojavirtual.model.BoletoJuno;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.model.dto.AsaasApiPagamentoStatus;
 import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
+import jdev.mentoria.lojavirtual.model.dto.CobrancaApiAsaasCartao;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
 import jdev.mentoria.lojavirtual.model.dto.ErroResponseApiJuno;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
 import jdev.mentoria.lojavirtual.model.dto.PagamentoCartaoCredito;
 import jdev.mentoria.lojavirtual.model.dto.PaymentsCartaoCredito;
 import jdev.mentoria.lojavirtual.model.dto.RetornoPagamentoCartaoJuno;
@@ -118,6 +121,52 @@ public class PagamentoController implements Serializable {
 		}
 		
 
+		//vamos gravar no banco apenas as tentativas de pagamento
+		//q deram certo... apos as validacoes acima...
+		//		
+		List<BoletoJuno> cobrancas =  boletoJunoRepository.cobrancaDaVendaCompra(idVendaCampo);
+		
+		//aqui nos estamos deletando as cobrancas q nao foram pagas
+		//ou seja cobranca q tentaram fazer, mas deu erro no
+		//cartao ou algo assim, tipo o numero de parcela tava errado etc...
+		for (BoletoJuno boletoJuno : cobrancas) {
+			boletoJunoRepository.deleteById(boletoJuno.getId());
+			boletoJunoRepository.flush();
+		}
+		
+		
+		/*INICIO - Gerando cobranca por cartão*/
+		ObjetoPostCarneJuno carne = new ObjetoPostCarneJuno();
+		
+		//passando o cpf, nome e telefone para buscar o CLIENTE
+		//na APIASSAS, dai a asaas vai associar o dinheiro
+		//q ta recebendo pelo cartao a um CLIENTE...
+		//
+		carne.setPayerCpfCnpj(cpfLimpo);
+		carne.setPayerName(holderName);
+		carne.setPayerPhone(vendaCompraLojaVirtual.getPessoa().getTelefone());
+		
+		//instanciandoum obj do tipo COBRANCAAPIASAASCARTAO
+		//de nome COBRANCAAPIASAASCARTAO
+		CobrancaApiAsaasCartao cobrancaApiAsaasCartao = new CobrancaApiAsaasCartao();
+		//chamando o metodo SETCUSTUMER/CLIENTE/ q recebe o RETORNO
+		//do metodo BUSCACLIENTEPESSOAAPIASAAS metodo q pede para a
+		//ASAAS buscar no BANCO de DADOS dela se tem algum CLIENTE
+		//com o CPF q esta no obj/var CARNE q estamos passando para o
+		//metodo BUSCACLIENTEPESSOAAPIASAAS... SE nao tiver CLIENTE
+		//no BANCO DE DADOS da ASAAS com o CPF passado...
+		//dai vai ser pego todas as informacoes q estao no OBJ/VAR CARNE
+		//e a ASAAS vai CAD no BANCO DELA... Dai... ela vai retornar
+		//para nos o ID do cliente CAD nela...
+		//caso ja tenha esse cliente cad... dai ela so vai retornar o ID
+		//sem precisar cad...E vamos SALVAR o valor de ID desse CLIENTE
+		//no OBJ/VAR COBRANCAAPIASAASCARTAO
+		cobrancaApiAsaasCartao.setCustomer(serviceJunoBoleto.buscaClientePessoaApiAsaas(carne));
+		//ADD ao OBJ/VAR COBRANCAAPIASAASCARTAO q o tipo de pagamento
+		//vai ser CARTAO DE CREDITO
+		cobrancaApiAsaasCartao.setBillingType(AsaasApiPagamentoStatus.CREDIT_CARD);
+		cobrancaApiAsaasCartao.setDescription("Venda realizada para cliente por cartão de crédito: ID Venda ->" + idVendaCampo);
+		
 		
 	}
 	

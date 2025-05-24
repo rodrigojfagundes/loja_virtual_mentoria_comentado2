@@ -385,7 +385,8 @@ public class ServiceJunoBoleto implements Serializable {
 		//
 		//para isso vamos chamar METODO WRITEVALUEASSTRING do 
 		//OBJECTMAPPER e passar para ele o
-		//obj/var COBRANCAAPIASAAS o retorno vai ficar salva no
+		//obj/var COBRANCAAPIASAAS q e um OBJ/VAR do TIPO
+		//POSTCARNEBOLETOJUNO o retorno vai ficar salva no
 		//STRING de nome JSON
 		//
 		String json  = new ObjectMapper().writeValueAsString(cobrancaApiAsaas);

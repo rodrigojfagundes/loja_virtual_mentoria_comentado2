@@ -1,5 +1,7 @@
 package jdev.mentoria.lojavirtual.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +13,12 @@ import jdev.mentoria.lojavirtual.model.BoletoJuno;
 //repository para CRUD do boleto no banco
 @Repository
 public interface BoletoJunoRepository extends JpaRepository<BoletoJuno, Long> {
+
+	//sera chamado no PAGAMENTOCONTROLLER.JAVA para gravar
+	//no banco os id de venda q apos os validacoes iniciais passaram
+	//tipo, valor da venda, quantidade de parcelas, etc...
+	@Query("select b from BoletoJuno b where b.vendaCompraLojaVirtual.id = ?1 and b.quitado = false")
+	public List<BoletoJuno> cobrancaDaVendaCompra(Long idVendaCompra);
 	
 	@Query("select b from BoletoJuno b where b.code = ?1")
 	public BoletoJuno findByCode (String code);
@@ -40,5 +48,6 @@ public interface BoletoJunoRepository extends JpaRepository<BoletoJuno, Long> {
 	@Modifying(flushAutomatically = true)
 	@Query(nativeQuery = true, value = "delete from boleto_juno where code = ?1")
 	public void deleteByCode(String code);
+
 
 }
