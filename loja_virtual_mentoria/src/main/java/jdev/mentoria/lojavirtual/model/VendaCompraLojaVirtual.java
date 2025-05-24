@@ -10,6 +10,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -27,6 +29,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jdev.mentoria.lojavirtual.enums.StatusVendaLojaVirtual;
 
 
 //entidade/class VendaCompraLojaVirtual (e a class da tela de venda
@@ -127,6 +131,11 @@ public class VendaCompraLojaVirtual implements Serializable {
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
+	
+	@NotNull(message = "Status da venda ou compra deve ser informado")
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private StatusVendaLojaVirtual statusVendaLojaVirtual;
 	
 	//Como UMA VENDACOMPRALOJAVIRTUAL pode ter MUITOS ITEMVENDALOJA
 	//entao teremos uma LISTA de ITEMSVENDALOJA
