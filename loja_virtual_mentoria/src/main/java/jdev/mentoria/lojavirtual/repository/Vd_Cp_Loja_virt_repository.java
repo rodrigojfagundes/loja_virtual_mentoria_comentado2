@@ -14,6 +14,4 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 	
 	
 	
-	
-	
 }
