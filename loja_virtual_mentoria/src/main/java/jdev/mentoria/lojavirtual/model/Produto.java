@@ -2,16 +2,21 @@ package jdev.mentoria.lojavirtual.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -71,9 +76,9 @@ public class Produto implements Serializable {
 	private BigDecimal valorVenda = BigDecimal.ZERO;
 	
 	@Column(nullable = false)
-	private Integer QtdEstoque = 0;
+	private Integer qtdEstoque = 0;
 	
-	private Integer QtdeAlertaEstoque = 0;
+	private Integer qtdeAlertaEstoque = 0;
 	
 	private String linkYoutube;
 	
@@ -115,6 +120,12 @@ public class Produto implements Serializable {
 	name = "marca_produto_id_fk"))
 	private MarcaProduto marcaProduto = new MarcaProduto();
 	
+	//UM PRODUTO pode ter VARIAS/MUITAS IMAGENS
+	//e MAPPEANDO a LISTA/ARRAY IMAGENS q ta a baixo com o ATRIBUTO
+	//PRODUTO q ta no IMAGEMPRODUTO.JAVA...
+	@OneToMany(mappedBy = "produto", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<ImagemProduto> imagens = new ArrayList<ImagemProduto>();
+	
 
 	//PROF DELETOU NA AULA 5.14
 	//MTAS PRODUTO para 1 NOTAITEMPRODUTO
@@ -135,6 +146,14 @@ public class Produto implements Serializable {
 	//private NotaItemProduto notaItemProduto = new NotaItemProduto();
 	//
 	
+	
+	public void setImagens(List<ImagemProduto> imagens) {
+		this.imagens = imagens;
+	}
+	
+	public List<ImagemProduto> getImagens() {
+		return imagens;
+	}
 	
 	public void setMarcaProduto(MarcaProduto marcaProduto) {
 		this.marcaProduto = marcaProduto;
@@ -222,18 +241,23 @@ public class Produto implements Serializable {
 	public void setValorVenda(BigDecimal valorVenda) {
 		this.valorVenda = valorVenda;
 	}
+	
 	public Integer getQtdEstoque() {
-		return QtdEstoque;
+		return qtdEstoque;
 	}
+
 	public void setQtdEstoque(Integer qtdEstoque) {
-		QtdEstoque = qtdEstoque;
+		this.qtdEstoque = qtdEstoque;
 	}
+
 	public Integer getQtdeAlertaEstoque() {
-		return QtdeAlertaEstoque;
+		return qtdeAlertaEstoque;
 	}
+
 	public void setQtdeAlertaEstoque(Integer qtdeAlertaEstoque) {
-		QtdeAlertaEstoque = qtdeAlertaEstoque;
+		this.qtdeAlertaEstoque = qtdeAlertaEstoque;
 	}
+
 	public String getLinkYoutube() {
 		return linkYoutube;
 	}
