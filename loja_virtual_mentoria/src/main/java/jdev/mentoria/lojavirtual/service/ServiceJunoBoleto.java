@@ -24,6 +24,7 @@ import jdev.mentoria.lojavirtual.enums.ApiTokenIntegracao;
 import jdev.mentoria.lojavirtual.model.AccessTokenJunoAPI;
 import jdev.mentoria.lojavirtual.model.BoletoJuno;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.model.dto.AsaasApiPagamentoStatus;
 import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
@@ -34,6 +35,8 @@ import jdev.mentoria.lojavirtual.repository.BoletoJunoRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
 
 //criando um service para criacao de boleto, e pix e cartao
+//
+//o nome e SERVICEJUNOBOLETO, mas seera utilizado tbm pela ASAAS
 @Service
 public class ServiceJunoBoleto implements Serializable {
 
@@ -50,6 +53,55 @@ public class ServiceJunoBoleto implements Serializable {
 	
 	@Autowired
 	private BoletoJunoRepository boletoJunoRepository;
+	
+	
+	//metodo de nomeCRIARCHAVEPIXASAAS... para criar CHAVEPIX
+	//na API de PAGAMENTO ASAAS...
+	/**
+	 * Cria a chave da API Asass para o PIX;
+	 * @return Chave
+	 */
+	public String criarChavePixAsaas() throws Exception {
+
+		// instanciando um CLIENT do tipo CLIENT
+		//
+		// informando q a url da API do ASAAS nao precisa de certificado ssl
+		Client client = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+		
+		// criando um var/obj dotipo WEBRESOURCE de nome WEBRESORUCE
+		// q recebe a URL/LINK de onde deve ser feita a solicitacao
+		WebResource webResource = client.resource(AsaasApiPagamentoStatus.URL_API_ASAAS + "pix/addressKeys");
+				
+		// criando um CLIENTRESPONSE do tipo CLIENTRESPONSE
+		// q vai receber o retorno do metodo ACCEPT do WEBRESOURCE
+		// metodo no qual passamos
+		// informando o tipo de formatacao, e montando o cabecalho
+		// para fazer as requisicoes a API da Asaas
+		// tbm informando o nosso token gerado pela asaas e tals
+		// NAOSEI SE e um BEARER_TOKEN, mas e um token q a ASAAS GEROU
+		// e tbm informamos para qual URL da asaas vai ser feita a
+		// requisicao do tipo post
+		//
+		// o retorno sera uma chave pix aleartoria gerada pela asaas
+		ClientResponse clientResponse = webResource.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+				.post(ClientResponse.class, "{\"type\":\"EVP\"}");
+
+		String strinRetorno = clientResponse.getEntity(String.class);
+		clientResponse.close();
+		return strinRetorno;
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
