@@ -136,22 +136,6 @@ public class Vd_Cp_loja_Virt_Controller {
 		vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.saveAndFlush(vendaCompraLojaVirtual);
 		
 		
-		//fazendo a SIMULACAO de um STATUSRASTREIO... Para TESTES
-		//no futuro ele vai servir como um START para a conexao com a API
-		//das TRANSPORTADORA
-		//
-		StatusRastreio statusRastreio = new StatusRastreio();
-		statusRastreio.setCentroDistribuicao("Loja Local");
-		statusRastreio.setCidade("Local");
-		statusRastreio.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
-		statusRastreio.setEstado("Local");
-		statusRastreio.setStatus("Inicio compra");
-		statusRastreio.setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
-				
-		statusRastreioRepository.save(statusRastreio);
-		
-		
-		
 		/*Associa a venda gravada no banco com a nota fiscal*/
 		vendaCompraLojaVirtual.getNotaFiscalVenda().setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
 		
@@ -566,19 +550,19 @@ public class Vd_Cp_loja_Virt_Controller {
 	//etiqueta e um papel q nos vamos colar nas caixas
 	//q vao ser buscadas pela transportadora...
 	@ResponseBody
-	@GetMapping(value = "**/cancelaEtiqueta/{idEtiqueta}/{descricao}")
+	@GetMapping(value = "**/cancelaEtiqueta/{idEtiqueta}/{reason_id}/{descricao}")
 	public ResponseEntity<String> cancelaEtiqueta(@PathVariable String idEtiqueta, @PathVariable String reason_id, @PathVariable String descricao) throws IOException{
 	
 		OkHttpClient client = new OkHttpClient().newBuilder() .build();
 		okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
-		okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{\n    \"order\": {\n        \"id\": \""+idEtiqueta+"\",\n        \"reason_id\": \"2\",\n        \"description\": \""+descricao+"\"\n    }\n}");
+		okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{\n    \"order\": {\n        \"id\": \""+idEtiqueta+"\",\n        \"reason_id\": \""+reason_id+"\",\n        \"description\": \""+descricao+"\"\n    }\n}");
 		okhttp3.Request request = new Request.Builder()
 				  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX+"api/v2/me/shipment/cancel")
 				  .method("POST", body)
 				  .addHeader("Accept", "application/json")
 				  .addHeader("Content-Type", "application/json")
 				  .addHeader("Authorization", "Bearer "+ ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
-				  .addHeader("User-Agent", "suporte@jdevtreinamento.com.br")
+				  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
 				  .build();
 		
 		okhttp3.Response response = client.newCall(request).execute();
@@ -989,7 +973,7 @@ public class Vd_Cp_loja_Virt_Controller {
 							  .addHeader("Accept", "application/json")
 							  .addHeader("Content-Type", "application/json")
 							  .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
-							  .addHeader("User-Agent", "suporte@jdevtreinamento.com.br")
+							  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
 							  .build();
 							
 							
@@ -1018,6 +1002,63 @@ public class Vd_Cp_loja_Virt_Controller {
 							jdbcTemplate.execute("begin; update vd_cp_loja_virt set url_imprime_etiqueta =  '"+urlEtiqueta+"'  where id = " + compraLojaVirtual.getId() + ";commit;");
 							//vd_Cp_Loja_virt_repository.updateURLEtiqueta(urlEtiqueta, compraLojaVirtual.getId());
 							 
+					        OkHttpClient clientRastreio = new OkHttpClient().newBuilder().build();
+					        okhttp3.MediaType mediaTypeR = okhttp3.MediaType.parse("application/json");
+					        okhttp3.RequestBody bodyR = okhttp3.RequestBody.create(mediaTypeR, "{\n    \"orders\": [\n        \"9e55f440-38c6-4491-8884-18dae893ae58\"\n    ]\n}");
+					        okhttp3.Request requestR = new Request.Builder()
+							  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX+ "api/v2/me/shipment/tracking")
+							  .method("POST", bodyR)
+							  .addHeader("Accept", "application/json")
+							  .addHeader("Content-Type", "application/json")
+							  .addHeader("Authorization", "Bearer " +  ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+							  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com").build();
+							
+					        //fazendo a requisicao acima e armazenando o RETORNO em JSON
+					        //do melhor envio na VAR/OBJ RESPONSER do tipo RESPONSE
+							Response responseR = clientRastreio.newCall(requestR).execute();
+							
+							//convertendo o RESPONSER em uma STRING e salvando com o nome de
+							//JSONNODER
+							JsonNode jsonNodeR = new ObjectMapper().readTree(responseR.body().string());
+							
+							//percorrendo o JSONNODER 
+							Iterator<JsonNode> iteratorR = jsonNodeR.iterator();
+							
+							//crianod uma VAR de nome IDTRACKING (o prof deixou IDETIQUETAR)
+							//mas  correto  IDTRACKING... pq e o ID de RASTREIO da encomenda
+							String idTrackingR = "";
+							
+							//percorrendo a VAR/OBJ INTERETOR
+							//q e onde ta o retorno da API do MELHORENVIO
+							//e procurando pela palavra TRACKING
+							//no JSON retornado... e salvando o valor
+							//do TRACKING na var/obj IDTRACKINGR
+							while(iteratorR.hasNext()) {
+								JsonNode node = iteratorR.next();
+								 if (node.get("tracking") != null) {
+									 idTrackingR = node.get("tracking").asText();
+								 }else {
+									 idTrackingR = node.asText(); 
+								 }
+								break;
+							}
+							
+							 List<StatusRastreio> rastreios =	statusRastreioRepository.listaRastreioVenda(idVenda);
+							 
+							 if (rastreios.isEmpty()) {
+								 
+								 StatusRastreio rastreio = new StatusRastreio();
+								 rastreio.setEmpresa(compraLojaVirtual.getEmpresa());
+								 rastreio.setVendaCompraLojaVirtual(compraLojaVirtual);
+								 rastreio.setUrlRastreio("https://www.melhorrastreio.com.br/rastreio/" + idTrackingR);
+								 
+								 statusRastreioRepository.saveAndFlush(rastreio);
+							 }else {
+								 statusRastreioRepository.salvaUrlRastreio("https://www.melhorrastreio.com.br/rastreio/" + idEtiquetaR, idVenda);
+							 }
+
+		
+
 
 							
 		return new ResponseEntity<String>("Sucesso", HttpStatus.OK);

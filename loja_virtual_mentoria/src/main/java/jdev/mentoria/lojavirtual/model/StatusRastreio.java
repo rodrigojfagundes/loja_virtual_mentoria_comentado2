@@ -30,10 +30,8 @@ public class StatusRastreio implements Serializable {
 	generator = "seq_nota_item_produto")
 	private Long id;
 	
-	private String centroDistribuicao;
-	private String cidade;
-	private String estado;
-	private String status;
+	private String urlRastreio;
+
 	
 	//MUITOS STATUSRASTREIO para 1 VENDACOMPRALOJAVIRTUAL
 	@JsonIgnore
@@ -72,29 +70,14 @@ public class StatusRastreio implements Serializable {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public String getCentroDistribuicao() {
-		return centroDistribuicao;
+	
+	
+	public void setUrlRastreio(String urlRastreio) {
+		this.urlRastreio = urlRastreio;
 	}
-	public void setCentroDistribuicao(String centroDistribuicao) {
-		this.centroDistribuicao = centroDistribuicao;
-	}
-	public String getCidade() {
-		return cidade;
-	}
-	public void setCidade(String cidade) {
-		this.cidade = cidade;
-	}
-	public String getEstado() {
-		return estado;
-	}
-	public void setEstado(String estado) {
-		this.estado = estado;
-	}
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
+	
+	public String getUrlRastreio() {
+		return urlRastreio;
 	}
 	
 	

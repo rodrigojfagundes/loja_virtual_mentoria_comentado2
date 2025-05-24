@@ -20,22 +20,46 @@ public class TesteAPIMelhorEnvio {
 	public static void main(String[] args) throws Exception {
 		
 		
+		
+		
+		OkHttpClient client = new OkHttpClient().newBuilder()
+				  .build();
+				MediaType mediaType = MediaType.parse("application/json");
+				RequestBody body = RequestBody.create(mediaType, "{\n    \"orders\": [\n        \"9e55f440-38c6-4491-8884-18dae893ae58\"\n    ]\n}");
+				Request request = new Request.Builder()
+				  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX+ "api/v2/me/shipment/tracking")
+				  .method("POST", body)
+				  .addHeader("Accept", "application/json")
+				  .addHeader("Content-Type", "application/json")
+				  .addHeader("Authorization", "Bearer " +  ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+				  .addHeader("User-Agent", "suporte@jdevtreinamento.com.br")
+				  .build();
+				
+				Response response = client.newCall(request).execute();
+		
+				System.out.println(response.body().string());
+				
+
+		
+		
+		
+		
 		//6 - traz uma lista de agency (agencias) de transportadoras
 		//tipo tem uma AGENCIA da TRANSPORTADORA JDLOG em TIJUCAS
 		//uma em SAO JOSE, etc... Agencia e meio como loja...
 		//
-		OkHttpClient client = new OkHttpClient();
-
-		Request request = new Request.Builder()
-		  .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=SC&city=Joinville")
-		  .get()
-		  .addHeader("accept", "application/json")
-		  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
-		  .build();
-
-		Response response = client.newCall(request).execute();
-		
-		System.out.println(response.body().string());
+		//OkHttpClient client = new OkHttpClient();
+		//
+		//Request request = new Request.Builder()
+		  //.url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=SC&city=Joinville")
+		  //.get()
+		  //.addHeader("accept", "application/json")
+		  //.addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+		  //.build();
+		  //
+		//Response response = client.newCall(request).execute();
+		//
+		//System.out.println(response.body().string());
 		
 		
 		
