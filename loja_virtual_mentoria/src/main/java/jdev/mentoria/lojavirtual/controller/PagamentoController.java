@@ -235,6 +235,65 @@ public class PagamentoController implements Serializable {
 		creditCardHolderInfo.setPhone(pessoaFisica.getTelefone());
 		creditCardHolderInfo.setMobilePhone(pessoaFisica.getTelefone());
 		
+		//associando ao obj/var COBRANCAAPIASAASCARTAO do tipo
+		//COBRANCAAPIASAASCARTAO o obj/var CREDITCARDHOLDERINFO
+		//do tipo CARTAODECREDITOHOLDERINFO... Q tem as info
+		//do dono do cartao de credito...
+		cobrancaApiAsaasCartao.setCreditCardHolderInfo(creditCardHolderInfo);
+		
+		//convertendo o OBJ/VAR COBRANCAAPIASAAS em um OBJ/VAR do
+		//tipo STRING de nome JSON
+		String json = new ObjectMapper().writeValueAsString(cobrancaApiAsaasCartao);
+		
+		//informando para ignorar o ssl
+		Client client = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+		//informando o link da api
+		WebResource webResource = client.resource(AsaasApiPagamentoStatus.URL_API_ASAAS + "payments");
+		
+		//criando um OBJ/VAR CLIENTRESPONSE do tipo WEBRESOURCE
+		//e montando o cabecalho informando q e utf-8
+		//passando o token e passando o no obj/var JSON do tipo STRING
+		//para enviar para a API da ASAAS
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json;charset=UTF-8")
+				.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+				.post(ClientResponse.class, json);
+		
+		//armazenando o retorno da api da ASAAS apos o envio
+		//do STRING JSON
+		String stringRetorno = clientResponse.getEntity(String.class);
+		int status = clientResponse.getStatus();
+		clientResponse.close();
+		
+		//conversao...
+		//
+		//basicamente o o prof disse q e para q o retorno q esta no
+		//STRINGRETORNO possa ter valor null e 
+		//valores desconhecidos/nao encontradas
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		
+		
+		
+		//se deu (retorno diferente de 200)
+		//erro vamos remover os boletos...
+		//
+		if (status != 200) {/*Deu erro*/
+		  	
+			for (BoletoJuno boletoJuno : cobrancas) {
+				
+				if (boletoJunoRepository.existsById(boletoJuno.getId())) {
+				   boletoJunoRepository.deleteById(boletoJuno.getId());
+				   boletoJunoRepository.flush();
+				}
+			}
+						
+			return new ResponseEntity<String>("Erro ao efetuar cobrança: ", HttpStatus.OK);
+		}
+		
+		
 	}
 	
 	
