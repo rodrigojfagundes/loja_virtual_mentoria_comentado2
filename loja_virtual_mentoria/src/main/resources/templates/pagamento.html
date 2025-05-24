@@ -6,9 +6,10 @@
 <title>Insert title here</title>
 
 <!-- BASICAMENTE e uma PAGINA HTML em q sera utilizada para inserir
-os dados de compra CARTAO ou PIX ou BOLETO para ir para o PAGAMENTOCONTROLLER
-para dps ir para a API da JUNO... Esses dados poderiam ser passados
-sem uma pagina PAGAMENTO.HTML... Mas a api da juno exige q 
+os dados de compra CARTAO ou PIX ou BOLETO para ir para o
+METODO/ENDPOINT FINALIZARCOMPRACARTAOASAAS do PAGAMENTOCONTROLLER.java
+para dps ir para a API da JUNO AGORA ASAAS... Esses dados poderiam ser passados
+sem uma pagina PAGAMENTO.HTML... Mas a api da juno/ASAAS exige q 
 os dados sejam passados por uma pagina web...
 
 LEMBRANDO os dados NOME, CPF, EMAIL do COMPRADOR vao vim de forma
@@ -33,9 +34,6 @@ de dado atraves dessa pagina PAGAMENTO.HTML sao as INFO de pagamento
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.map"></script>
-
-<!--o direct-checkout pelo o q eu entendi tem recursos de criptografia do javascript-->
-<script type="text/javascript" src="https://www.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
@@ -238,20 +236,11 @@ de dado atraves dessa pagina PAGAMENTO.HTML sao as INFO de pagamento
 
 
 		
-<!--instanciando um obj do tipo DIRECTCHECKOUT de nome CHECKOUT
-e para ele vamos passar o PUBLICTOKEN geradopela JUNO 
-q basicamente tem o PUBLICTOKEN q a juno gerou para nos
-esse directcheckout pelo o q eu entendi do q o prof disse
-tem algumas funcoes de criptografia... tipo
-deve criptografar as info de cartao de credito e tals
-para poder ir para o backend e dps para a juno... eu acho
-
-tbm tem um codigo q o prof copiou e colou q basicamente
+<!--
+tem um codigo q o prof copiou e colou q basicamente
 puxa o endereco(cidade e sua) pelo CEP-->	
 <script type="text/javascript">
-
-       var checkout = new DirectCheckout('10951138DA2E18AA0275F43ACA03649EC406D9F5331D9F78CC4169A965B873AB35FFAEE08E46454E');
-
+ 
         $(document).ready(function() {
 //validando se o e o valor q ta nos campos/var/atributo CPF, CEP, CVV
 //NUMEROCARTAO esta correto com o JQUERYMASK... dai nao vai pd
@@ -413,43 +402,38 @@ puxa o endereco(cidade e sua) pelo CEP-->
 			expirationYear: anovalidade
 	  };
 	  
-	  //chamando o METODO ISVALIDCARDNUMBER do OBJ/VAR CHECKOUT
-	  //e passando para ele o valor q ta na var/atributo CARDNUMBER
-	  //do obj/var CARDDATA, para validar se e um numero valido
-	  var isValidCardNumber = checkout.isValidCardNumber(cardData.cardNumber);
+	  //verificando se o retorno de se o num do cartao e valido e diferente
+	  //de null... prof modificou na aula 26 do modulo 12...
+	  //pq a asaas valida de outra forma....
+	  var isValidCardNumber = cardData.cardNumber != null;
 	  
 	  if (isValidCardNumber == false){
 		  alert('Número do cartão é inválido');
 		  return;
 	  }
 	  
-	  //validando o codigo de seguranca do cartao
-	  var isValidSecurityCode = checkout.isValidSecurityCode(cardData.cardNumber, cvv);
+	  //validando o codigo de seguranca do cartao... prof modificou na
+	  //aula 26.12
+	  var isValidSecurityCode = cardData.cardNumber != null && cvv != null;
 	  
 	  if (isValidSecurityCode == false){
 		  alert('Códivo CVV de segurança é inválido.');
 		  return;
 	  }
 	  
-	  //validando a data de validade do cartao
-	  var isValidExpireDate = checkout.isValidExpireDate(cardData.expirationMonth, cardData.expirationYear);
+	  //validando a data de validade do cartao... prof modificou na aula
+	  //26 do modulo 12... pq asaas valida de outra forma
+	  var isValidExpireDate = cardData.expirationMonth != null && cardData.expirationYear != null;
 	  
 	  if (isValidExpireDate == false){
 		  alert('Data de válidade é inválida');
 		  return;
 	  }
 	  
+	  //prof modificou na aula
+	  //26 do modulo 12... pq asaas valida de outra forma
+	  var isValidCardData = cardData != null; 
 	  
-	  var isValidCardData = checkout.isValidCardData(cardData, function(error) {
-		  
-		  if (error.toString().includes('Invalid holder name', error)){
-			  alert('Seu nome informado não está igual ao escrito no cartão de crédito.');
-		  }else{
-			  alert('Mensagem de erro: ' + error.toString());
-		  }
-		  
-		  return;
-	  });
 	  
 	  
 	 // console.info('isValidCardData' + isValidCardData);
@@ -457,24 +441,22 @@ puxa o endereco(cidade e sua) pelo CEP-->
 	 // console.info('isValidSecurityCode' + isValidSecurityCode);
 	 // console.info('isValidCardNumber' + isValidCardNumber);
 	
-	 //se os dados do cartao forem validos... vamos gerar um HASH
-	 //do cartao de credito  
+	 //prof modificou na aula
+	 //26 do modulo 12... pq asaas valida de outra forma
 	  if (isValidCardData && isValidExpireDate && isValidSecurityCode && isValidCardNumber){
 		  
-		    checkout.getCardHash(cardData, function(cardHash) {
 		      
 			document.getElementById('buttonrealizarPagamento').disabled = true;
 			document.getElementById('buttonrealizarPagamento').value = 'Efetuando pagamento...';
 		  
 			//aqui basicamente vai pegar todas as INFO q estao nos
 			//campos/var/atributos e enviar elas atraves de um POST
-			//para o metodo FINALIZARCOMPRACARTAO q esta no 
+			//para o metodo FINALIZARCOMPRACARTAOASAAS q esta no 
 			//PAGAMENTOCONTROLLER.JAVA
 		   $.ajax({
 			   method: 'POST',
 			   url: 'finalizarCompraCartao',
 			   data: {
-				   cardHash: cardHash,
 				   cardNumber: cardData.cardNumber,
 				   holderName: cardData.holderName,
 				   securityCode: cardData.securityCode,
@@ -511,14 +493,6 @@ puxa o endereco(cidade e sua) pelo CEP-->
 			   return;
 		   });
 		  
-		  
-			  
-		 
-		  }, function(error) {
-		      alert('Não foi possível gerar o HASH do cartão de crédito": ' + error);
-			  return;
-			  
-		  });
 		  
 	  }else {
 		  alert('O pagamento não pode ser realizado.');

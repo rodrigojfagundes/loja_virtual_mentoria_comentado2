@@ -74,8 +74,15 @@ public class PagamentoController implements Serializable {
 	@Autowired
 	private BoletoJunoRepository boletoJunoRepository; 
 	
-	
-	
+	//metodo q recebe as informacoes q estao nos atributos/var
+	//da PAGINA.HTML... foi enviado pelo AJAX
+	//dai vamos validar esses dados para ver se ta tudo certinho
+	//e vamos enviar eles para a ASAAS
+	//
+	//OBS: PELO O Q EU ENTENDI DO Q O PROF FALOU... MESMO Q O PAGAMENTO
+	//SEJA POR CARTAO... E CRIADO UM BOLETO NA ASAAS E O BOLETO
+	//E PAGO PELO CARTAO... SO Q DE FORMA AUTOMATICA...
+	//
 	//metodo de nome FINALIZARCOMPRACARTAOASAAS para
 	//fazer pagamento de compras na ASAAS a partir do CARTAO
 	@RequestMapping(method = RequestMethod.POST, value = "**/finalizarCompraCartao")
@@ -414,9 +421,13 @@ public class PagamentoController implements Serializable {
 	//pagina web... com o THIMELIFT (MVC) quando o backend
 	//e java e spring e o frontend e html...
 	//
-	//com o ID da VENDACOMPRALOJAVIRTUAL q recebemos
+	//com o ID da VENDACOMPRALOJAVIRTUAL q recebemos NO METODO
+	//**/pagamento/{idVendaCompra}
 	//vamos saber a QUAL VENDACOMPRALOJAVIRTUAL as informacoes
-	//de pagamento(cartao de credito, pix) estao associadas...
+	//TIPO PRODUTO, NOME DO COMPRADOR, VALOR, ETC...
+	//
+	//DAI VAMOS APENAS DIGITAR as INFO de PAGAMENTO, TIPO o 
+	//NUMERO DO CARTAO, o CVV, DATA, etc..
 	//
 	@RequestMapping(method = RequestMethod.GET, value = "**/pagamento/{idVendaCompra}")
 	public ModelAndView pagamento(@PathVariable(value = "idVendaCompra",
