@@ -32,11 +32,21 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter implements H
 		
 		//permitindo acesso ao metodo/endpoint REQUISICAOJUNOBOLETO(WEBHOOK)
 		//sem precisar ter login no sistema...
+		
+		//
+		////
+		///notificacaoapiasaas/ para permitir acesso sem token ja
+		//tava funcionando (eu tava conseguindo fazer
+		//POST e testar o WEBHOOK)... Mas como no do prof nao funcionou
+		//entao TALVEZ se parar de funcionar eu tenho q tirar o
+		///requisicaojunoboleto/notificacaoapiasaas/ e deixar
+		//so o /notificacaoapiasaas/
+		//modificacao feita na aula 31 sessao 12
 		http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 		.disable().authorizeRequests().antMatchers("/").permitAll()
 		.antMatchers("/index","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
-		.antMatchers(HttpMethod.POST, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
-		.antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
+		.antMatchers(HttpMethod.POST, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**", "**/requisicaojunoboleto/notificacaoapiasaas").permitAll()
+		.antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**", "**/requisicaojunoboleto/notificacaoapiasaas").permitAll()
 		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		
 		//redireciona ou da um retorno para index quando desloga
@@ -64,11 +74,22 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter implements H
 	
 
 	//ignorando URLS no momento para nao autenticar
+	//
+	//
+	//
+	////
+	///notificacaoapiasaas/ para permitir acesso sem token ja
+	//tava funcionando (eu tava conseguindo fazer
+	//POST e testar o WEBHOOK)... Mas como no do prof nao funcionou
+	//entao TALVEZ se parar de funcionar eu tenho q tirar o
+	///requisicaojunoboleto/notificacaoapiasaas/ e deixar
+	//so o /notificacaoapiasaas/
+	//modificacao feita na aula 31 sessao 12
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().
-		    antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**")
-		   .antMatchers(HttpMethod.POST,"/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**");
+		    antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**", "**/requisicaojunoboleto/notificacaoapiasaas")
+		   .antMatchers(HttpMethod.POST,"/requisicaojunoboleto/**", "/notificacaoapiv2","/notificacaoapiasaas","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**", "**/requisicaojunoboleto/notificacaoapiasaas");
 		/* Ingnorando URL no momento para nao autenticar */
 	}
 
