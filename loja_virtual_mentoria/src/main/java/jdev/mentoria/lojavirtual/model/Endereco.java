@@ -56,6 +56,9 @@ public class Endereco implements Serializable {
 	@Column(nullable = false)
 	private String cidade;
 	
+	@Column(nullable = true)
+	private String estado;	
+	
 	//1 PESSOA pd ter MTO ENDERECO...... e 1 ENDERECO tem 1 PESSOA
 	@JsonIgnore
 	@ManyToOne(targetEntity = Pessoa.class)
@@ -63,6 +66,15 @@ public class Endereco implements Serializable {
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "pessoa_fk"))
 	private Pessoa pessoa;
+	
+	
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+	
+	public String getEstado() {
+		return estado;
+	}
 	
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)

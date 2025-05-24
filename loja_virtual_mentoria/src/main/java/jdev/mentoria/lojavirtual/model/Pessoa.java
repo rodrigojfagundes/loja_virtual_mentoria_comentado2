@@ -24,6 +24,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import jdev.mentoria.lojavirtual.enums.TipoEndereco;
+
 //classe/entidade pessoa sera ABSTRACT pq nos nao vamos trabalhar
 //com a PESSOA em si... Mas sim com as classes FILHAS dela (pessoa)
 //tipo a PESSOA_FISICA, e PESSOA_JURIDICA
@@ -75,8 +77,25 @@ public abstract class Pessoa implements Serializable {
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "empresa_id_fk"))
 	private Pessoa empresa;
-
-
+	
+	//sera usado no VD_CP_LOJA_VIRT_CONTROLLER para percorrer
+	//as informacoes sobre o endereco... Para poder enviar
+	//a rua, cidade, estado, para a transportadora fazer a entrega
+	//do produto...
+	public Endereco enderecoEntrega() {
+		
+		Endereco enderecoReturn = null;
+		for(Endereco endereco : enderecos) {
+			if(endereco.getTipoEndereco().name()
+					.equals(TipoEndereco.ENTREGA.name())) {
+				enderecoReturn = endereco;
+				break;
+			}
+		}
+		return enderecoReturn;
+	}
+	
+	
 	public Pessoa getEmpresa() {
 		return empresa;
 	}

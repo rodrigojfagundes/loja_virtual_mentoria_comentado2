@@ -133,7 +133,7 @@ public class VendaCompraLojaVirtual implements Serializable {
 	private PessoaJuridica empresa;
 	
 	@NotNull(message = "Status da venda ou compra deve ser informado")
-	@Column(nullable = false)
+	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private StatusVendaLojaVirtual statusVendaLojaVirtual;
 	
@@ -148,6 +148,59 @@ public class VendaCompraLojaVirtual implements Serializable {
 	//quando da um GET... Ou seja ta oculto...
 	private Boolean excluido = Boolean.FALSE;
 	
+	//var/atributo para guardar o codigo de ORDER q é como se fosse
+	//um ID gerado pela API do MELHORENVIO... 
+	//
+	@Column(name = "codigo_etiqueta")
+	private String codigoEtiqueta;
+	
+	//var/obj para salvar a URL gerada pela API do MELHORENVIO para 
+	//SALVAR/IMPRIMIR a etiqueta com as informacoes dos produtos
+	//q vao ser transportados...
+	@Column(name = "url_imprime_etiqueta")
+	private String urlImprimeEtiqueta;
+	
+	//var/obj para informar qual o SERVICOTRANSPORTADORA... ou seja
+	//qual o ID da transportadora q vamos usar... tipo 1 sedex, 2 pac
+	//3 jadlog... etc... E essa opcao e escolhida pelo o cliente na
+	//hora da compra... Claro se tiver MAIS de UMA transportadora
+	//disponivel para essa entrega
+	private String servicoTransportadora;
+	
+	
+	
+	public StatusVendaLojaVirtual getStatusVendaLojaVirtual() {
+		return statusVendaLojaVirtual;
+	}
+
+	public void setStatusVendaLojaVirtual(StatusVendaLojaVirtual statusVendaLojaVirtual) {
+		this.statusVendaLojaVirtual = statusVendaLojaVirtual;
+	}
+
+	public String getCodigoEtiqueta() {
+		return codigoEtiqueta;
+	}
+
+	public void setCodigoEtiqueta(String codigoEtiqueta) {
+		this.codigoEtiqueta = codigoEtiqueta;
+	}
+
+	public String getUrlImprimeEtiqueta() {
+		return urlImprimeEtiqueta;
+	}
+
+	public void setUrlImprimeEtiqueta(String urlImprimeEtiqueta) {
+		this.urlImprimeEtiqueta = urlImprimeEtiqueta;
+	}
+
+	public String getServicoTransportadora() {
+		return servicoTransportadora;
+	}
+
+	public void setServicoTransportadora(String servicoTransportadora) {
+		this.servicoTransportadora = servicoTransportadora;
+	}
+
 	public void setExcluido(Boolean excluido) {
 		this.excluido = excluido;
 	}

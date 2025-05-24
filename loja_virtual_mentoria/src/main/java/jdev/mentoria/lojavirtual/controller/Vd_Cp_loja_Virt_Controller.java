@@ -1,6 +1,7 @@
 package jdev.mentoria.lojavirtual.controller;
 
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,8 +42,12 @@ import jdev.mentoria.lojavirtual.model.StatusRastreio;
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 import jdev.mentoria.lojavirtual.model.dto.ConsultaFreteDTO;
 import jdev.mentoria.lojavirtual.model.dto.EmpresaTransporteDTO;
+import jdev.mentoria.lojavirtual.model.dto.EnvioEtiquetaDTO;
 import jdev.mentoria.lojavirtual.model.dto.ItemVendaDTO;
+import jdev.mentoria.lojavirtual.model.dto.ProductsEnvioEtiquetaDTO;
+import jdev.mentoria.lojavirtual.model.dto.TagsEnvioDto;
 import jdev.mentoria.lojavirtual.model.dto.VendaCompraLojaVirtualDTO;
+import jdev.mentoria.lojavirtual.model.dto.VolumesEnvioEtiquetaDTO;
 import jdev.mentoria.lojavirtual.repository.ContaReceberRepository;
 import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
@@ -549,6 +556,419 @@ public class Vd_Cp_loja_Virt_Controller {
 		}		
 		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
 	}
+	
+	//metodo/endpoint q recebe um codigo de venda
+	@ResponseBody
+	@GetMapping(value = "**/imprimeCompraEtiquetaFrete/{idVenda}")
+	public ResponseEntity<String> imprimeCompraEtiquetaFrete(
+			@PathVariable Long idVenda) throws ExceptionMentoriaJava, IOException {
+		
+		//criando um obj do tipo VENDACOMPRALOJAVIRTUAL de nome 
+		//COMPRALOJAVIRTUAL q vai receber o retorno do METODO FINDBYID
+		//do VD_CP_LOJA_VIRT_REPOSITORY q basicamente procura no BANCO
+		//se EXISTE uma COMPRAVENDALOJAVIRTUAL(VENDA) com o ID passado
+		VendaCompraLojaVirtual compraLojaVirtual = vd_Cp_Loja_virt_repository
+				.findById(idVenda).orElseGet(null);
+		
+		//se nao tiver diz q a VENDA NAO FOI ENCONTRADA
+		if (compraLojaVirtual == null) {
+			return new ResponseEntity<String>(
+					"Venda não encontrada", HttpStatus.OK);
+		}
+		
+		List<Endereco> enderecos = enderecoRepository.enderecoPj(
+				compraLojaVirtual.getEmpresa().getId());
+		compraLojaVirtual.getEmpresa().setEnderecos(enderecos);
+		
+		//intanciando um var/obj/atributo do tipo ENVIOETIQUETADTO
+		//de nome ENVIOETIQUETADTO
+		EnvioEtiquetaDTO envioEtiquetaDTO = new EnvioEtiquetaDTO();
+		
+		//chamando a ENTITY/CLASS FROM(ORIGEM) q esta instanciada
+		//no ENVIOETIQUETADTO, e passando as INFORMACOES da nossa
+		//COMPRALOJAVIRTUAL (ID recebido acima) trazendo coisas como
+		//NOME, TELEFONE, EMAIL, etc...
+		//pois o FROM é a ORIGEM, e a ORIGEM do PRODUTO e a LOJAVIRTUAL
+		//
+		envioEtiquetaDTO.setService(compraLojaVirtual.getServicoTransportadora());
+		envioEtiquetaDTO.setAgency("49");
+		envioEtiquetaDTO.getFrom().setName(compraLojaVirtual.getEmpresa().getNome());
+		envioEtiquetaDTO.getFrom().setPhone(compraLojaVirtual.getEmpresa().getTelefone());
+		envioEtiquetaDTO.getFrom().setEmail(compraLojaVirtual.getEmpresa().getEmail());
+		envioEtiquetaDTO.getFrom().setCompany_document(compraLojaVirtual.getEmpresa().getCnpj());
+		envioEtiquetaDTO.getFrom().setState_register(compraLojaVirtual.getEmpresa().getInscEstadual());
+		envioEtiquetaDTO.getFrom().setAddress(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getRuaLogra());
+		//envioEtiquetaDTO.getFrom().setComplement(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getComplemento());
+		envioEtiquetaDTO.getFrom().setComplement("Empresa");
+		envioEtiquetaDTO.getFrom().setNumber(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getNumero());
+		envioEtiquetaDTO.getFrom().setDistrict(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getEstado());
+		envioEtiquetaDTO.getFrom().setCity(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getCidade());
+		envioEtiquetaDTO.getFrom().setCountry_id("BR");
+		envioEtiquetaDTO.getFrom().setPostal_code(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getCep());
+		envioEtiquetaDTO.getFrom().setNote("Não há");
+
+		//MESMO BLOCO Q O DE CIMA... SO Q DE TESTE ESSE
+
+		//envioEtiquetaDTO.setService("3");
+		//envioEtiquetaDTO.setAgency("49");
+		//envioEtiquetaDTO.getFrom().setName("Loja Virtual");
+		//envioEtiquetaDTO.getFrom().setPhone("4899912345");
+		//envioEtiquetaDTO.getFrom().setEmail("emaildaloja@lojajava.com.br");
+		//envioEtiquetaDTO.getFrom().setCompany_document("83.475.913/0001-91");
+		//envioEtiquetaDTO.getFrom().setState_register("1234567");
+		//envioEtiquetaDTO.getFrom().setAddress("Magina BR-101");
+		//envioEtiquetaDTO.getFrom().setComplement("Empresa");
+		//envioEtiquetaDTO.getFrom().setNumber("10");
+		//envioEtiquetaDTO.getFrom().setDistrict("SC");
+		//envioEtiquetaDTO.getFrom().setCity("Tijucas");
+		//envioEtiquetaDTO.getFrom().setCountry_id("BR");
+		//envioEtiquetaDTO.getFrom().setPostal_code("88200000");
+		//envioEtiquetaDTO.getFrom().setNote("Não há");
+		
+		System.out.println(envioEtiquetaDTO.toString());
+
+		//chamando a ENTITY/CLASS TO(DESTINO) q esta instanciada
+		//no ENVIOETIQUETADTO, e passando as INFORMACOES da nossa
+		//COMPRALOJAVIRTUAL.PESSOA (ID recebido acima) trazendo coisas como
+		//NOME, TELEFONE, EMAIL, etc... Pois qm vai comprar ou seja
+		//RECEBER o PRODUTO é uma PESSOAFISICA, por isso estamos
+		//pegando as INFO (nome, email, cpf, etcc...) do GETPESSOA....
+		//pois o TO é o DESTINO, e o DESTINO do PRODUTO e a LOJAVIRTUAL
+		//q no caso é o ENDERECO DE UMA PESSOA FISICA...
+		//
+		envioEtiquetaDTO.getTo().setName(compraLojaVirtual.getPessoa().getNome());
+		envioEtiquetaDTO.getTo().setPhone(compraLojaVirtual.getPessoa().getTelefone());
+		envioEtiquetaDTO.getTo().setEmail(compraLojaVirtual.getPessoa().getEmail());
+		envioEtiquetaDTO.getTo().setDocument(compraLojaVirtual.getPessoa().getCpf());
+		envioEtiquetaDTO.getTo().setAddress(compraLojaVirtual.getPessoa().enderecoEntrega().getRuaLogra());
+		envioEtiquetaDTO.getTo().setComplement(compraLojaVirtual.getPessoa().enderecoEntrega().getComplemento());
+		envioEtiquetaDTO.getTo().setNumber(compraLojaVirtual.getPessoa().enderecoEntrega().getNumero());
+		envioEtiquetaDTO.getTo().setDistrict(compraLojaVirtual.getPessoa().enderecoEntrega().getEstado());
+		envioEtiquetaDTO.getTo().setCity(compraLojaVirtual.getPessoa().enderecoEntrega().getCidade());
+		envioEtiquetaDTO.getTo().setState_abbr(compraLojaVirtual.getPessoa().enderecoEntrega().getUf());
+		//envioEtiquetaDTO.getTo().setCountry_id(compraLojaVirtual.getPessoa().enderecoEntrega().getUf());
+		envioEtiquetaDTO.getTo().setCountry_id("BR");
+		envioEtiquetaDTO.getTo().setPostal_code(compraLojaVirtual.getPessoa().enderecoEntrega().getCep());
+		envioEtiquetaDTO.getTo().setNote("Não há");
+
+		
+		//instanciando uma LISTA do tipo PRODUCTSENVIOETIQUETADTO
+		//de nome PRODUCTS
+		//
+		List<ProductsEnvioEtiquetaDTO> products = new ArrayList<ProductsEnvioEtiquetaDTO>();
+		
+		//instanciando uma VAR/OBJ do tipo ITEMVENDALOJA de nome ITEMVENDALOJA
+		//q vai receber o q tiver no ITEMVENDALOJA da COMPRALOJAVIRTUAL
+		//ou seja... Vai receber os PRODUTO.JAVA q estao sendo COMPRADOS
+		//pelo CLIENTE
+		//
+		for (ItemVendaLoja itemVendaLoja : compraLojaVirtual.getItemVendaLojas()) {
+			
+			//instanciando um obj/var de nome DTO do tipo PRODUCTSENVIOETIQUETADTO
+			//
+			ProductsEnvioEtiquetaDTO dto = new ProductsEnvioEtiquetaDTO();
+			
+			//passando as iformações q estao no nosso ITEMVENDALOJA
+			//q basicamente é uma class/entity com uma LISTA de PRODUTO.JAVA
+			//q foram comprados pelo cliente da loja
+			//e usando essas informacoes para preencher o DTO do tipo
+			//PRODUCTSNEVIOETIQUETADTO
+			//
+			dto.setName(itemVendaLoja.getProduto().getNome());
+			dto.setQuantity(itemVendaLoja.getQuantidade().toString());
+			dto.setUnitary_value("" + itemVendaLoja.getProduto().getValorVenda().doubleValue());
+			
+			//adicionando o nosso DTO do tipo PRODUCTSENVIOETIQUETADTO
+			//na nossa LISTA de PRODUCTSENVIOETIQUETADTO de nome PRODUCTS
+			//
+			products.add(dto);
+			
+		}
+		
+		//passando a lista de products acima para o nosso obj/var
+		//ENVIOETIQUETADTO
+		//
+		envioEtiquetaDTO.setProducts(products);
+		
+		
+		//instanciando uma LISTA do tipo VOLUMESENVIOETIQUETADTO de nome VOLUMES
+		//
+		List<VolumesEnvioEtiquetaDTO> volumes = new ArrayList<VolumesEnvioEtiquetaDTO>();
+		
+		//instanciando uma VAR/OBJ do tipo ITEMVENDALOJA de nome ITEMVENDALOJA
+		//q vai receber o q tiver no ITEMVENDALOJA da COMPRALOJAVIRTUAL
+		//ou seja... Vai receber os PRODUTO.JAVA q estao sendo COMPRADOS
+		//pelo CLIENTE
+		//
+		for (ItemVendaLoja itemVendaLoja : compraLojaVirtual.getItemVendaLojas()) {
+			
+			//instanciando um OBJ/VAR de nome DTO do tipo VOLUMESENVIOETIQUETADTO
+			//
+			VolumesEnvioEtiquetaDTO dto = new VolumesEnvioEtiquetaDTO();
+			
+			//passando as iformações q estao no nosso ITEMVENDALOJA
+			//q basicamente é uma class/entity com uma LISTA de PRODUTO.JAVA
+			//q foram comprados pelo cliente da loja
+			//e usando essas informacoes para preencher o DTO do tipo
+			//PRODUCTSNEVIOETIQUETADTO, informacoes relacionadas ao
+			//VOLUME, ou seja, altura, profundidade, peso, largura...
+			//
+			dto.setHeight(itemVendaLoja.getProduto().getAltura().toString());
+			dto.setLength(itemVendaLoja.getProduto().getProfundidade().toString());
+			dto.setWeight(itemVendaLoja.getProduto().getPeso().toString());
+			dto.setWidth(itemVendaLoja.getProduto().getLargura().toString());
+			
+			//adicionando o nosso DTO do tipo VOLUMESENVIOETIQUETADTO na nossa
+			//LISTA de EVOLUMESENVIOETIQUETADTO de nome VOLUMES
+			//
+			volumes.add(dto);
+			
+			//} TALVEZ PRECISE
+		}
+		
+		//passando a nossa LISTA de VOLUME de nome VOLUMES para o
+		//nosso OBJ/VAR ENVIOETIQUETADTO
+		//
+		envioEtiquetaDTO.setVolumes(volumes);
+		
+		//passando alguns valores estaticos/padroes para o
+		//o OBJ/VAR OPTIONS q esta instanciado no ENVIOETIQUETADTO
+		//
+		//e outras informacoes nos pegamos da propia COMPRAVENDALOJAVIRTUAL
+		//como NOME, Numero da NOTAFISCAL... etc...
+		envioEtiquetaDTO.getOptions().setInsurance_value("" + compraLojaVirtual.getValorTotal().doubleValue());
+		envioEtiquetaDTO.getOptions().setReceipt(false);
+		envioEtiquetaDTO.getOptions().setOwn_hand(false);
+		envioEtiquetaDTO.getOptions().setReverse(false);
+		envioEtiquetaDTO.getOptions().setNon_commercial(false);
+		envioEtiquetaDTO.getOptions().getInvoice().setKey(compraLojaVirtual.getNotaFiscalVenda().getNumero());
+		//envioEtiquetaDTO.getOptions().getInvoice().setKey("31190307586261000184550010000092481404848162");
+		envioEtiquetaDTO.getOptions().setPlatform(compraLojaVirtual.getEmpresa().getNomeFantasia());
+
+		
+		//instanciando um OBJ/VAR do tipo TAGSENVIODTO de nome DTOTAGENVIO
+		//q vamos basicamente passar o ID da COMPRA na LOJAVIRTUAL
+		//e vamos deixar em null o link direto para acessar a compra
+		//na lojavirtual... tipo clique aqui e veja a compra...
+		//
+		TagsEnvioDto dtoTagEnvio = new TagsEnvioDto();
+		dtoTagEnvio.setTag("Identificação do pedido na plataforma, exemplo:" + compraLojaVirtual.getId());
+		dtoTagEnvio.setUrl(null);
+		
+		//passando o nosso obj/var do tipo TAGSENVIODTO de nome DTOTAGENVIO
+		//para o OBJ/VAR OPTIONS q ta no nosso OBJ/VAR ENVIOETIQUETADTO
+		//
+		envioEtiquetaDTO.getOptions().getTags().add(dtoTagEnvio);
+
+		//transformando o obj/var ENVIOETIQUEDTO em um STRING
+		//de nome JSONENVIO
+		//
+		String jsonEnvio = new ObjectMapper().writeValueAsString(envioEtiquetaDTO);
+		
+		//basicamente usando o TOKEN, o EMAIL, e preenchendo os cabecalhos
+		//e TBM nos transformamos o OBJ/VAR JSONENVIO q e do TIPO STRING
+		//e um OBJ/VAR de nome BODY do tipo JSON
+		//dai nos enviamos ele para a URL da API DO MELHORENVIO
+		//
+		//dai dessa forma nos vamos conseguir passar todas as informacoes
+		//q a API do MELHORENVIO pede, dai vamos conseguir CADASTRAR
+		//um ENVIO... E eles vao falar o valor para transportar e tals...
+		//DAIII dps em outro metodo se a gente concordar com o valor
+		//nos fazemos a COMPRA desse ENVIO... Dai a transportadora
+		//vai gerar uma etiqueta, o caminhao vai passar na LOJAVIRTUAL
+		//pegar o pacote e levar para o cliente... +ou- isso...
+		//
+	    OkHttpClient client = new OkHttpClient().newBuilder().build();
+	    okhttp3.MediaType mediaType = okhttp3.MediaType.parse("application/json");
+	     okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, jsonEnvio);
+			okhttp3.Request request = new okhttp3.Request.Builder()
+			  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX + "api/v2/me/cart")
+			  .method("POST", body)
+			  .addHeader("Accept", "application/json")
+			  .addHeader("Content-Type", "application/json")
+			  .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+			  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+			  .build();
+			
+			//apos EXEC o bloco de codigo acima, ou seja enviar as info
+			//para o MELHORNEVIO... Ela (MELHORENVIO) vai nos retornar
+			//um JSON com um ID e algumas informacoes como valores,
+			//tempo, e a transportadoras e fazem esse trageto...
+			//esssas informacoes vao ser salvar no arquivo RESPONSE
+			//do tipo OKHTTP3.RESPONSE
+			//
+			okhttp3.Response response = client.newCall(request).execute();
+			
+			
+			//criando um OBJ/VAR do tipo JSONNODE de nome JSONNODE q vai
+			//RECEBER o valor q ta no OBJ/VAR RESPONSE q e um obj/var do
+			//tipo HTTP3.RESPONSE...
+			//
+			JsonNode jsonNode = new ObjectMapper().readTree(response.body().string());
+			
+			//O retorno da API do MELHORENVIO agora ta no OBJ/VAR JSONNODE
+			//e vamos ITERAR sobre esse obj/var... Ou seja procurar
+			//nela o CAMPO ID e salvar o ID em uma var de nome IDETIQUETA
+			//do tipo STRING...
+			//
+			Iterator<JsonNode> iterator = jsonNode.iterator();			
+			String idEtiqueta = "";
+			
+			while(iterator.hasNext()) {
+				JsonNode node = iterator.next();
+				idEtiqueta = node.get("id").asText();
+				break;
+			}
+
+			//OBS: esse ID ali de cima, tambem chamado de 
+			//CODIGOETIQUETA/IDETIQUETA... Nos vamos usar ele no proximo
+			//passo, para se caso a gente CONCORDE com o VALOR, E o TEMPO
+			//para transporte, nos vamos passar esse ID para um outro
+			//metodo da APIMELHORENVIO e dizer q queremos COMPRAR esse
+			//TRANSPORTE, ou seja q SIM o caminhao pd vir buscar o produto
+			//na LOJAVIRTUAL e levar para o CLIENTE(pessoa q comprou o 
+			//produto)... Dai a API do MELHORENVIO gera uma ETIQUETA
+			//um papel q e colado na caixa do produto e tals...
+			
+			
+		    /*Salvando o código da etiqueta*/
+		    vd_Cp_Loja_virt_repository.updateEtiqueta(idEtiqueta, compraLojaVirtual.getId());
+
+
+		    //agora com o CODIGOETIQUETA em maos nos vamos COMPRAR
+		    //a ETIQUETA... para isso vamos ter q passar o 
+		    //IDETIQUETA para a API do MELHORENVIO...
+		    //
+		    //
+		    //
+		    //basicamente CRIAMOS obj/var CLIENTECOMPRA do tipo OKHTTPCLIENT
+		    //um obj/var de nome MEDIATYPEC do tipo OKHTTP3.MEDIATYPE
+		    //um obj/var de nome BODYC do tipo OKHTTP3.REQUESTBODY
+		    //um obj/var de nome REQUESTC do tipo OKHTTP3.REQUEST
+		    //dai preenchemos os cabecalhos informamos o nosso TOKEN
+		    //e email e enviamos o ID q ta na VAR/OBJ IDETIQUETA
+		    //para a URL do MELHORENVIO... ou seja informamos
+		    //q vamos COMPRAR o TRANSPORTE... ou seja a pd vim buscar
+		    //o produto e levar para o cliente, nos aceitamos o valor e
+		    //o tempo...
+			//
+			OkHttpClient clientCompra = new OkHttpClient().newBuilder().build();
+			 okhttp3.MediaType mediaTypeC =  okhttp3.MediaType.parse("application/json");
+			 okhttp3.RequestBody bodyC =  okhttp3.RequestBody.create(mediaTypeC, "{\n    \"orders\": [\n        \""+idEtiqueta+"\"\n    ]\n}");
+			 okhttp3.Request requestC = new  okhttp3.Request.Builder()
+			  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX  + "api/v2/me/shipment/checkout")
+			  .method("POST", bodyC)
+			  .addHeader("Accept", "application/json")
+			  .addHeader("Content-Type", "application/json")
+			  .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+			  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+			  .build();
+			 
+			 //exec a acao acima... de enviar o IDETIQUETA para a API do
+			 //MELHORENVIO e salvando o JSON q eles deram de resultado
+			 //na VAR/OBJ RESPONSEC
+			 okhttp3.Response responseC = clientCompra.newCall(requestC).execute();
+			 	 
+			 //verificando se foi possivel realizar a compra da etiqueta
+			 //
+			 if (!responseC.isSuccessful()) {
+				 return new ResponseEntity<String>("Não foi possível realizar a compra da etiqueta", HttpStatus.OK); 
+			 }
+			 
+
+			 //pedindo para a API do MELHORENVIO GERAR a ETIQUETA
+			 //para nos IMPRIMIR no PRODUTO... ETIQUETA essa q foi
+			 //COMPRADA no METODO ACIMA... A ETIQUETA e COMPRADA
+			 //no momento em OCLIENTE da loja aceita
+			 //os valores do frete, tempo
+			 //etc...
+			 //
+			 //basicamente instanciamos os OBJ/VAR passamos os cabecalhos
+			 //informamos o TOKEN nosso... E enviamos o ID da ETIQUET
+			 //para a URL da API do MELHORENVIO
+			 //
+				OkHttpClient clientGe = new OkHttpClient().newBuilder().build();
+				 okhttp3.MediaType mediaTypeGe =  okhttp3.MediaType.parse("application/json");
+				 okhttp3.RequestBody bodyGe =  okhttp3.RequestBody.create(mediaTypeGe, "{\n    \"orders\":[\n        \""+idEtiqueta+"\"\n    ]\n}");
+				 okhttp3.Request requestGe = new  okhttp3.Request.Builder()
+				  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX  + "api/v2/me/shipment/generate")
+				  .method("POST", bodyGe)
+				  .addHeader("Accept", "application/json")
+				  .addHeader("Content-Type", "application/json")
+				  .addHeader("Authorization", "Bearer " +  ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+				  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+				  .build();
+				
+				 //realizando a requisicao acima... ou seja passando os
+				 //parametros acima para a API do MELHORENVIO
+				 //e salvando o retorno deles em JSON na var/obj
+				 //RESPONSEGE do tipo OKHTTP3.RESPONSE
+				 //
+				 okhttp3.Response responseGe = clientGe.newCall(requestGe).execute();
+
+			 
+				 //verificando se nao deu erro
+				 //
+				 if (!responseGe.isSuccessful()) {
+					 return new ResponseEntity<String>("Não foi possível gerar a etiqueta", HttpStatus.OK); 
+				 }
+				 
+
+				 //instanciando os var/obj 
+				 //o obj/var CLIENTIM do tipo OKHTTPCLIENT
+				 //o obj/var MEDIATYPEIM do typo OKHTTP3.MEDIATYPE
+				 //o obj/var BODYIM do tipo OKHTTP3.REQUESTBODY
+				 //o obj/var REQUESTIM do tipo OKHTTP3.REQUEST
+				 //dai passamos os cabecalhos
+				 //e o ID da ETIQUETA q queremos q a API do MELHORENVIO
+				 //gerem ou seja deixar no formato pronto para imprimir
+				 //tbm passamos o nosso email e o token de autenticacao
+				 //
+					/*Faz impresão das etiquetas*/
+					
+					OkHttpClient clientIm = new OkHttpClient().newBuilder().build();
+					okhttp3.MediaType mediaTypeIm = MediaType.parse("application/json");
+					okhttp3.RequestBody bodyIm = okhttp3.RequestBody.create(mediaTypeIm, "{\n    \"mode\": \"private\",\n    \"orders\": [\n        \""+idEtiqueta+"\"\n    ]\n}");
+							okhttp3.Request requestIm = new Request.Builder()
+							  .url(ApiTokenIntegracao.URL_MELHOR_ENVIO_SAND_BOX  + "api/v2/me/shipment/print")
+							  .method("POST", bodyIm)
+							  .addHeader("Accept", "application/json")
+							  .addHeader("Content-Type", "application/json")
+							  .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
+							  .addHeader("User-Agent", "suporte@jdevtreinamento.com.br")
+							  .build();
+							
+							
+							//executando a funcao acima, e salvando
+							//o resultado q a API do MELHORENVIO retorna
+							//na var/obj RESPONSEIM do tipo
+							//OKHTTP3.RESPONSE
+							okhttp3.Response responseIm = clientIm.newCall(requestIm).execute();
+
+							//verificando se deu algum erro no retorno
+							if (!responseIm.isSuccessful()) {
+								 return new ResponseEntity<String>("Não foi imprimir a etiqueta.", HttpStatus.OK); 
+							}	
+							
+							//salvando o retorno da API do MELHORENVIO em uma STRING
+							//de nome URLETIQUETA... Lembrando o retorno e um link/url
+							//para a PESSOA Q VENDEU o PRODUTO acessar e IMPRIMIR
+							//a ETIQUETA e COLAR na CAIXA do PRODUTO...
+							 String urlEtiqueta = responseIm.body().string();
+							
+							 
+							 //colocando a URL da ETIQUETA gerada pela API do MELHORENVIO
+							 //no campo URLETIQUETA da VENDACOMPRALOJAVIRTUAL correspondente
+							 //ou seja associando tipo a VENDACOMPRALOJAVIRTUAL ID 28
+							 //a URLETIQUETA http://...
+							 vd_Cp_Loja_virt_repository.updateURLEtiqueta(urlEtiqueta, compraLojaVirtual.getId());
+							 
+
+							
+		return new ResponseEntity<String>("Sucesso", HttpStatus.OK);
+	}
+	
+	
 	
 	//metodo q vai receber as INFORMACOES como PRODUTOS, Tamanhos
 	//Pesos, etc... E vai passar para a API do MELHORENVIO

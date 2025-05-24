@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,6 +119,25 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 			+ " and i.vendaCompraLojaVirtual.dataVenda >= ?1 "
 			+ " and i.vendaCompraLojaVirtual.dataVenda <= ?2 ")
 	List<VendaCompraLojaVirtual> consultaVendaFaixaData(Date data1, Date data2);
+
+
+	//metodo q recebe o ID da ETIQUETA q foi gerado pela MELHORENVIO
+	//e recebe o ID da VENDACOMPRALOJAVIRTUAL... Ou seja o ID da VENDA
+	//para podermos associar dizer q tipo a VENDA ID 77 tem a IDETIQUETA
+	//777...
+	@Modifying(flushAutomatically = true)
+	@Query(nativeQuery = true, value = "update vd_cp_loja_virt set codigo_etiqueta = ?1 where id = ?2")
+	void updateEtiqueta(String idEtiqueta, Long id);
+	
+	
+	
+	//metodo q recebe o URL de uma ETIQUETA (GERADO PELA API do MELHORENVIO)
+	//e recebe o ID de uma COMPRAVENDALOJAVIRTUAL...
+	//dai nos podemos associar no banco de dados, colocando q
+	//a COMPRAVENDALOJAVIRTUAL ex ID 28 tem a URLETIQUETA http://...
+	@Modifying(flushAutomatically = true)
+	@Query(nativeQuery = true, value = "update vd_cp_loja_virt set url_imprime_etiqueta = ?1 where id = ?2")
+	void updateURLEtiqueta(String urlEtiqueta, Long id);
 	
 	
 }
