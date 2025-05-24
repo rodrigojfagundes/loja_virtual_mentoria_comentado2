@@ -1,0 +1,19 @@
+package jdev.mentoria.lojavirtual.repository;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+import jdev.mentoria.lojavirtual.model.Usuario;
+
+@Repository
+public interface UsuarioRepository extends CrudRepository<Usuario, Long>{
+	
+	//selecionando usuario na class/tabela usuario, onde u.login
+	//e o parametro passado q sera o q estamos procurando na class/tabela
+	//usuario
+	@Query(value = "select u from Usuario u where u.login = ?1")
+	Usuario findUserByLogin(String login);
+	
+	
+}
