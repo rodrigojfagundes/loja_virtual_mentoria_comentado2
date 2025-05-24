@@ -2,6 +2,14 @@ package jdev.mentoria.lojavirtual.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+//
+//essa class sera instanciada no PAGAMENTOCONTROLLER.JAVA
+//e vai armazenar as info referente as cobrancas/compras/pagamentos
+//feitas por cartao
+//de credito quando a API da ASAAS retornar para gente...
+//
+//annotation JSONIGNOREPROPERTIES par aignorar atributos
+//q nao vieram preenchidos... ou sej anao da erro
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CobrancaGeradaCartaoCreditoAsaas {
 
@@ -41,6 +49,11 @@ public class CobrancaGeradaCartaoCreditoAsaas {
 	private String lastBankSlipViewedDate = null;
 	private Boolean postalService = false;
 
+	//instanciando um obj/var de nome CREDITCARD
+	//do tipo RESPOSTAPAGAMENTOCREDITCARD
+	//q basicamente vai armazenar os retornos q a asaas
+	//vai nos passar quando for feita uma compra por cartao
+	//tipo o numero do cartao, bandeira, token, etc...
 	private RespostaPagamentoCreditCard creditCard = new RespostaPagamentoCreditCard();
 
 	public void setCreditCard(RespostaPagamentoCreditCard creditCard) {

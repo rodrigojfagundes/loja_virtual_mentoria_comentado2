@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,13 +184,14 @@ public class PagamentoController implements Serializable {
 		//
 		//se for parcelado vamos dividir o valor TOTAL
 		//pela quantidade de parcelas
-		if (qtdparcela == 1) {					
+		if (qtdparcela == 1) {
 			cobrancaApiAsaasCartao.setInstallmentValue(vendaCompraLojaVirtual.getValorTotal().floatValue());
 		}else {
 			BigDecimal valorParcela = vendaCompraLojaVirtual.getValorTotal()
-					  			.divide(BigDecimal.valueOf(qtdparcela), RoundingMode.DOWN)
+					            .divide(BigDecimal.valueOf(qtdparcela), RoundingMode.DOWN)
 					            .setScale(2, RoundingMode.DOWN);
-			
+		
+		
 			cobrancaApiAsaasCartao.setInstallmentValue(valorParcela.floatValue());
 		}
 		
@@ -315,7 +317,59 @@ public class PagamentoController implements Serializable {
 		CobrancaGeradaCartaoCreditoAsaas cartaoCredito = objectMapper.
 				readValue(stringRetorno,  new TypeReference<CobrancaGeradaCartaoCreditoAsaas>() {});
 
+		//como deu certo, temos q gerar um for para criar
+		//os boletos para cada parcela... tipo se a compra foi
+		//em 7 parcelas entao temos 7 boletos
+		//q serao pagos com o cartao de credito...
+		//
+		//recorrencia/quantidade de parcela comeca com 1
+		//e criando uma lista de BOLETOSJUNOS (mas sera usado pela
+		//ASAAS)...
+		//e fazendo o for...
+		int recorrencia = 1;
+		List<BoletoJuno> boletoJunos = new ArrayList<BoletoJuno>();
 		
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date dataCobranca = dateFormat.parse(cobrancaApiAsaasCartao.getDueDate());
+		Calendar calendar = Calendar.getInstance();
+		
+		for(int p = 1 ; p <= qtdparcela; p++) {
+			
+			//instanciando um boletojuno(q sera usado pela api
+			//da ASAAS) para cada parcela...
+			//e informando a data, valor, cartao, cliente, etc...
+			BoletoJuno boletoJuno = new BoletoJuno();
+
+			boletoJuno.setChargeICartao(cartaoCredito.getId());
+			boletoJuno.setCheckoutUrl(cartaoCredito.getInvoiceUrl());
+			boletoJuno.setCode(cartaoCredito.getId());
+			boletoJuno.setDataVencimento(dateFormat.format(dataCobranca));
+			
+			calendar.setTime(dataCobranca);
+			calendar.add(Calendar.MONTH, 1);
+			dataCobranca = calendar.getTime();
+			
+			boletoJuno.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+			boletoJuno.setIdChrBoleto(cartaoCredito.getId());
+			boletoJuno.setIdPix(cartaoCredito.getId());
+			boletoJuno.setInstallmentLink(cartaoCredito.getInvoiceUrl());
+			boletoJuno.setQuitado(false);
+			boletoJuno.setRecorrencia(recorrencia);
+			boletoJuno.setValor(BigDecimal.valueOf(cobrancaApiAsaasCartao.getInstallmentValue()));
+			boletoJuno.setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+			
+			recorrencia ++;
+			boletoJunos.add(boletoJuno);
+		}
+		
+		//salvndo no banco os boletos com as parcelas...
+		//q sera utilizado cartao de credito para pagar essas parcelas...
+		//
+		boletoJunoRepository.saveAllAndFlush(boletoJunos);
+		
+		
+		//vamos, fazer a verificacao se realmente foi
+		//pago certinho para poder quitar a venda e tals...
 		
 	}
 	

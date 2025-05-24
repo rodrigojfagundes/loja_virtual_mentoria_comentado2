@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 //classe ser instanciada no COBRANCAGERADAASASSAPI
 //
 //e basicamente vai ter dados referente a uma cobranca/pagamento
-//na asaas
+//na asaas... como data de pagamento, cliente, valor, etc...
+//
+//tbm sem tem disconto, juros, etc...
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CobrancaGeradaAssasData {
 
