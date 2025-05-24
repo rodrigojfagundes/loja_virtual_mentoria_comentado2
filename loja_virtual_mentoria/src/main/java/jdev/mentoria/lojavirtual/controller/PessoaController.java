@@ -16,14 +16,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.enums.TipoPessoa;
 import jdev.mentoria.lojavirtual.model.Endereco;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.model.dto.CepDTO;
+import jdev.mentoria.lojavirtual.model.dto.ConsultaCnpjDto;
 import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
 import jdev.mentoria.lojavirtual.repository.PessoaFisicaRepository;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.service.PessoaUserService;
+import jdev.mentoria.lojavirtual.service.ServiceContagemAcessoApi;
 import jdev.mentoria.lojavirtual.util.ValidaCNPJ;
 import jdev.mentoria.lojavirtual.util.ValidaCPF;
 
@@ -44,8 +47,7 @@ public class PessoaController {
 	private PessoaFisicaRepository pessoaFisicaRepository;
 	
 	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	
+	private ServiceContagemAcessoApi serviceContagemAcessoApi;
 	
 	//EndPoint/metodo para buscar uma LISTA de PESSOAFISICA pelo nome
 	@ResponseBody
@@ -56,8 +58,9 @@ public class PessoaController {
 		List<PessoaFisica> fisicas = pessoaFisicaRepository
 				.pesquisaPorNomePF(nome.trim().toUpperCase());
 		
-		//para contar quantas pessoas chamam o metodo/funcao/endpoint CONSULTAPFNOME
-		jdbcTemplate.execute("begin; update tabela_acesso_end_potin set qtde_acesso_end_point = qtde_acesso_end_point + 1 where nome_end_point = 'END-POINT-NOME-PESSOA-FISICA'; commit");
+		//chamando o metodo ATUALIZAACESSOENDPOINTPF para contar
+		//quantas pessoas acessaram o metodo CONSULTAPFNOME
+		serviceContagemAcessoApi.atualizaAcessoEndPointPF();
 		
 		return new ResponseEntity<
 				List<PessoaFisica>>(fisicas, HttpStatus.OK);
@@ -116,6 +119,14 @@ public class PessoaController {
 		return new ResponseEntity<CepDTO>(pessoaUserService.consultaCep(cep), HttpStatus.OK);
 	}
 	
+	//endpoint para consultar as informacoes de um CNPJ
+	@ResponseBody
+	@GetMapping(value = "**/consultaCnpjReceitaWs/{cnpj}")
+	public ResponseEntity<ConsultaCnpjDto> consultaCnpjReceitaWs(@PathVariable("cnpj") String cnpj) {
+			//chaando o metodo CONSULTACNPJRECEITAWS q ta no PESSOAUSERSERVICE e passando um CNPJ
+		return new ResponseEntity<ConsultaCnpjDto>(pessoaUserService.consultaCnpjReceitaWS(cnpj), HttpStatus.OK);
+	}
+	
 	//salvar PESSOAJURIDICA/EMPRESA
 	@ResponseBody
 	@PostMapping(value = "**/salvarPj")
@@ -125,6 +136,11 @@ public class PessoaController {
 		if(pessoaJuridica == null) {
 			throw new ExceptionMentoriaJava("Pessoa juridica nao pode ser NULL");
 		}
+		
+		if(pessoaJuridica.getTipoPessoa() == null) {
+			throw new ExceptionMentoriaJava("Informe o tipo Juridico ou Fornecedor");
+		}
+		
 		//verificando se ja tem PESSOAJURIDICA com esse CNPJ
 		if (pessoaJuridica.getId() == null && pessoaRepository
 				.existeCnpjCadastrado(pessoaJuridica.getCnpj()) != null) {
@@ -219,6 +235,14 @@ public class PessoaController {
 		if(pessoaFisica == null) {
 			throw new ExceptionMentoriaJava("Pessoa fisica nao pode ser NULL");
 		}
+		
+		//se tiver cadastrando uma pessoa fisica e esquecer de informar
+		//o TIPOPESSOA, o metodo a baixo corrige
+		if(pessoaFisica.getTipoPessoa() == null) {
+			pessoaFisica.setTipoPessoa(TipoPessoa.FISICA.name());
+		}
+		
+		
 		//verificando se ja tem PESSOAFISICA com esse CPF
 		if (pessoaFisica.getId() == null && pessoaRepository
 				.existeCpfCadastrado(pessoaFisica.getCpf()) != null) {

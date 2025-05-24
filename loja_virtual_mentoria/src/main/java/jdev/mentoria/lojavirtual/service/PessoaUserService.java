@@ -13,6 +13,7 @@ import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.model.Usuario;
 import jdev.mentoria.lojavirtual.model.dto.CepDTO;
+import jdev.mentoria.lojavirtual.model.dto.ConsultaCnpjDto;
 import jdev.mentoria.lojavirtual.repository.PessoaFisicaRepository;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.repository.UsuarioRepository;
@@ -195,9 +196,19 @@ public class PessoaUserService {
 	public CepDTO consultaCep(String cep) {
 		
 		//passando um numero de CEP q esta no atributo CEP para o VIACEP.COM.BR
-		//e esperando receber um CEPDTO.CLASS
+		//e esperando receber um obj do tipo CEPDTO (CEPDTO.CLASS)
 		return new RestTemplate().getForEntity(
 				"https://viacep.com.br/ws/" + cep +"/json/", CepDTO.class).getBody();
 	}
+	
+	public ConsultaCnpjDto consultaCnpjReceitaWS(String cnpj) {
+		//passando um numero de CNPJ para a API do RECEITAWS e iremos receber
+		//as informacoes referente a esse CNPJ q sera salva em OBJ do tipo
+		//CONSULTACNPJDTO
+			return new RestTemplate().getForEntity(
+					"https://receitaws.com.br/v1/cnpj/" + cnpj, ConsultaCnpjDto.class).getBody();
+	
+	}
+	
 	
 }
