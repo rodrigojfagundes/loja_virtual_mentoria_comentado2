@@ -24,6 +24,9 @@ public class PessoaUserService {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 	
+	@Autowired
+	private ServiceSendEmail serviceSendEmail;
+	
 	public PessoaJuridica salvarPessoaJuridica(PessoaJuridica juridica) {
 		
 	//	juridica = pessoaRepository.save(juridica);
@@ -71,7 +74,28 @@ public class PessoaUserService {
 			usuarioPj = usuarioRepository.save(usuarioPj);
 			
 			usuarioRepository.insereAcessoUserPj(usuarioPj.getId());
+			
+			StringBuilder menssagemHtml = new StringBuilder();
+			
+			menssagemHtml.append("<b>Segue a baixo seus dados de acesso para a loja virtual </b>");
+			menssagemHtml.append("<b>Login: </b>"+juridica.getEmail() +"</b> <br />");
+			menssagemHtml.append("<b>Senha: </b>").append(senha).append("<br /><br />");
+			menssagemHtml.append("<b>Obrigado! </b>");
+			
+			//enviando email com o titulo, o conteudo e o e-mail de destino
+			//e-mail de destino e o q foi cad na hora de criar a empresa 
+			//(PESSOAJURIDICA)
+			try {
+			serviceSendEmail.enviarEmailHtml(		
+					"Acesso Gerado para Loja Virtual",
+					menssagemHtml.toString(),
+					juridica.getEmail());
+			
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
+	}
+			
 		
 		
 		//se tiver usuario para essa PJ dai vamos retornar 

@@ -16,6 +16,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jdev.mentoria.lojavirtual.enums.TipoEndereco;
 
 
@@ -55,6 +57,7 @@ public class Endereco implements Serializable {
 	private String cidade;
 	
 	//1 PESSOA pd ter MTO ENDERECO...... e 1 ENDERECO tem 1 PESSOA
+	@JsonIgnore
 	@ManyToOne(targetEntity = Pessoa.class)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
@@ -66,6 +69,7 @@ public class Endereco implements Serializable {
 	
 	
 	//MTAS ENDERECO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@JsonIgnore
 	@ManyToOne(targetEntity = Pessoa.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
