@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
+import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
 import jdev.mentoria.lojavirtual.repository.PessoaRepository;
 import jdev.mentoria.lojavirtual.service.PessoaUserService;
+import jdev.mentoria.lojavirtual.util.ValidaCNPJ;
+import jdev.mentoria.lojavirtual.util.ValidaCPF;
 
 @RestController
 public class PessoaController {
@@ -23,7 +26,7 @@ public class PessoaController {
 	@Autowired
 	private PessoaUserService pessoaUserService;
 	
-	
+	//salvar PESSOAJURIDICA/EMPRESA
 	@ResponseBody
 	@PostMapping(value = "**/salvarPj")
 	public ResponseEntity<PessoaJuridica> salvarPj(
@@ -48,6 +51,12 @@ public class PessoaController {
 					+ "Ja existe Inscricao Estadual cadastrado com o numero: " + pessoaJuridica.getInscEstadual());
 		}
 		
+		//verificando se o CNPJ e valido, se nao for TRUE dai e barrado
+		if (!ValidaCNPJ.isCNPJ(pessoaJuridica.getCnpj())) {
+			throw new ExceptionMentoriaJava("CNPJ : " + pessoaJuridica
+					.getCnpj() + " esta invalido");
+		}
+		
 		
 		//chamando o service para salvar a pessoa juridica
 		 pessoaJuridica = pessoaUserService
@@ -58,5 +67,37 @@ public class PessoaController {
 		
 	}
 	
+	//salvar PESSOAFISICA
+	@ResponseBody
+	@PostMapping(value = "**/salvarPf")
+	public ResponseEntity<PessoaFisica> salvarPf(
+			@RequestBody PessoaFisica pessoaFisica) throws ExceptionMentoriaJava {
+		
+		if(pessoaFisica == null) {
+			throw new ExceptionMentoriaJava("Pessoa fisica nao pode ser NULL");
+		}
+		//verificando se ja tem PESSOAFISICA com esse CPF
+		if (pessoaFisica.getId() == null && pessoaRepository
+				.existeCpfCadastrado(pessoaFisica.getCpf()) != null) {
+			
+			throw new ExceptionMentoriaJava(""
+					+ "Ja existe CPF cadastrado com o numero: " + pessoaFisica.getCpf());
+		}
+				
+		//verificando se o CPF e valido, se nao for TRUE dai e barrado
+		if (!ValidaCPF.isCPF(pessoaFisica.getCpf())) {
+			throw new ExceptionMentoriaJava("CPF : " + pessoaFisica
+					.getCpf() + " esta invalido");
+		}
+		
+		
+		//chamando o service para salvar a PESSOAFISICA
+		 pessoaFisica = pessoaUserService
+				 .salvarPessoaFisica(pessoaFisica);
+		
+		return new ResponseEntity<PessoaFisica>(
+				pessoaFisica, HttpStatus.OK);
+		
+	}
 
 }

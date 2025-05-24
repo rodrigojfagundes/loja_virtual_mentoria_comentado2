@@ -64,6 +64,7 @@ public class Endereco implements Serializable {
 	name = "pessoa_fk"))
 	private Pessoa pessoa;
 	
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private TipoEndereco tipoEndereco;
 	
