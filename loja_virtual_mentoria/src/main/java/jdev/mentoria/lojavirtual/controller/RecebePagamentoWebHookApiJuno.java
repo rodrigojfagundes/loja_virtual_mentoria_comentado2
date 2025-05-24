@@ -48,14 +48,18 @@ public class RecebePagamentoWebHookApiJuno implements Serializable {
 	headers = "Content-Type=application/json;charset=UTF-8", method = RequestMethod.POST)
 	public ResponseEntity<String> recebeNotificacaoPagamentoApiAsaas(@RequestBody NotificacaoPagamentoApiAsaas notificacaoPagamentoApiAsaas) {
 		
-		
+		//criando um BOLETOJUNO do tipo BOLETOJUNO (q sera usado pela ASAAS)
+		//q ira receber o ID da fatura q foi paga
 		BoletoJuno boletoJuno = boletoJunoRepository.findByCode(notificacaoPagamentoApiAsaas.idFatura());
 		
+		//verificando se existe o boleto
 		if (boletoJuno == null) {
 			return new ResponseEntity<String>("Boleto/Fatura não encontrada no banco de dados", HttpStatus.OK);
 		}
 		
-		
+		//se o boleto existir... vamos alterar o status dele para quitado...
+		//ou seja boleto pago... e salvando no banco de dados da
+		//lojavirtualmentoria
 		if (boletoJuno != null 
 				&& notificacaoPagamentoApiAsaas.boletoPixFaturaPaga()
 				&& !boletoJuno.isQuitado()) {
