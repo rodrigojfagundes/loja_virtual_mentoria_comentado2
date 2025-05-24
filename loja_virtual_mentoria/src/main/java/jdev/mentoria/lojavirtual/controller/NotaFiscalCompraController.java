@@ -1,5 +1,6 @@
 package jdev.mentoria.lojavirtual.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -19,8 +20,10 @@ import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
 import jdev.mentoria.lojavirtual.model.MarcaProduto;
 import jdev.mentoria.lojavirtual.model.NotaFiscalCompra;
 import jdev.mentoria.lojavirtual.model.NotaFiscalVenda;
+import jdev.mentoria.lojavirtual.model.dto.ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalCompraRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
+import jdev.mentoria.lojavirtual.service.NotaFiscalCompraService;
 
 @RestController
 public class NotaFiscalCompraController {
@@ -30,6 +33,27 @@ public class NotaFiscalCompraController {
 	
 	@Autowired
 	private NotaFiscalVendaRepository notaFiscalVendaRepository;
+	
+	@Autowired
+	private NotaFiscalCompraService notaFiscalCompraService;
+	
+	
+	@ResponseBody
+	@PostMapping(value = "/**/relatorioProdCompradoNotaFiscal")
+	public ResponseEntity<List<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto>> relatorioProdCompradoNotaFiscal(
+			@Valid @RequestBody ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto objetoRequisicaoRelatorioProdutoCompraNotaFiscalDto){
+		
+		
+		
+		List<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto> retorno = 
+				new ArrayList<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto>();
+		
+		retorno = notaFiscalCompraService.gerarRelatorioProdCompraNota(
+				objetoRequisicaoRelatorioProdutoCompraNotaFiscalDto);
+		
+		return new ResponseEntity<List<ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto>>(retorno, HttpStatus.OK);
+	
+	}
 	
 	
 	@ResponseBody
