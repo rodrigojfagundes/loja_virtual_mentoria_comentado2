@@ -1,11 +1,8 @@
 package jdev.mentoria.lojavirtual.controller;
 
-
 import java.util.List;
 
-
 import javax.validation.Valid;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,11 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
 import jdev.mentoria.lojavirtual.model.NotaItemProduto;
 import jdev.mentoria.lojavirtual.repository.NotaItemProdutoRepository;
-
 
 @RestController
 public class NotaItemProdutoController {
@@ -72,8 +67,11 @@ public class NotaItemProdutoController {
 		
 		notaItemSalva = notaItemProdutoRepository.findById(notaItemProduto.getId()).get();
 		
-		return new ResponseEntity<NotaItemProduto>(notaItemSalva, HttpStatus.OK);		
+		return new ResponseEntity<NotaItemProduto>(notaItemSalva, HttpStatus.OK);
+		
+		
 	}
+	
 	
 	
 	@ResponseBody
@@ -87,6 +85,6 @@ public class NotaItemProdutoController {
 	}
 	
 	
-
 	
+
 }

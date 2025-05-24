@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-
 import org.springframework.security.core.GrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,7 +26,7 @@ public class Acesso implements GrantedAuthority {
 
 	// descricao e o nome da ROLE EX: ROLE_ADMIN, ROLE_DEV, etc...
 	@Column(nullable = false)
-	private String descricao;
+	private String descricao; /* Acesso ex: ROLE_ADMIN ou ROLE_SECRETARIO */
 
 	// esse metodo vai retornar a STRING DESCRICAO que é o TIPO de
 	// ACESSO/ROLE/PERMISSAO... EX: ROLE_ADMIN, ROLE_DEV
@@ -35,7 +34,6 @@ public class Acesso implements GrantedAuthority {
 	@JsonIgnore
 	@Override
 	public String getAuthority() {
-		// TODO Auto-generated method stub
 		return this.descricao;
 	}
 

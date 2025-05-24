@@ -20,78 +20,89 @@ import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
 import jdev.mentoria.lojavirtual.model.MarcaProduto;
 import jdev.mentoria.lojavirtual.repository.MarcaRepository;
 
+
 @Controller
 @RestController
 public class MarcaProdutoController {
-
-
+	
+	
 	@Autowired
 	private MarcaRepository marcaRepository;
 
 	// @ResponseBody para poder dar um retorno da API
 	// @Postmapping para mapear a url para receber um JSON
 	// @RequestBody recebe um JSON e converte em um OBJ do tipo MARCAPRODUTO
-	// @ResponseEntity encapsula os dados em HTTP
-	@ResponseBody
+	// @ResponseEntity encapsula os dados em HTTP	
+	@ResponseBody 
 	@PostMapping(value = "**/salvarMarca")
-	public ResponseEntity<MarcaProduto> salvarMarca(@RequestBody @Valid MarcaProduto marcaProduto) throws ExceptionMentoriaJava {
-
+	public ResponseEntity<MarcaProduto> salvarMarca(@RequestBody @Valid MarcaProduto marcaProduto ) throws ExceptionMentoriaJava { /*Recebe o JSON e converte pra Objeto*/
+		
 		// antes de cadastrar um MARCAPRODUTO sera verificado no banco se ja tem
 		// algum acesso com a mesma descricao/nome
 		if (marcaProduto.getId() == null) {
-			List<MarcaProduto> marcaProdutos = marcaRepository.buscarMarcaDesc(marcaProduto.getNomeDesc().toUpperCase());
-
-			if (!marcaProdutos.isEmpty()) {
-				throw new ExceptionMentoriaJava("Ja existe MarcaProduto com a descricao/nome: " + marcaProduto.getNomeDesc());
-			}
+		  List<MarcaProduto> marcaProdutos  = marcaRepository.buscarMarcaDesc(marcaProduto.getNomeDesc().toUpperCase());
+		  
+		  if (!marcaProdutos.isEmpty()) {
+			  throw new ExceptionMentoriaJava("Já existe Marca com a descrição/nome: " + marcaProduto.getNomeDesc());
+		  }
 		}
-
+		
+		
 		MarcaProduto marcaProdutoSalvo = marcaRepository.save(marcaProduto);
+		
 		return new ResponseEntity<MarcaProduto>(marcaProdutoSalvo, HttpStatus.OK);
-
 	}
-
+	
+	
+	
 	@ResponseBody
+	//Mapeando a url para receber JSON
 	@PostMapping(value = "**/deleteMarca")
-	public ResponseEntity<?> deleteMarca(@RequestBody MarcaProduto marcaProduto) {
-
+	public ResponseEntity<?> deleteMarca(@RequestBody MarcaProduto marcaProduto) { /*Recebe o JSON e converte pra Objeto*/
+		
 		marcaRepository.deleteById(marcaProduto.getId());
-		return new ResponseEntity("MarcaProduto Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity("Marca produto Removido",HttpStatus.OK);
 	}
+	
 
-	// @Secured({ "ROLE_GERENTE", "ROLE_ADMIN" })
+	//@Secured({ "ROLE_GERENTE", "ROLE_ADMIN" })
 	@ResponseBody
 	@DeleteMapping(value = "**/deleteMarcaPorId/{id}")
-	public ResponseEntity<?> deleteMarcaPorId(@PathVariable("id") Long id) {
-
+	public ResponseEntity<?> deleteMarcaPorId(@PathVariable("id") Long id) { 
+		
 		marcaRepository.deleteById(id);
-		return new ResponseEntity("MarcaProduto Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity("Marca Produto Removido",HttpStatus.OK);
 	}
-
+	
+	
+	
 	@ResponseBody
 	@GetMapping(value = "**/obterMarcaProduto/{id}")
-	public ResponseEntity<MarcaProduto> obterMarcaProduto(@PathVariable("id") Long id) throws ExceptionMentoriaJava {
-
+	public ResponseEntity<MarcaProduto> obterMarcaProduto(@PathVariable("id") Long id) throws ExceptionMentoriaJava { 
+		
 		MarcaProduto marcaProduto = marcaRepository.findById(id).orElse(null);
-
+		
 		if (marcaProduto == null) {
-			throw new ExceptionMentoriaJava("Não encontrou MarcaProduto com codigo: " + id);
+			throw new ExceptionMentoriaJava("Não encontrou Marca Produto com código: " + id);
 		}
-
-		return new ResponseEntity<MarcaProduto>(marcaProduto, HttpStatus.OK);
-
+		
+		return new ResponseEntity<MarcaProduto>(marcaProduto,HttpStatus.OK);
 	}
-
+	
+	
+	//buscando marcaproduto por descricao/nome
 	@ResponseBody
-	@GetMapping(value = "**/buscarMarcaProdutoPorDesc/{descricao}")
-	public ResponseEntity<List<MarcaProduto>> buscarMarcaProdutoPorDesc(@PathVariable("descricao") String desc) {
-
-		List<MarcaProduto> marcaProduto = marcaRepository.buscarMarcaDesc(desc.toUpperCase().trim());
-
-		return new ResponseEntity<List<MarcaProduto>>(marcaProduto, HttpStatus.OK);
-
+	@GetMapping(value = "**/buscarMarcaProdutoPorDesc/{desc}")
+	public ResponseEntity<List<MarcaProduto>> buscarMarcaProdutoPorDesc(@PathVariable("desc") String desc) { 
+		
+		List<MarcaProduto>  marcaProdutos = marcaRepository.buscarMarcaDesc(desc.toUpperCase().trim());
+		
+		return new ResponseEntity<List<MarcaProduto>>(marcaProdutos,HttpStatus.OK);
 	}
+	
+	
+	
 
 }

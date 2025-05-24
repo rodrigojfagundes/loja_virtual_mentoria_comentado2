@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import jdev.mentoria.lojavirtual.model.ContaReceber;
 
 @Repository
-public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long>{
+public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long> {
 
 }

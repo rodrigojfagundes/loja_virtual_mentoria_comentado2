@@ -32,7 +32,6 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 	@Autowired
 	private ServiceSendEmail serviceSendEmail;
 	
-	
 	@ExceptionHandler(ExceptionMentoriaJava.class)
 	public ResponseEntity<Object> handleExceptionCustom (ExceptionMentoriaJava ex) {
 		
@@ -42,13 +41,11 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 		objetoErroDTO.setCode(HttpStatus.OK.toString());
 		
 		return new ResponseEntity<Object>(objetoErroDTO, HttpStatus.OK);
-		
-		
 	}
 	
 	
 	
-	
+	/*Captura execeçoes do projeto*/
 	//@ExceptionHandler nos passamos as excecoes q podem ser capturada
 	//no caso ta generica, para todo o Java
 	@ExceptionHandler({Exception.class, RuntimeException.class, Throwable.class})
@@ -58,76 +55,71 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 		
 		ObjetoErroDTO objetoErroDTO = new ObjetoErroDTO();
 		
-		
 		String msg = "";
 		
 		//quando e passado algum argumento errado
 		if (ex instanceof MethodArgumentNotValidException) {
-			List<ObjectError> list = 
-					((MethodArgumentNotValidException) ex)
-					.getBindingResult().getAllErrors();
 			
-			for(ObjectError objectError : list) {
+			List<ObjectError> list = ((MethodArgumentNotValidException) ex).getBindingResult().getAllErrors();
+			
+			for (ObjectError objectError : list) {
 				msg += objectError.getDefaultMessage() + "\n";
 			}
-		} else if (ex instanceof HttpMessageNotReadableException) {
-			msg = "Não esta sendo enviado dados para o BODY corpo da requisicao";
 		}
-		
-		else {
+		else if (ex instanceof HttpMessageNotReadableException) {
+			
+			msg = "Não está sendo enviado dados para o BODY corpo da requisição";
+			
+		}else {
 			msg = ex.getMessage();
 		}
 		
 		objetoErroDTO.setError(msg);
-		objetoErroDTO.setCode(status.value() 
-				+ "==> " + status.getReasonPhrase());
+		objetoErroDTO.setCode(status.value() + " ==> " + status.getReasonPhrase()); 
 		
 		ex.printStackTrace();
+		
 		
 		//caso seja um erro desconhecido ele sera enviado por e-mail
 		//para o dev do sistema... Erro q NAO e do tipo atributos no JSON 
 		//etc...
 		try {
-			serviceSendEmail.enviarEmailHtml("Erro na loja virtual",
-					ExceptionUtils.getStackTrace(ex), 
+			
+			serviceSendEmail.enviarEmailHtml("Erro na loja virtual", 
+					ExceptionUtils.getStackTrace(ex),
 					"rodrigojosefagundes@gmail.com");
+			
 		} catch (UnsupportedEncodingException | MessagingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		
-		return new ResponseEntity<Object>(
-				objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<Object>(objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
-	//Captura erro na parte do banco
-	@ExceptionHandler({
-			DataIntegrityViolationException.class,
+	
+	/*Captura erro na parte de banco*/
+	@ExceptionHandler({DataIntegrityViolationException.class, 
 			ConstraintViolationException.class, SQLException.class})
-	protected ResponseEntity<Object> handlerExceptionDataIntegry(Exception ex){
+	protected ResponseEntity<Object> handleExceptionDataIntegry(Exception ex){
 		
 		ObjetoErroDTO objetoErroDTO = new ObjetoErroDTO();
+		
 		String msg = "";
 		
-		if(ex instanceof DataIntegrityViolationException) {
-			msg = "Erro de integridade de banco: " + ((DataIntegrityViolationException) ex).getCause().getCause().getMessage();
-		} else
-		
-		if(ex instanceof ConstraintViolationException) {
+		if (ex instanceof DataIntegrityViolationException) {
+			msg = "Erro de integridade no banco: " +  ((DataIntegrityViolationException) ex).getCause().getCause().getMessage();
+		}else
+		if (ex instanceof ConstraintViolationException) {
 			msg = "Erro de chave estrangeira: " + ((ConstraintViolationException) ex).getCause().getCause().getMessage();
-		} else
-			
-		if(ex instanceof SQLException) {
-			msg = "Erro de SQL do Banco: " + ((SQLException) ex)
-					.getCause().getCause().getMessage();
-		} else {
+		}else
+		if (ex instanceof SQLException) {
+			msg = "Erro de SQL do Banco: " + ((SQLException) ex).getCause().getCause().getMessage();
+		}else {
 			msg = ex.getMessage();
 		}
 		
-		
 		objetoErroDTO.setError(msg);
-		objetoErroDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());		
+		objetoErroDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString()); 
 		
 		ex.printStackTrace();
 		
@@ -135,18 +127,18 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 		//para o dev do sistema... Erro q NAO e do tipo atributos no JSON, 
 		//etc...
 		try {
-			serviceSendEmail.enviarEmailHtml("Erro na loja virtual",
-					ExceptionUtils.getStackTrace(ex), 
+			
+			serviceSendEmail.enviarEmailHtml("Erro na loja virtual", 
+					ExceptionUtils.getStackTrace(ex),
 					"rodrigojosefagundes@gmail.com");
+			
 		} catch (UnsupportedEncodingException | MessagingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		
-		return new ResponseEntity<Object>(
-				objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<Object>(objetoErroDTO, HttpStatus.INTERNAL_SERVER_ERROR);
 		
 	}
 	
+
 }

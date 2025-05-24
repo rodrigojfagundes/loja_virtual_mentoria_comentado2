@@ -1,0 +1,439 @@
+package jdev.mentoria.lojavirtual.service;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.DatatypeConverter;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+
+import jdev.mentoria.lojavirtual.enums.ApiTokenIntegracao;
+import jdev.mentoria.lojavirtual.model.AccessTokenJunoAPI;
+import jdev.mentoria.lojavirtual.model.BoletoJuno;
+import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
+import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
+import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
+import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
+import jdev.mentoria.lojavirtual.repository.AccesTokenJunoRepository;
+import jdev.mentoria.lojavirtual.repository.BoletoJunoRepository;
+import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
+
+//criando um service para criacao de boleto, e pix e cartao
+@Service
+public class ServiceJunoBoleto implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Autowired
+	private AccessTokenJunoService accessTokenJunoService;
+	
+	@Autowired
+	private AccesTokenJunoRepository accesTokenJunoRepository;
+	
+	@Autowired
+	private Vd_Cp_Loja_virt_repository vd_Cp_Loja_virt_repository;
+	
+	@Autowired
+	private BoletoJunoRepository boletoJunoRepository;
+	
+	
+	
+	//metodo para cancelar boleto e qrcode pix gerado... 
+	//q recebe um ID/CODE em STRING
+	//o CODE parece q é o ID_CHR_BOLETO... um tipo de ID dos boleto
+	//gerado pela API da JUNO na hora q eles criam um boleto...
+	//
+	public String cancelarBoleto(String code) throws Exception {
+		
+		//instanciando o token
+		AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		
+		//informando q a url api.juno.com.br nao precisa de certificado ssl
+		Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+		//criando um var/obj dotipo WEBRESOURCE de nome WEBRESORUCE
+		//q recebe a URL/LINK de onde deve ser feita a solicitacao
+		WebResource webResource = client.resource("https://api.juno.com.br/charges/"+code+"/cancelation");
+		
+		//passando os tokens e o CODE/ID recebido no inicio do metodo
+		//para a URL q esta instanciada em WEBRESOURCE (url de onde ta
+		//o metodo api da juno)... e passando as outras informacoes tbm...
+		ClientResponse clientResponse = webResource.accept(MediaType.APPLICATION_JSON)
+				.header("X-Api-Version", 2)
+				.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+				.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+				.put(ClientResponse.class);
+		
+		//se o boleto for cancelado com sucesso vamos deletar o codigo
+		//de barra dele do banco de dados
+		if (clientResponse.getStatus() == 204) {
+			
+			boletoJunoRepository.deleteByCode(code);
+			
+			return "Cancelado com sucesso";
+		}
+		
+		return clientResponse.getEntity(String.class);
+		
+	}
+	
+	
+	
+	
+	
+	//metodo para gerar os boleto e pix... q recebe um OBJ do tipo OBJETOPOSTCARNERJUNO
+	//
+	public String gerarCarneApi(ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception {
+		
+		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.findById(objetoPostCarneJuno.getIdVenda()).get();
+		
+		//instanciando um obj do tipo cobrancajunoapi
+		CobrancaJunoAPI cobrancaJunoAPI = new CobrancaJunoAPI();
+		
+		//passando os valores para os atributos
+		//chave pix, descricao, valor, etc...
+		cobrancaJunoAPI.getCharge().setPixKey(ApiTokenIntegracao.CHAVE_BOLETO_PIX);
+		cobrancaJunoAPI.getCharge().setDescription(objetoPostCarneJuno.getDescription());
+		cobrancaJunoAPI.getCharge().setAmount(Float.valueOf(objetoPostCarneJuno.getTotalAmount()));
+		cobrancaJunoAPI.getCharge().setInstallments(Integer.parseInt(objetoPostCarneJuno.getInstallments()));
+		
+		//data do boleto/pix....
+		Calendar dataVencimento = Calendar.getInstance();
+		dataVencimento.add(Calendar.DAY_OF_MONTH, 7);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd");
+		cobrancaJunoAPI.getCharge().setDueDate(dateFormat.format(dataVencimento.getTime()));
+		
+		//juros, tempo q pd ser pago apos o vencimento, etc...
+		cobrancaJunoAPI.getCharge().setFine(BigDecimal.valueOf(1.00));
+		cobrancaJunoAPI.getCharge().setInterest(BigDecimal.valueOf(1.00));
+		cobrancaJunoAPI.getCharge().setMaxOverdueDays(10);
+		cobrancaJunoAPI.getCharge().getPaymentTypes().add("BOLETO_PIX");
+		
+		//nome, documento, e-mail, etc...
+		cobrancaJunoAPI.getBilling().setName(objetoPostCarneJuno.getPayerName());
+		cobrancaJunoAPI.getBilling().setDocument(objetoPostCarneJuno.getPayerCpfCnpj());
+		cobrancaJunoAPI.getBilling().setEmail(objetoPostCarneJuno.getEmail());
+		cobrancaJunoAPI.getBilling().setPhone(objetoPostCarneJuno.getPayerPhone());
+		
+		//verificando se tem token, para pd enviar os daos para API da JUNO
+		//para pd criar um boleto/pix...
+		AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		if (accessTokenJunoAPI != null) {
+			
+			//ignorar ssl/certificado para o link api.juno.com.br...
+			Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+			//as requisicoes vao ser feitas para a api q ta no link
+			//api.juno.com.br/charges
+			WebResource webResource = client.resource("https://api.juno.com.br/charges");
+			
+			ObjectMapper objectMapper = new ObjectMapper();
+			String json = objectMapper.writeValueAsString(cobrancaJunoAPI);
+			
+			//criando o cabecalho passando a solicitacao + o token privado + o bearer
+			//token gerado pela juno... e mais o nosso OBJ JSON do tipo objectmapper 
+			//q tem o as informacoes q foram adicionadas no OBJ 
+			//COBRANCAJUNOAPI convertidas no formato JSON......
+			ClientResponse clientResponse = webResource
+					.accept("application/json;charset=UTF-8")
+					.header("Content-Type", "application/json;charset=UTF-8")
+					.header("X-API-Version", 2)
+					.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+					.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+					.post(ClientResponse.class, json);
+			
+			String stringRetorno = clientResponse.getEntity(String.class);
+			
+			if (clientResponse.getStatus() == 200) { /*Retornou com sucesso*/
+				
+				clientResponse.close();
+				objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY); /*Converte relacionamento um para muitos dentro de json*/
+				
+				//o retorno do metodo acima, apos passarmos as informacoes
+				//para a API da juno criar o boleto, nos vamos salvar o retorno
+				//da api da juno q sera um boleto... vamos salvar
+				//em um obj/var de nome JSONRETORNOOBJ do tipo
+				//BOLETOGERADOAPIJUNO :)
+				BoletoGeradoApiJuno jsonRetornoObj = objectMapper.readValue(stringRetorno,
+						   new TypeReference<BoletoGeradoApiJuno>() {});
+				
+				int recorrencia = 1;
+				
+				//lista de boletojuno
+				List<BoletoJuno> boletoJunos = new ArrayList<BoletoJuno>();
+				
+				//for para percorrer BOLETO (C) por BOLETO... Pois mtas vezes
+				//e retornado pela api uma LISTA de boleto...
+				for (ConteudoBoletoJuno c : jsonRetornoObj.get_embedded().getCharges()) {
+					
+					//instanciando um BOLETOJUNO
+					BoletoJuno boletoJuno = new BoletoJuno();
+					
+					//preenchendo as informacoes desse boleto
+					boletoJuno.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+					boletoJuno.setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+					boletoJuno.setCode(c.getCode());
+					boletoJuno.setLink(c.getLink());
+					boletoJuno.setDataVencimento(new SimpleDateFormat("yyyy-MM-dd").format(new SimpleDateFormat("yyyy-MM-dd").parse(c.getDueDate())));
+					boletoJuno.setCheckoutUrl(c.getCheckoutUrl());
+					boletoJuno.setValor(new BigDecimal(c.getAmount()));
+					boletoJuno.setIdChrBoleto(c.getId());
+					boletoJuno.setInstallmentLink(c.getInstallmentLink());
+					boletoJuno.setIdPix(c.getPix().getId());
+					boletoJuno.setPayloadInBase64(c.getPix().getPayloadInBase64());
+					boletoJuno.setImageInBase64(c.getPix().getImageInBase64());
+					boletoJuno.setRecorrencia(recorrencia);
+					
+					boletoJunos.add(boletoJuno);
+					recorrencia ++;
+					
+				}
+				
+				//salvando o boleteo no banco...
+				boletoJunoRepository.saveAllAndFlush(boletoJunos);
+				
+				return boletoJunos.get(0).getLink();
+				
+			}else {
+				return stringRetorno;
+			}
+			
+		}else {
+			return "Não exite chave de acesso para a API";
+		}
+		
+	}
+	
+	
+	
+	
+	
+	//metodo para permitir gerar chave de autorizacao (um token) 
+	//para permitir gerar chave pix com a juno api
+	public String geraChaveBoletoPix() throws Exception {
+		
+		//obtendo um token... q e o bearer token...
+		AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		
+		//ignorarndo certificado ssl para esse link
+		Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+		
+		//o webresource a baixo aparentemente vai receber o link de onde
+		//e gerado a chave pix... eu acho...
+		WebResource webResource = client.resource("https://api.juno.com.br/pix/keys");
+		//WebResource webResource = client.resource("https://api.juno.com.br/api-integration/pix/keys");
+		
+		//em resumo montando o cabecalho http para fazer a requisicao...
+		//instanciando o obj webresource q ja tem o link
+		//e passando para ele outros paramenetros para fazer a requisicao
+		//
+		//o token privado e um token q a juno gera e q
+		//nos pegamos no site da juno... tbm temos q passar o bearer token
+		//RANDOM_KEY e pq estamos pedindo para gerar um chave de pix
+		//randomica...
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("X-API-Version", 2)
+				.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+				.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+				.post(ClientResponse.class, "{ \"type\": \"RANDOM_KEY\" }");
+		
+		         //.header("X-Idempotency-Key", "chave-boleto-pix")
+		return clientResponse.getEntity(String.class);
+		
+		
+	}
+	
+	
+	
+	
+	
+	//metodo para passar ou gerar token bearer da api juno...
+	//
+	public AccessTokenJunoAPI obterTokenApiJuno() throws Exception {
+		
+		//verificando se tem token ativo na API da JUNO
+		AccessTokenJunoAPI accessTokenJunoAPI = accessTokenJunoService.buscaTokenAtivo();
+		
+		//se nao tiver (ou expirado) vamos passar o CLIENTID e SECRETID 
+		//gerado pela API JUNO nas configuracoes para conseguir um novo token
+		if (accessTokenJunoAPI == null || (accessTokenJunoAPI != null && accessTokenJunoAPI.expirado()) ) {
+			
+			String clienteID = "vi7QZerW09C8JG1o";
+			String secretID = "$A_+&ksH}&+2<3VM]1MZqc,F_xif_-Dc";
+			
+			//acho q estamos removendo necessidade de certificado ssl
+			Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+			//informando qual sera o link q nao precisaremos de certificado ssl
+			//q sera o link onde iremos passar o CLIENTID e SECRETID
+			WebResource webResource = client.resource("https://api.juno.com.br/authorization-server/oauth/token?grant_type=client_credentials");
+			
+			//var/obj do tipo STRING de nome BASICCHAVE q reecbe o
+			//CLIENT_ID + SECRETID
+			String basicChave = clienteID + ":" + secretID;
+			//
+			//convertendo o clientid e secretid para base64 e salvando
+			//na var string TOKEN_AUTENTICACAO
+			String token_autenticao = DatatypeConverter.printBase64Binary(basicChave.getBytes());
+			
+			//montando um cabecalho de req http
+			//e passando o CLIENTID e SECRETID q ta na var
+			//TOKEN_AUTENTICACAO... Para a API da JUNO gerar um novo
+			//BEARER TOKEN
+			ClientResponse clientResponse = webResource.
+					accept(MediaType.APPLICATION_FORM_URLENCODED)
+					.type(MediaType.APPLICATION_FORM_URLENCODED)
+					.header("Content-Type", "application/x-www-form-urlencoded")
+					.header("Authorization", "Basic " + token_autenticao)
+					.post(ClientResponse.class);
+			
+			//se conseguiu um novo token com a juno apos
+			//passar o client id e secret id
+			//vamos deletar o token antigo do banco...
+			//pq o antigo ja expirou...
+			if (clientResponse.getStatus() == 200) { /*Sucesso*/
+				accesTokenJunoRepository.deleteAll();
+				accesTokenJunoRepository.flush();
+				
+				AccessTokenJunoAPI accessTokenJunoAPI2 = clientResponse.getEntity(AccessTokenJunoAPI.class);
+				accessTokenJunoAPI2.setToken_acesso(token_autenticao);
+				
+				accessTokenJunoAPI2 = accesTokenJunoRepository.saveAndFlush(accessTokenJunoAPI2);
+				
+				return accessTokenJunoAPI2;
+			}else {
+				return null;
+			}
+			
+			//se caso ja tinha um token e nao precisou passar o CLIENTID
+			//e CLIENTSECRET dai so vai retornar o ACCESTOKENJUNOAPI a baixo
+		}else {
+			return accessTokenJunoAPI;
+		}
+	}
+	
+	/*
+	 * {"id":"wbh_AE815607C1F5A94934934A2EA3CA0180","url":"https://lojavirtualmentoria-env.eba-bijtuvkg.sa-east-1.elasticbeanstalk.com/loja_virtual_mentoria/requisicaojunoboleto/notificacaoapiv2","secret":"23b85f4998289533ed3ee310ae9d5bd3f803fadac7fb1ecff0296fbf1bb060f8","status":"ACTIVE","eventTypes":[{"id":"evt_DC2E7E8848B08C62","name":"DOCUMENT_STATUS_CHANGED","label":"O status de um documento foi alterado","status":"ENABLED"}],"_links":{"self":{"href":"https://api.juno.com.br/api-integration/notifications/webhooks/wbh_AE815607C1F5A94934934A2EA3CA0180"}}}
+	 * 
+	 * */
+	//
+	//metodo CRIARWEBHOOK... basicamente um WEBHOOK é um METODO q
+	//sera ACESSADO pela API da JUNO... Ou seja a JUNO vai fazer requisicoes
+	//para esse metodo... Por isso  colocamoso sistema em uma hospedagem
+	//
+	//ou seja em vez de nos se conectar na JUNO a JUNO vai se conectar
+	//no nosso sistema...
+	//
+	//tipo uma compra teveo cartao nao aprovado...
+	//dai a JUNO acessa a nossa API/WEBHOOK e envia uma informacao
+	//dizendo q deu problema no pagamento por cartao... +ou- isso...
+	//
+	//aqui estamos recebendo um OBJ/VAR do tipo CRIARWEBHOOK de nome
+	//CRIARWEBHOOK e nele tem o nosso link da LOJAVIRTUAL na AWS
+	//para a JUNO se conectar...
+	//
+	//e vamos enviar essa informacao para a JUNO saber onde se conectar
+	//para ela nos enviar informacoes se tipo o pagamento de uma compra ta ok
+	public String criarWebHook(CriarWebHook criarWebHook) throws Exception {
+		
+	    AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		
+		Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+		WebResource webResource = client.resource("https://api.juno.com.br/notifications/webhooks");
+		
+		String json = new ObjectMapper().writeValueAsString(criarWebHook);
+		
+		
+		//enviando para a JUNO o nosso URL da AWS e o link certinho
+		//para ela acessar o nosso WEBHOOK
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("X-API-Version", 2)
+				.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+				.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+				.post(ClientResponse.class, json);
+		
+		 String resposta = clientResponse.getEntity(String.class);
+		 clientResponse.close();
+		
+		return resposta;
+		
+	}
+	
+	
+	//metodo para listar todos os webhooks da aplicacao loja_virtual_mentoria
+	//
+	public String listaWebHook() throws Exception {
+		
+		//pegando o nosso token da juno
+	    AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		
+	    //instanciando os obj client e webresource e passando para eles
+	    //os links da juno
+		Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+		WebResource webResource = client.resource("https://api.juno.com.br/notifications/webhooks");
+		
+		//monstando a requisicao em json q vamos fazer para
+		//a juno
+		ClientResponse clientResponse = webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("X-API-Version", 2)
+				.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+				.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+				.get(ClientResponse.class);
+		
+		//armazenando o retorno da api da juno 
+		//com os nossos webhooks q a api da juno tem acesso
+		//na var/obj do tipo string de nome resposta
+		 String resposta = clientResponse.getEntity(String.class);
+		 
+		return resposta;
+		
+	}
+	
+	
+	//metodo para deletar os webhooks da nossa aplicacao
+	//loja_virtual_mentoria... basicamente webhook sao metodos/endpoint
+	//q a nossa aplicacao fornece para a juno... e a juno insere
+	//informacoes na nossa loja_virtual_mentoria atraves desses
+	//metodos/endpoint... tipo a juno avisa q o pagamento por
+	//cartao de credito esta ok... entao a loja_virtual_mentoria
+	//pode permitir a compra do produto... ja q o pagamento por
+	//cartao de credito ficou ok
+	public void deleteWebHook(String idWebHook) throws Exception {
+		
+	    AccessTokenJunoAPI accessTokenJunoAPI = this.obterTokenApiJuno();
+		
+		Client client = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+		WebResource webResource = client.resource("https://api.juno.com.br/notifications/webhooks/" + idWebHook);
+		
+		webResource
+				.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("X-API-Version", 2)
+				.header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+				.header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+				.delete();
+		
+		
+	}
+
+	
+
+}

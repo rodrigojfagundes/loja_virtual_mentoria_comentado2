@@ -20,22 +20,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jdev.mentoria.lojavirtual.enums.TipoEndereco;
 
-
 //criando a entidade/classe Endereco
-
 @Entity
-@Table(name="endereco")
-@SequenceGenerator(name = "seq_endereco", 
-sequenceName = "seq_endereco", allocationSize = 1, initialValue = 1)
+@Table(name = "endereco")
+@SequenceGenerator(name = "seq_endereco", sequenceName = "seq_endereco", allocationSize = 1, initialValue = 1)
 public class Endereco implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_endereco")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_endereco")
 	private Long id;
-	
+
 	@Column(nullable = false)
 	private String ruaLogra;
 	
@@ -44,6 +40,7 @@ public class Endereco implements Serializable {
 	
 	@Column(nullable = false)
 	private String numero;
+	
 	
 	private String complemento;
 	
@@ -56,16 +53,27 @@ public class Endereco implements Serializable {
 	@Column(nullable = false)
 	private String cidade;
 	
+	
+	
 	@Column(nullable = true)
-	private String estado;	
+	private String estado;
 	
 	//1 PESSOA pd ter MTO ENDERECO...... e 1 ENDERECO tem 1 PESSOA
 	@JsonIgnore
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "pessoa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "pessoa_fk"))
+	@JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
 	private Pessoa pessoa;
+	
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TipoEndereco tipoEndereco;
+	
+	//MTAS ENDERECO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
+	@JsonIgnore
+	@ManyToOne(targetEntity = Pessoa.class)
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
+	private Pessoa empresa;
 	
 	
 	public void setEstado(String estado) {
@@ -76,20 +84,6 @@ public class Endereco implements Serializable {
 		return estado;
 	}
 	
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private TipoEndereco tipoEndereco;
-	
-	
-	//MTAS ENDERECO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
-	@JsonIgnore
-	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
-	private Pessoa empresa;
-
-	
 	
 	public Pessoa getEmpresa() {
 		return empresa;
@@ -97,6 +91,14 @@ public class Endereco implements Serializable {
 
 	public void setEmpresa(Pessoa empresa) {
 		this.empresa = empresa;
+	}
+
+	public void setTipoEndereco(TipoEndereco tipoEndereco) {
+		this.tipoEndereco = tipoEndereco;
+	}
+	
+	public TipoEndereco getTipoEndereco() {
+		return tipoEndereco;
 	}
 
 	public Long getId() {
@@ -170,14 +172,6 @@ public class Endereco implements Serializable {
 	public void setPessoa(Pessoa pessoa) {
 		this.pessoa = pessoa;
 	}
-	
-	public TipoEndereco getTipoEndereco() {
-		return tipoEndereco;
-	}
-
-	public void setTipoEndereco(TipoEndereco tipoEndereco) {
-		this.tipoEndereco = tipoEndereco;
-	}
 
 	@Override
 	public int hashCode() {
@@ -203,8 +197,5 @@ public class Endereco implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
-	
+
 }

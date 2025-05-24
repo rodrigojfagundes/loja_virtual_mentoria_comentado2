@@ -3,10 +3,9 @@ package jdev.mentoria.lojavirtual.model.dto;
 import jdev.mentoria.lojavirtual.model.Produto;
 
 public class ItemVendaDTO {
-	
-	
+
 	private Double quantidade;
-	
+
 	private Produto produto;
 
 	public Double getQuantidade() {
@@ -24,9 +23,5 @@ public class ItemVendaDTO {
 	public void setProduto(Produto produto) {
 		this.produto = produto;
 	}
-	
-	
-	
-	
-	
+
 }

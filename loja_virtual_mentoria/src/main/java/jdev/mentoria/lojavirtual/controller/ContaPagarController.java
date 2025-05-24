@@ -23,88 +23,95 @@ import jdev.mentoria.lojavirtual.repository.ContaPagarRepository;
 @Controller
 @RestController
 public class ContaPagarController {
-
-
+	
 	@Autowired
-	private ContaPagarRepository contaPagarRepository;
-
+	private ContaPagarRepository contaPagarRepository; 
+	
 	// @ResponseBody para poder dar um retorno da API
 	// @Postmapping para mapear a url para receber um JSON
 	// @RequestBody recebe um JSON e converte em um OBJ do tipo CONTAPAGAR
 	// @ResponseEntity encapsula os dados em HTTP
-	@ResponseBody
-	@PostMapping(value = "**/salvarContaPagar")
-	//OBS O PROF DEIXOU O NOME COMO SALVARACESSO, mas o CORRETO E SALVARPRODUTO
-	public ResponseEntity<ContaPagar> salvarContaPagar(@RequestBody @Valid ContaPagar contaPagar) throws ExceptionMentoriaJava {
+	@ResponseBody /*Poder dar um retorno da API*/
+	@PostMapping(value = "**/salvarContaPagar") /*Mapeando a url para receber JSON*/
+	public ResponseEntity<ContaPagar> salvarAcesso(@RequestBody @Valid ContaPagar contaPagar) throws ExceptionMentoriaJava { /*Recebe o JSON e converte pra Objeto*/
+			//OBS O PROF DEIXOU O NOME COMO SALVARACESSO, mas o CORRETO E SALVARPRODUTO
+		if (contaPagar.getEmpresa() == null || contaPagar.getEmpresa().getId() <= 0) {
+			throw new ExceptionMentoriaJava("Empresa responsável deve ser informada");
+		}
 		
-		if(contaPagar.getEmpresa() == null || contaPagar.getEmpresa().getId() <=0) {
-			throw new ExceptionMentoriaJava("Empresa responsavel deve ser informada");
-		}
-	
 
-		if(contaPagar.getPessoa() == null || contaPagar.getPessoa().getId() <=0) {
-			throw new ExceptionMentoriaJava("Pessoa responsavel deve ser informada");
+		if (contaPagar.getPessoa() == null || contaPagar.getPessoa().getId() <= 0) {
+			throw new ExceptionMentoriaJava("Pessoa responsável deve ser informada");
 		}
-	
-		if(contaPagar.getPessoa_fornecedor() == null || contaPagar.getPessoa_fornecedor().getId() <=0) {
-			throw new ExceptionMentoriaJava("Fornecedor responsavel deve ser informada");
+		
+		if (contaPagar.getPessoa_fornecedor() == null || contaPagar.getPessoa_fornecedor().getId() <= 0) {
+			throw new ExceptionMentoriaJava("Fornecedor responsável deve ser informada");
 		}
 		
 		//se o ID tiver NULL e pq e uma conta nova
-		if(contaPagar.getId() == null) {
-			List<ContaPagar> contaPagars = contaPagarRepository.buscaContaDesc(
-					contaPagar.getDescricao().toUpperCase().trim());
-			if (!contaPagars.isEmpty()) {
-				throw new ExceptionMentoriaJava("Ja existe conta a pagar com a mesma descricao");
+		if (contaPagar.getId() == null) {
+			List<ContaPagar> contaPagars = contaPagarRepository.buscaContaDesc(contaPagar.getDescricao().toUpperCase().trim());
+			if(!contaPagars.isEmpty()) {
+				throw new ExceptionMentoriaJava("Já existe conta a pagar com a mesma descrição.");
 			}
 		}
 		
-		
+		//o prof deixou o nome de CONPAGARSALVA, mas acho mais adequado
+		//CONTAPAGARSALVAR
 		ContaPagar contaPagarSalva = contaPagarRepository.save(contaPagar);
+		
 		return new ResponseEntity<ContaPagar>(contaPagarSalva, HttpStatus.OK);
-
 	}
-
-	@ResponseBody
-	@PostMapping(value = "**/deleteContaPagar")
-	public ResponseEntity<String> deleteContaPagar(@RequestBody ContaPagar contaPagar) {
-
+	
+	
+	//Poder dar um retorno da API
+	@ResponseBody 
+	//Mapeando a url para receber JSON
+	@PostMapping(value = "**/deleteContaPagar") 
+	public ResponseEntity<String> deleteContaPagar(@RequestBody ContaPagar contaPagar) { /*Recebe o JSON e converte pra Objeto*/
+		
 		contaPagarRepository.deleteById(contaPagar.getId());
-		return new ResponseEntity<String>("ContaPagar Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity<String>("Conta Pagar Removida",HttpStatus.OK);
 	}
+	
 
 	@ResponseBody
 	@DeleteMapping(value = "**/deleteContaPagarPorId/{id}")
-	public ResponseEntity<String> deleteContaPagarPorId(@PathVariable("id") Long id) {
-
+	public ResponseEntity<String> deleteContaPagarPorId(@PathVariable("id") Long id) { 
+		
 		contaPagarRepository.deleteById(id);
-		return new ResponseEntity<String>("ContaPagar Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity<String>("ContaPagar Removido",HttpStatus.OK);
 	}
-
+	
+	
+	
 	@ResponseBody
 	@GetMapping(value = "**/obterContaPagar/{id}")
-	public ResponseEntity<ContaPagar> obterContaPagar(@PathVariable("id") Long id) throws ExceptionMentoriaJava {
-
+	public ResponseEntity<ContaPagar> obterContaPagar(@PathVariable("id") Long id) throws ExceptionMentoriaJava { 
+		
 		ContaPagar contaPagar = contaPagarRepository.findById(id).orElse(null);
-
+		
 		if (contaPagar == null) {
-			throw new ExceptionMentoriaJava("Não encontrou ContaPagar com codigo: " + id);
+			throw new ExceptionMentoriaJava("Não encontrou Conta a PAgar com código: " + id);
 		}
-
-		return new ResponseEntity<ContaPagar>(contaPagar, HttpStatus.OK);
-
+		
+		return new ResponseEntity<ContaPagar>(contaPagar,HttpStatus.OK);
 	}
-
+	
+	
+	
 	@ResponseBody
 	@GetMapping(value = "**/buscarContaPagarDesc/{desc}")
-	public ResponseEntity<List<ContaPagar>> buscarContaPagarDesc(@PathVariable("desc") String desc) {
-
+	public ResponseEntity<List<ContaPagar>> buscarContaPagarDesc(@PathVariable("desc") String desc) { 
+		
 		List<ContaPagar> contaPagar = contaPagarRepository.buscaContaDesc(desc.toUpperCase());
-
-		return new ResponseEntity<List<ContaPagar>>(contaPagar, HttpStatus.OK);
-
+		
+		return new ResponseEntity<List<ContaPagar>>(contaPagar,HttpStatus.OK);
 	}
+	
+	
+	
 
 }

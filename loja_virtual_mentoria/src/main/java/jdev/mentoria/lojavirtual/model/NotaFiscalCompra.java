@@ -22,32 +22,33 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+
 @Entity
-@Table(name="nota_fiscal_compra")
-@SequenceGenerator(name = "seq_nota_fiscal_compra", 
-sequenceName = "seq_nota_fiscal_compra", allocationSize = 1, initialValue = 1)
+@Table(name = "nota_fiscal_compra")
+@SequenceGenerator(name = "seq_nota_fiscal_compra", sequenceName = "seq_nota_fiscal_compra", allocationSize = 1, initialValue = 1)
 public class NotaFiscalCompra implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_nota_fiscal_compra")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_fiscal_compra")
 	private Long id;
 	
-	@NotNull(message = "informe o numero da nota")
+	@NotNull(message = "Informe o número da nota")
 	@Column(nullable = false)
 	private String numeroNota;
 	
 	@NotEmpty(message = "Informe a serie da nota")
-	//@NotNull(message = "Informe a serie da nota")
+	@NotNull(message = "Informe a série da nota")
 	@Column(nullable = false)
 	private String serieNota;
 	
+	
 	private String descricaoObs;
 	
-	//@Size(min = 1, message = "Valor total da nota maior que 1 Real")
-	@NotNull(message = "Informe o valor total da nota")
+	//@Size(min = 1, message = "Informe o total da nota maior que R$ 1 real")
+	@NotNull(message = "Informe o total da nota")
 	@Column(nullable = false)
 	private BigDecimal valorTotal;
 	
@@ -71,26 +72,24 @@ public class NotaFiscalCompra implements Serializable {
 	//
 	//campo sera usado para FORNECEDOR do produto
 	//
+	/*Campo também usado para o fornecedor do produto*/
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "pessoa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "pessoa_fk"))
+	@JoinColumn(name = "pessoa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
 	private PessoaJuridica pessoa;
-		
+	
 	//MTAS NOTAFISCALCOMPRA para 1 CONTAPAGAR
 	@ManyToOne
-	@JoinColumn(name = "conta_pagar_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "conta_pagar_fk"))
+	@JoinColumn(name = "conta_pagar_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "conta_pagar_fk"))
 	private ContaPagar contaPagar;
-
 	
 	//MTAS NOTAFISCALCOMPRA para 1 EMPRESA (PESSOAJURIDICA)
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
+	
 	
 	
 	public PessoaJuridica getEmpresa() {
@@ -208,4 +207,7 @@ public class NotaFiscalCompra implements Serializable {
 	
 	
 	
+	
+	
+
 }

@@ -11,10 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jdev.mentoria.lojavirtual.model.NotaFiscalCompra;
 import jdev.mentoria.lojavirtual.model.NotaItemProduto;
 
-
 @Repository
 @Transactional
-public interface NotaItemProdutoRepository extends JpaRepository<NotaItemProduto, Long>{
+public interface NotaItemProdutoRepository extends JpaRepository<NotaItemProduto, Long> {
 	
 	//buscar os itens de uma nota
 	//
@@ -43,5 +42,4 @@ public interface NotaItemProdutoRepository extends JpaRepository<NotaItemProduto
 	@Query(nativeQuery = true, value = "delete from nota_item_produto where id = ?1")
 	void deleteByIdNotaItem(Long id);
 
-	
 }

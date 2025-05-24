@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+
 //class/entidade que ira armazenar os atributos/var/OBJETOS
 // tipo FROMENVIOETIQUETADTO(info de ORIGEM do PRODUTO)
 //tipo TOENVIOETIQUETADTO (info de DESTINO do PRODUTO)
@@ -18,29 +19,28 @@ public class EnvioEtiquetaDTO implements Serializable {
 	
 	private String service;
 	private String agency;
-	
+
 	//criando um obj/var do tipo FROMENVIOETIQUETADTO q tera
 	//as informacoes de ORIGEM do ENVIO... tipo cidade, estado, nome, etc...
 	//
 	private FromEnvioEtiquetaDTO from = new FromEnvioEtiquetaDTO();
-	
+
 	//criando um obj/var do tipo TOENVIOETIQUETADTO q tera
 	//as informacoes de DESTINO do ENVIO... tipo cidade, estado, nome, etc...
 	//
 	private ToEnvioEtiquetaDTO to = new ToEnvioEtiquetaDTO();
-	
+
 	//criando uma LISTA de OBJ do tipo PRODUCTSENVIOETIQUETADTO
 	//e no PRODUCTSENVIOETIQUETADTO tem as var/atributos name, quantity
 	//univary_value para a API do MELHORENVIO conseguir calcular o preco
 	//do FRETE...
 	private List<ProductsEnvioEtiquetaDTO> products = new ArrayList<ProductsEnvioEtiquetaDTO>();
-	
+
 	//criando uma LISTA de VOLUMES/CAIXAS (VOLUMESENVIOETIQUETADTO)
 	//q tem as informacoes em atributos/var como peso, altura, largura
 	//para a API do MELHORENVIO pd calcular o preco do frete
 	//
 	private List<VolumesEnvioEtiquetaDTO> volumes = new ArrayList<VolumesEnvioEtiquetaDTO>();
-
 	
 	//instanciando o nosso obj/var OPTIONS, q basicamente
 	//tem alguns informacoes adicionais na hora de fazer o transporte
@@ -50,26 +50,16 @@ public class EnvioEtiquetaDTO implements Serializable {
 	public void setOptions(OptionsEnvioEtiquetaDTO options) {
 		this.options = options;
 	}
-	
 	public OptionsEnvioEtiquetaDTO getOptions() {
 		return options;
 	}
-	
-	
+
 	public String getService() {
 		return service;
 	}
 
 	public void setService(String service) {
 		this.service = service;
-	}
-
-	public String getAgency() {
-		return agency;
-	}
-
-	public void setAgency(String agency) {
-		this.agency = agency;
 	}
 
 	public FromEnvioEtiquetaDTO getFrom() {
@@ -103,9 +93,13 @@ public class EnvioEtiquetaDTO implements Serializable {
 	public void setVolumes(List<VolumesEnvioEtiquetaDTO> volumes) {
 		this.volumes = volumes;
 	}
-	
-	
-	
-	
-	
+
+	public String getAgency() {
+		return agency;
+	}
+
+	public void setAgency(String agency) {
+		this.agency = agency;
+	}
+
 }

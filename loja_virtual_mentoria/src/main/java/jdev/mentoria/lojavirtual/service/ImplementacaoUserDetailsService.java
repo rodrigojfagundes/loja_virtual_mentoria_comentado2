@@ -21,13 +21,12 @@ public class ImplementacaoUserDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		// TODO Auto-generated method stub
 
 		// o username e o login para consulta
-		Usuario usuario = usuarioRepository.findUserByLogin(username);
+		Usuario usuario = usuarioRepository.findUserByLogin(username);/* Recebe o login pra consulta */
 
 		if (usuario == null) {
-			throw new UsernameNotFoundException("Usuario nao foi encontrado");
+			throw new UsernameNotFoundException("Usuário não foi encontrado");
 		}
 
 		// se o usuario existir no banco vamos retornar o LOGIN/USERNAME

@@ -13,10 +13,7 @@ public interface CupDescontoRepository extends JpaRepository<CupDesc, Long> {
 	
 	//pesquisando todos os CUPONSDESCONTO  de uma EMPRESA pelo ID
 	//
-	@Query(value = "select c from CupDesc c where c.empresa.id =?1")
+	@Query(value = "select c from CupDesc c where c.empresa.id = ?1")
 	public List<CupDesc> cupDescontoPorEmpresa(Long idEmpresa);
-	
-	
-	
-	
+
 }

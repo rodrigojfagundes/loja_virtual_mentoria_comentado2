@@ -7,13 +7,13 @@ public enum StatusContaReceber {
 	ABERTA("Aberta"),
 	QUITADA("Quitada");
 	
+	
 	private String descricao;
 	
 	private StatusContaReceber(String descricao) {
 		this.descricao = descricao;
-		
 	}
-
+	
 	public String getDescricao() {
 		return descricao;
 	}
@@ -22,6 +22,5 @@ public enum StatusContaReceber {
 	public String toString() {
 		return this.descricao;
 	}
-	
-	
+
 }

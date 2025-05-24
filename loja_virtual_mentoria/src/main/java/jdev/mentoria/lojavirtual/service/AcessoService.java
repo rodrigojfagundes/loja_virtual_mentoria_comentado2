@@ -12,9 +12,12 @@ public class AcessoService {
 	@Autowired
 	private AcessoRepository acessoRepository;
 	
+	
 	public Acesso save(Acesso acesso) {
+		
+		/*Qualquer tipo de validação*/
 		
 		return acessoRepository.save(acesso);
 	}
-	
+
 }

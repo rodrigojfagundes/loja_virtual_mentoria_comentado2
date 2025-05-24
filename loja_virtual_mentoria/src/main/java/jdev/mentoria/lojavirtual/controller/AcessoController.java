@@ -19,80 +19,92 @@ import jdev.mentoria.lojavirtual.model.Acesso;
 import jdev.mentoria.lojavirtual.repository.AcessoRepository;
 import jdev.mentoria.lojavirtual.service.AcessoService;
 
+//@CrossOrigin(origins = "https://www.jdevtreinamento.com.br")
 @Controller
 @RestController
 public class AcessoController {
-
+	
 	@Autowired
 	private AcessoService acessoService;
-
+	
 	@Autowired
 	private AcessoRepository acessoRepository;
-
+	
+	
 	// @ResponseBody para poder dar um retorno da API
 	// @Postmapping para mapear a url para receber um JSON
 	// @RequestBody recebe um JSON e converte em um OBJ do tipo ACESSO
 	// @ResponseEntity encapsula os dados em HTTP
+	//Mapeando a url para receber JSON
 	@ResponseBody
-	@PostMapping(value = "**/salvarAcesso")
-	public ResponseEntity<Acesso> salvarAcesso(@RequestBody Acesso acesso) throws ExceptionMentoriaJava {
-
+	@PostMapping(value = "**/salvarAcesso") 
+	public ResponseEntity<Acesso> salvarAcesso(@RequestBody Acesso acesso) throws ExceptionMentoriaJava { /*Recebe o JSON e converte pra Objeto*/
+		
 		// antes de cadastrar um acesso/role sera verificado no banco se ja tem
 		// algum acesso com a mesma descricao
 		if (acesso.getId() == null) {
-			List<Acesso> acessos = acessoRepository.buscarAcessoDesc(acesso.getDescricao().toUpperCase());
-
-			if (!acessos.isEmpty()) {
-				throw new ExceptionMentoriaJava("Ja existe acesso com a descricao: " + acesso.getDescricao());
-			}
+		  List<Acesso> acessos = acessoRepository.buscarAcessoDesc(acesso.getDescricao().toUpperCase());
+		  
+		  if (!acessos.isEmpty()) {
+			  throw new ExceptionMentoriaJava("Já existe Acesso com a descrição: " + acesso.getDescricao());
+		  }
 		}
-
+		
+		
 		Acesso acessoSalvo = acessoService.save(acesso);
+		
 		return new ResponseEntity<Acesso>(acessoSalvo, HttpStatus.OK);
-
 	}
-
-	@ResponseBody
-	@PostMapping(value = "**/deleteAcesso")
-	public ResponseEntity<?> deleteAcesso(@RequestBody Acesso acesso) {
-
+	
+	
+	
+	@ResponseBody /*Poder dar um retorno da API*/
+	@PostMapping(value = "**/deleteAcesso") /*Mapeando a url para receber JSON*/
+	public ResponseEntity<?> deleteAcesso(@RequestBody Acesso acesso) { /*Recebe o JSON e converte pra Objeto*/
+		
 		acessoRepository.deleteById(acesso.getId());
-		return new ResponseEntity("Acesso Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity("Acesso Removido",HttpStatus.OK);
 	}
-
-	// @Secured({ "ROLE_GERENTE", "ROLE_ADMIN" })
+	
+	
+	//@Secured({ "ROLE_GERENTE", "ROLE_ADMIN" })
 	@ResponseBody
 	@DeleteMapping(value = "**/deleteAcessoPorId/{id}")
-	public ResponseEntity<?> deleteAcessoPorId(@PathVariable("id") Long id) {
-
+	public ResponseEntity<?> deleteAcessoPorId(@PathVariable("id") Long id) { 
+		
 		acessoRepository.deleteById(id);
-		return new ResponseEntity("Acesso Removido", HttpStatus.OK);
-
+		
+		return new ResponseEntity("Acesso Removido",HttpStatus.OK);
 	}
-
+	
+	
+	
 	@ResponseBody
 	@GetMapping(value = "**/obterAcesso/{id}")
-	public ResponseEntity<Acesso> obterAcesso(@PathVariable("id") Long id) throws ExceptionMentoriaJava {
-
+	public ResponseEntity<Acesso> obterAcesso(@PathVariable("id") Long id) throws ExceptionMentoriaJava { 
+		
 		Acesso acesso = acessoRepository.findById(id).orElse(null);
-
+		
 		if (acesso == null) {
-			throw new ExceptionMentoriaJava("Não encontrou Acesso com codigo: " + id);
+			throw new ExceptionMentoriaJava("Não encontrou Acesso com código: " + id);
 		}
-
-		return new ResponseEntity<Acesso>(acesso, HttpStatus.OK);
-
+		
+		return new ResponseEntity<Acesso>(acesso,HttpStatus.OK);
 	}
-
+	
+	
+	
 	@ResponseBody
-	@GetMapping(value = "**/buscarPorDesc/{descricao}")
-	public ResponseEntity<List<Acesso>> buscarPorDesc(@PathVariable("descricao") String desc) {
-
+	@GetMapping(value = "**/buscarPorDesc/{desc}")
+	public ResponseEntity<List<Acesso>> buscarPorDesc(@PathVariable("desc") String desc) { 
+		
 		List<Acesso> acesso = acessoRepository.buscarAcessoDesc(desc.toUpperCase());
-
-		return new ResponseEntity<List<Acesso>>(acesso, HttpStatus.OK);
-
+		
+		return new ResponseEntity<List<Acesso>>(acesso,HttpStatus.OK);
 	}
+	
+	
+	
 
 }

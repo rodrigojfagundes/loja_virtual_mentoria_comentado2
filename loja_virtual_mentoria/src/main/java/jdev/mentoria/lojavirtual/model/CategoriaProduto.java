@@ -15,34 +15,30 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 
-//Classe/entidade para ter o nome das categorias dos produtos
 
+//Classe/entidade para ter o nome das categorias dos produtos
 @Entity
 @Table(name = "categoria_produto")
-@SequenceGenerator(name = "seq_categoria_produto", 
-sequenceName = "seq_categoria_produto", 
-allocationSize = 1, initialValue = 1)
-public class CategoriaProduto implements Serializable{
+@SequenceGenerator(name = "seq_categoria_produto", sequenceName = "seq_categoria_produto", allocationSize = 1, initialValue = 1)
+public class CategoriaProduto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_categoria_produto")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_categoria_produto")
 	private Long id;
-	
+
 	@Column(name = "nome_desc", nullable = false)
 	private String nomeDesc;
-
 	
+		
 	//MTAS CATEGORIAPRODUTO para 1 EMPRESA 
 	//(e EMPRESA e uma PESSOAJURIDICA)
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa = new PessoaJuridica();
-
+	
 
 	public PessoaJuridica getEmpresa() {
 		return empresa;
@@ -68,7 +64,6 @@ public class CategoriaProduto implements Serializable{
 		this.nomeDesc = nomeDesc;
 	}
 
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -92,9 +87,6 @@ public class CategoriaProduto implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	} 
-	
-	
-	
-	
+	}
+
 }

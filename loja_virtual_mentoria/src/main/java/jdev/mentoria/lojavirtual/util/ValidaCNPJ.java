@@ -4,13 +4,10 @@ import java.util.InputMismatchException;
 
 public class ValidaCNPJ {
 
-	
-	
 	public static boolean isCNPJ(String CNPJ) {
 		
 		//retirando os pontos, barras e hifens do CNPJ
-		CNPJ = CNPJ.replaceAll("\\.", "")
-				.replaceAll("\\/", "").replaceAll("\\-", "");
+		CNPJ = CNPJ.replaceAll("\\.", "").replaceAll("\\/", "").replaceAll("\\-", ""); 
 		
 		// considera-se erro CNPJ's formados por uma sequencia de numeros iguais
 		if (CNPJ.equals("00000000000000") || CNPJ.equals("11111111111111") || CNPJ.equals("22222222222222")

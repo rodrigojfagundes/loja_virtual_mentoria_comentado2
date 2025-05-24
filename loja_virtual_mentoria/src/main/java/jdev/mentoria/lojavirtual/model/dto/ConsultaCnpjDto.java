@@ -9,19 +9,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 //dto q vai receber o retorno da API ReceitaWS
 //e vamos usar a API do ReceitaWS para pesquisar um CNPJ
 //para pegar as informacoes como nome, rua, cidade, etc...
-public class ConsultaCnpjDto implements Serializable{
+public class ConsultaCnpjDto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private List<AtividadeDto> atividade_principal = new ArrayList<AtividadeDto>();
+
 	private String data_situacao;
 	private String tipo;
 	private String nome;
 	private String uf;
 	private String telefone;
 	private String email;
-	
+
 	private List<AtividadeDto> atividades_secundarias = new ArrayList<AtividadeDto>();
+
 	private List<QsaDTO> qsa = new ArrayList<QsaDTO>();
 
 	private String situacao;
@@ -38,15 +40,15 @@ public class ConsultaCnpjDto implements Serializable{
 	private String ultima_atualizacao;
 	private String status;
 	private String complemento;
-	private String eft;
+	private String efr;
 	private String motivo_situacao;
 	private String situacao_especial;
 	private String data_situacao_especial;
 	private String capital_social;
-	
+
 	@JsonIgnore
 	private ExtraDTO extra;
-	
+
 	private BillingDTO billing;
 
 	public List<AtividadeDto> getAtividade_principal() {
@@ -233,12 +235,12 @@ public class ConsultaCnpjDto implements Serializable{
 		this.complemento = complemento;
 	}
 
-	public String getEft() {
-		return eft;
+	public String getEfr() {
+		return efr;
 	}
 
-	public void setEft(String eft) {
-		this.eft = eft;
+	public void setEfr(String efr) {
+		this.efr = efr;
 	}
 
 	public String getMotivo_situacao() {
@@ -288,8 +290,5 @@ public class ConsultaCnpjDto implements Serializable{
 	public void setBilling(BillingDTO billing) {
 		this.billing = billing;
 	}
-	
-	
-	
-	
+
 }

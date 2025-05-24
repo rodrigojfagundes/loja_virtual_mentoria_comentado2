@@ -16,56 +16,49 @@ import javax.persistence.Table;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 @Entity
-@Table(name="avaliacao_produto")
-@SequenceGenerator(name = "seq_avaliacao_produto", 
-sequenceName = "seq_avaliacao_produto", allocationSize = 1, initialValue = 1)
+@Table(name = "avaliacao_produto")
+@SequenceGenerator(name = "seq_avaliacao_produto", sequenceName = "seq_avaliacao_produto", allocationSize = 1, initialValue = 1)
 public class AvaliacaoProduto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_avaliacao_produto")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_avaliacao_produto")
 	private Long id;
-	
+
 	@Min(value = 1, message = "A nota deve ser pelo menos 1")
-	@Max(value = 10, message = "A nota maxima e 10")
+	@Max(value = 10, message = "A nota deve ser pelo menos 10")
 	@Column(nullable = false)
 	private Integer nota;
 	
-	@NotEmpty(message = "Informe uma descricao para a avaliacao produto")
+	@NotEmpty(message = "Informe uma descricao para a avalição do produto")
 	@Column(nullable = false)
 	private String descricao;
-	
+
 	//qm pd avaliar o produto e qm comprou, entao uma pessoa
 	//
 	//MUITAS AVALIACAOPRODUTO para 1 PESSOAFISICA
 	@ManyToOne(targetEntity = PessoaFisica.class)
-	@JoinColumn(name = "pessoa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "pessoa_fk"))
+	@JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
 	private PessoaFisica pessoa;
-	
+
 	//e qm vai ter essa avaliacao e um produto...
 	//
 	//MUITOS AVALIACAOPRODUTO para 1 PRODUTO
 	@ManyToOne
-	@JoinColumn(name = "produto_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "produto_fk"))
+	@JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
 	private Produto produto;
 	
 	//MTAS AVALIACAOPRODUTO para 1 EMPRESA/PESSOAJURIDICA
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
-
+	
+	
+	
 	
 	public PessoaJuridica getEmpresa() {
 		return empresa;
@@ -82,6 +75,7 @@ public class AvaliacaoProduto implements Serializable {
 	public String getDescricao() {
 		return descricao;
 	}
+	
 
 	public Long getId() {
 		return id;
@@ -115,7 +109,6 @@ public class AvaliacaoProduto implements Serializable {
 		this.produto = produto;
 	}
 
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -140,9 +133,5 @@ public class AvaliacaoProduto implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
-	
-	
+
 }

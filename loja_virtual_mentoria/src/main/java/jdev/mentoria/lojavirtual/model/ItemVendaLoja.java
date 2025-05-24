@@ -15,46 +15,38 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="item_venda_loja")
-@SequenceGenerator(name = "seq_item_venda_loja", 
-sequenceName = "seq_item_venda_loja", allocationSize = 1, initialValue = 1)
-public class ItemVendaLoja implements Serializable{
+@Table(name = "item_venda_loja")
+@SequenceGenerator(name = "seq_item_venda_loja", sequenceName = "seq_item_venda_loja", allocationSize = 1, initialValue = 1)
+public class ItemVendaLoja implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_item_venda_loja")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_item_venda_loja")
 	private Long id;
-	
+
 	@Column(nullable = false)
 	private Double quantidade;
-	
+
 	//MUITOS ITEMVENDALOJA para 1 PRODUTO
 	@ManyToOne
-	@JoinColumn(name = "produto_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "produto_fk"))
+	@JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
 	private Produto produto;
-	
+
 	//MUITOS ITEMVENDALOJA para uma VENDACOMPRALOJAVIRTUAL
 	//ou seja podemos vender muitos itens por vez...
 	@ManyToOne
-	@JoinColumn(name = "venda_compraLoja_virtu_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "venda_compraLoja_virtu_fk"))
+	@JoinColumn(name = "venda_compraLoja_virtu_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compraLoja_virtu_fk"))
 	private VendaCompraLojaVirtual vendaCompraLojaVirtual;
-
 	
 	//MTAS ITEMVENDALOJA para 1 EMPRESA/PESSOAJURIDICA
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
+	
+	
 
-	
-	
 	public PessoaJuridica getEmpresa() {
 		return empresa;
 	}
@@ -95,8 +87,6 @@ public class ItemVendaLoja implements Serializable{
 		this.vendaCompraLojaVirtual = vendaCompraLojaVirtual;
 	}
 
-	
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -121,7 +111,5 @@ public class ItemVendaLoja implements Serializable{
 			return false;
 		return true;
 	}
-	
-	
-	
+
 }

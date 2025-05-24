@@ -7,16 +7,16 @@ public enum StatusContaPagar {
 	ABERTA("Aberta"),
 	QUITADA("Quitada"),
 	ALUGUEL("Aluguel"),
-	FUNCIONARIO("Funcionario"),
+	FUNCIONARIO("Funcionário"),
 	NEGOCIADA("Renegociada");
+	
 	
 	private String descricao;
 	
 	private StatusContaPagar(String descricao) {
 		this.descricao = descricao;
-		
 	}
-
+	
 	public String getDescricao() {
 		return descricao;
 	}
@@ -25,6 +25,5 @@ public enum StatusContaPagar {
 	public String toString() {
 		return this.descricao;
 	}
-	
-	
+
 }

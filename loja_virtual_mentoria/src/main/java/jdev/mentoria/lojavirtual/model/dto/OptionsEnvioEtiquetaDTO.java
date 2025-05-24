@@ -4,18 +4,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
 //class/entity OPTIONSENVIOETIQUETADTO... q tera algumas opcoes
 //informacoes extrar para a API do MELHORENVIO calcular o preco
 //do transporte... Essa classe sera chamada na ENVIOETIQUETADTO
 //e de la sera enviada como JSON para API do MELHORENVIO calcular
 //o frete
-public class OptionsEnvioEtiquetaDTO implements Serializable{
+public class OptionsEnvioEtiquetaDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	
+
 	private String insurance_value;
+
 	private boolean receipt;
 	private boolean own_hand;
 	private boolean reverse;
@@ -24,12 +23,12 @@ public class OptionsEnvioEtiquetaDTO implements Serializable{
 	//instanciando um INVOICEENVIODTO de nome INVOICE
 	//q basicamente tem um key
 	private InvoiceEnvioDTO invoice = new InvoiceEnvioDTO();
-	
+
 	//instanciando uma plataform
 	private String platform;
-	
+
 	//instanciando uma tag
-	List<TagsEnvioDto> tags = new ArrayList<TagsEnvioDto>();
+	private List<TagsEnvioDto> tags = new ArrayList<TagsEnvioDto>();
 
 	public String getInsurance_value() {
 		return insurance_value;
@@ -94,7 +93,5 @@ public class OptionsEnvioEtiquetaDTO implements Serializable{
 	public void setTags(List<TagsEnvioDto> tags) {
 		this.tags = tags;
 	}
-	
-	
-	
+
 }

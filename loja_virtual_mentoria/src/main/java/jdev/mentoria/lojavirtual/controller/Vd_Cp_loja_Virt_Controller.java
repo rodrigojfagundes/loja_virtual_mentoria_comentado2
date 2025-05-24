@@ -1,19 +1,15 @@
 package jdev.mentoria.lojavirtual.controller;
 
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,6 +40,7 @@ import jdev.mentoria.lojavirtual.model.dto.ConsultaFreteDTO;
 import jdev.mentoria.lojavirtual.model.dto.EmpresaTransporteDTO;
 import jdev.mentoria.lojavirtual.model.dto.EnvioEtiquetaDTO;
 import jdev.mentoria.lojavirtual.model.dto.ItemVendaDTO;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoPostCarneJuno;
 import jdev.mentoria.lojavirtual.model.dto.ProductsEnvioEtiquetaDTO;
 import jdev.mentoria.lojavirtual.model.dto.TagsEnvioDto;
 import jdev.mentoria.lojavirtual.model.dto.VendaCompraLojaVirtualDTO;
@@ -54,6 +50,7 @@ import jdev.mentoria.lojavirtual.repository.EnderecoRepository;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
 import jdev.mentoria.lojavirtual.repository.StatusRastreioRepository;
 import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
+import jdev.mentoria.lojavirtual.service.ServiceJunoBoleto;
 import jdev.mentoria.lojavirtual.service.ServiceSendEmail;
 import jdev.mentoria.lojavirtual.service.VendaService;
 import okhttp3.MediaType;
@@ -61,19 +58,18 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-
 @RestController
 public class Vd_Cp_loja_Virt_Controller {
-	
+
 	@Autowired
 	private Vd_Cp_Loja_virt_repository vd_Cp_Loja_virt_repository;
-	
+
 	@Autowired
 	private EnderecoRepository enderecoRepository;
-	
+
 	@Autowired
 	private PessoaController pessoaController;
-	
+
 	@Autowired
 	private NotaFiscalVendaRepository notaFiscalVendaRepository;
 	
@@ -81,7 +77,7 @@ public class Vd_Cp_loja_Virt_Controller {
 	private StatusRastreioRepository statusRastreioRepository;
 	
 	@Autowired
-	private VendaService vendaService;
+	private VendaService vendaService; 
 	
 	@Autowired
 	private ContaReceberRepository contaReceberRepository;
@@ -92,11 +88,15 @@ public class Vd_Cp_loja_Virt_Controller {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 	
-	
+	@Autowired
+	private ServiceJunoBoleto serviceJunoBoleto;
+
+
 	@ResponseBody
 	@PostMapping(value = "**/salvarVendaLoja")
-	public ResponseEntity<VendaCompraLojaVirtualDTO> salvarVendaLoja(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) throws ExceptionMentoriaJava, UnsupportedEncodingException, MessagingException {
-		
+	public ResponseEntity<VendaCompraLojaVirtualDTO> salvarVendaLoja(
+			@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) throws ExceptionMentoriaJava, UnsupportedEncodingException, MessagingException {
+
 		//como o valor nao vem montado pelo JSON... Nos precisamos
 		//acessar os OBJ/atributos e instanciar eles
 		//tipo no JSON vem a EMPRESA mas ela nao ta instanciado na 
@@ -105,78 +105,62 @@ public class Vd_Cp_loja_Virt_Controller {
 		vendaCompraLojaVirtual.getPessoa().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
 		PessoaFisica pessoaFisica = pessoaController.salvarPf(vendaCompraLojaVirtual.getPessoa()).getBody();
 		vendaCompraLojaVirtual.setPessoa(pessoaFisica);
-		
+
 		vendaCompraLojaVirtual.getEnderecoCobranca().setPessoa(pessoaFisica);
 		vendaCompraLojaVirtual.getEnderecoCobranca().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
 		Endereco enderecoCobranca = enderecoRepository.save(vendaCompraLojaVirtual.getEnderecoCobranca());
 		vendaCompraLojaVirtual.setEnderecoCobranca(enderecoCobranca);
-		
+
 		vendaCompraLojaVirtual.getEnderecoEntrega().setPessoa(pessoaFisica);
 		vendaCompraLojaVirtual.getEnderecoEntrega().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
 		Endereco enderecoEntrega = enderecoRepository.save(vendaCompraLojaVirtual.getEnderecoEntrega());
 		vendaCompraLojaVirtual.setEnderecoEntrega(enderecoEntrega);
-		
+
 		vendaCompraLojaVirtual.getNotaFiscalVenda().setEmpresa(vendaCompraLojaVirtual.getEmpresa());
-		
-		
+
 		//fazendo associacao de objeto
 		//
 		//meio q estamos pegando PRODUTO por PRODUTO da VENDACOMPRALOJAVIRTUAL
 		//e esses PRODUTOS estao dentro do ITEMVENDALOJAS
-		for(int i = 0; i < vendaCompraLojaVirtual.getItemVendaLojas().size(); i++) {
-			vendaCompraLojaVirtual.getItemVendaLojas()
-			.get(i).setEmpresa(vendaCompraLojaVirtual.getEmpresa());
-			
-			vendaCompraLojaVirtual.getItemVendaLojas()
-			.get(i).setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+		for (int i = 0; i < vendaCompraLojaVirtual.getItemVendaLojas().size(); i++) {
+			vendaCompraLojaVirtual.getItemVendaLojas().get(i).setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+			vendaCompraLojaVirtual.getItemVendaLojas().get(i).setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
 		}
-		
-		
-		/*Salva primeiro a venda e todo os dados*/
+
+		/* Salva primeiro a venda e todo os dados */
 		vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.saveAndFlush(vendaCompraLojaVirtual);
 		
-		
-		/*Associa a venda gravada no banco com a nota fiscal*/
+		/* Associa a venda gravada no banco com a nota fiscal */
 		vendaCompraLojaVirtual.getNotaFiscalVenda().setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
-		
-		/*Persiste novamente as nota fiscal novamente pra ficar amarrada na venda*/
-		notaFiscalVendaRepository.saveAndFlush(vendaCompraLojaVirtual.getNotaFiscalVenda());
-		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		compraLojaVirtualDTO.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
-		
-		compraLojaVirtualDTO.setPessoa(vendaCompraLojaVirtual.getPessoa());
-		
-		compraLojaVirtualDTO.setEntrega(
-				vendaCompraLojaVirtual.getEnderecoEntrega());
-		
-		compraLojaVirtualDTO.setCobranca(
-				vendaCompraLojaVirtual.getEnderecoCobranca());
-		
-		
-		compraLojaVirtualDTO.setValorDesc(
-				vendaCompraLojaVirtual.getValorDesconto());
-		
-		compraLojaVirtualDTO.setValorFrete(
-				vendaCompraLojaVirtual.getValorFret());
 
-		compraLojaVirtualDTO.setId(vendaCompraLojaVirtual.getId());
-		
-		for (ItemVendaLoja item: vendaCompraLojaVirtual
-				.getItemVendaLojas()) {
-						
+		/* Persiste novamente as nota fiscal novamente pra ficar amarrada na venda */
+		notaFiscalVendaRepository.saveAndFlush(vendaCompraLojaVirtual.getNotaFiscalVenda());
+
+		//AQUI O NOME DO OBJ/VAR q o prof deixou era COMPRALOJAVIRTUALDTO
+		//mas acho mais acho mais adaquedado VENDACOMPRALOJAVIRTUALDTO
+		VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+		vendaCompraLojaVirtualDTO.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
+		vendaCompraLojaVirtualDTO.setPessoa(vendaCompraLojaVirtual.getPessoa());
+
+		vendaCompraLojaVirtualDTO.setEntrega(vendaCompraLojaVirtual.getEnderecoEntrega());
+		vendaCompraLojaVirtualDTO.setCobranca(vendaCompraLojaVirtual.getEnderecoCobranca());
+
+		vendaCompraLojaVirtualDTO.setValorDesc(vendaCompraLojaVirtual.getValorDesconto());
+		vendaCompraLojaVirtualDTO.setValorFrete(vendaCompraLojaVirtual.getValorFret());
+		vendaCompraLojaVirtualDTO.setId(vendaCompraLojaVirtual.getId());
+
+		for (ItemVendaLoja item : vendaCompraLojaVirtual.getItemVendaLojas()) {
+
 			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			
 			itemVendaDTO.setQuantidade(item.getQuantidade());
 			itemVendaDTO.setProduto(item.getProduto());
-			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-			
+
+			vendaCompraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
 		}
 		
+		
 		ContaReceber contaReceber = new ContaReceber();
-		contaReceber.setDescricao("Venda da loja virtual n: " + vendaCompraLojaVirtual.getId());
+		contaReceber.setDescricao("Venda da loja virtual nº: " + vendaCompraLojaVirtual.getId());
 		contaReceber.setDtPagamento(Calendar.getInstance().getTime());
 		contaReceber.setDtVencimento(Calendar.getInstance().getTime());
 		contaReceber.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
@@ -189,101 +173,61 @@ public class Vd_Cp_loja_Virt_Controller {
 		
 		//e-mail para comprador
 		StringBuilder msgemail = new StringBuilder();
-		msgemail.append("Ola, ").append(pessoaFisica.getNome()).append("</br>");
-		msgemail.append("Voce realizou de n: ").append(vendaCompraLojaVirtual.getId()).append("</br>");
-		msgemail.append("Na loja").append(vendaCompraLojaVirtual.getEmpresa().getNomeFantasia());
-		
-		//assunto, msg, destino
+		msgemail.append("Olá, ").append(pessoaFisica.getNome()).append("</br>");
+		msgemail.append("Você realizou a compra de nº: ").append(vendaCompraLojaVirtual.getId()).append("</br>");
+		msgemail.append("Na loja ").append(vendaCompraLojaVirtual.getEmpresa().getNomeFantasia());
+		/*assunto, msg, destino*/
 		serviceSendEmail.enviarEmailHtml("Compra Realizada", msgemail.toString(), pessoaFisica.getEmail());
 		
-		//email para vendedor
+		/*Email para o vendedor*/
 		msgemail = new StringBuilder();
-		msgemail.append("Voce realizou uma venda,  nº ").append(vendaCompraLojaVirtual.getId());
+		msgemail.append("Você realizou uma venda, nº " ).append(vendaCompraLojaVirtual.getId());
 		serviceSendEmail.enviarEmailHtml("Venda Realizada", msgemail.toString(), vendaCompraLojaVirtual.getEmpresa().getEmail());
 
-		
-		return new ResponseEntity<VendaCompraLojaVirtualDTO>(compraLojaVirtualDTO, HttpStatus.OK);
-	
+		return new ResponseEntity<VendaCompraLojaVirtualDTO>(vendaCompraLojaVirtualDTO, HttpStatus.OK);
 	}
-	
-	
+
 	@ResponseBody
 	@GetMapping(value = "**/consultaVendaId/{id}")
-	public ResponseEntity<VendaCompraLojaVirtualDTO> consultaVendaId(@PathVariable("id") Long idVenda){
-		
-		
+	public ResponseEntity<VendaCompraLojaVirtualDTO> consultaVendaId(@PathVariable("id") Long idVenda) {
+
 		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
 		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
 		//com o nome de VENDACOMPRALOJAVIRTUAL
-		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-				.findByIdExclusao(idVenda);
+		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.findByIdExclusao(idVenda);
 		
 		if (vendaCompraLojaVirtual == null) {
 			vendaCompraLojaVirtual = new VendaCompraLojaVirtual();
 		}
-		
 
 		//convertendo para DTO
 		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		compraLojaVirtualDTO.setValorTotal(vendaCompraLojaVirtual.getValorTotal());
-		
-		compraLojaVirtualDTO.setPessoa(vendaCompraLojaVirtual.getPessoa());
-		
-		compraLojaVirtualDTO.setEntrega(
-				vendaCompraLojaVirtual.getEnderecoEntrega());
-		
-		compraLojaVirtualDTO.setCobranca(
-				vendaCompraLojaVirtual.getEnderecoCobranca());
-		
-		
-		compraLojaVirtualDTO.setValorDesc(
-				vendaCompraLojaVirtual.getValorDesconto());
-		
-		compraLojaVirtualDTO.setValorFrete(
-				vendaCompraLojaVirtual.getValorFret());
-		
-		compraLojaVirtualDTO.setId(vendaCompraLojaVirtual.getId());
-		
-		
-		for (ItemVendaLoja item: vendaCompraLojaVirtual
-				.getItemVendaLojas()) {
-						
-			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			
-			itemVendaDTO.setQuantidade(item.getQuantidade());
-			itemVendaDTO.setProduto(item.getProduto());
-			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-			
-		}
+		//AQUI O NOME DO OBJ/VAR o prof deixou como COMPRALOJAVIRTUALDTO
+		//mas eu acho mas adequado VENDACOMPRALOJAVIRTUALDTO
+		VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = vendaService.consultaVenda(vendaCompraLojaVirtual);
 
-		
-		return new ResponseEntity<VendaCompraLojaVirtualDTO>
-		(compraLojaVirtualDTO, HttpStatus.OK);
-		
+		return new ResponseEntity<VendaCompraLojaVirtualDTO>(vendaCompraLojaVirtualDTO, HttpStatus.OK);
 	}
 	
 	@ResponseBody
 	@DeleteMapping(value = "**/deleteVendaTotalBanco/{idVenda}")
-	public ResponseEntity<String> deleteVendaTotalBanco(@PathVariable(value = "idVenda") Long idVenda){
+	public ResponseEntity<String> deleteVendaTotalBanco(@PathVariable(value = "idVenda") Long idVenda) {
 		
 		vendaService.exclusaoTotalVendaBanco(idVenda);
 		
-		return new ResponseEntity<String>("Venda excluida com sucesso", HttpStatus.OK);
+		return new ResponseEntity<String>("Venda excluida com sucesso.",HttpStatus.OK);
 		
 	}
-	
+		
 	//para exclusao logica... Ou seja nao e deletado e sim
 	//sera oculto na hora de fazer o get
 	@ResponseBody
 	@DeleteMapping(value = "**/deleteVendaTotalBanco2/{idVenda}")
-	public ResponseEntity<String> deleteVendaTotalBanco2(@PathVariable(value = "idVenda") Long idVenda){
+	public ResponseEntity<String> deleteVendaTotalBanco2(@PathVariable(value = "idVenda") Long idVenda) {
 		
 		vendaService.exclusaoTotalVendaBanco2(idVenda);
 		
-		return new ResponseEntity<String>("Venda excluida logicamente com sucesso", HttpStatus.OK);
+		return new ResponseEntity<String>("Venda excluida logicamente com sucesso!.",HttpStatus.OK);
 		
 	}
 	
@@ -291,169 +235,80 @@ public class Vd_Cp_loja_Virt_Controller {
 	//para ativar um uma compravenda apos ela ter sido deletada logicamente
 	@ResponseBody
 	@PutMapping(value = "**/ativaRegistroVendaBanco/{idVenda}")
-	public ResponseEntity<String> ativaRegistroVendaBanco(@PathVariable(value = "idVenda") Long idVenda){
+	public ResponseEntity<String> ativaRegistroVendaBanco(@PathVariable(value = "idVenda") Long idVenda) {
 		
 		vendaService.ativaRegistroVendaBanco(idVenda);
 		
-		return new ResponseEntity<String>("VendaCompraLojaVirtual ativada logicamente com sucesso", HttpStatus.OK);
+		return new ResponseEntity<String>("Venda ativada com sucesso!.",HttpStatus.OK);
 		
 	}
 	
-	
-	//meio q nos passamos o ID de um CLIENTE e vamos ver
-	//quais foram as VENDASCOMPRALOJAVIRTUAL (vendacompra) q
-	//foram para esse CLIENTE
-	@ResponseBody
-	@GetMapping(value = "**/vendaPorCliente/{idCliente}")
-	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> vendaPorCliente(@PathVariable("idCliente") Long idCliente){
-				
-		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
-		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
-		//com o nome de VENDACOMPRALOJAVIRTUAL
-		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-				.vendaPorCliente(idCliente);
-		
-		if (vendaCompraLojaVirtual == null) {
-			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
-		}		
-		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
-		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
-		//e NAO COMPRALOJAVIRTUALDTOLIST
-		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
-		
-		//VCL significa VENDACOMPRALOJA
-		for(VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
-		//convertendo para DTO		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		
-		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
-		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
-		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
-		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
-		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
-		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
-		compraLojaVirtualDTO.setId(vcl.getId());
-				
-		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
-			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			itemVendaDTO.setQuantidade(item.getQuantidade());
-			itemVendaDTO.setProduto(item.getProduto());
-			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-		}		
-		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
-		}		
-		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
-	}
-	
-	
-	
-	
-	
-	//meio q nos passamos o ID de um produto e vamos ver
-	//quais foram as VENDASCOMPRALOJAVIRTUAL (vendacompra) q esses
-	//produto foram vendidos...
-	@ResponseBody
-	@GetMapping(value = "**/consultaVendaPorProdutoId/{id}")
-	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> consultaVendaPorProdutoId(@PathVariable("id") Long idProd){
-				
-		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
-		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
-		//com o nome de VENDACOMPRALOJAVIRTUAL
-		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-				.vendaPorProduto(idProd);
-		
-		if (vendaCompraLojaVirtual == null) {
-			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
-		}		
-		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
-		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
-		//e NAO COMPRALOJAVIRTUALDTOLIST
-		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
-		
-		//VCL significa VENDACOMPRALOJA
-		for(VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
-		//convertendo para DTO		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		
-		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
-		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
-		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
-		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
-		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
-		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
-		compraLojaVirtualDTO.setId(vcl.getId());
-				
-		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
-			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			itemVendaDTO.setQuantidade(item.getQuantidade());
-			itemVendaDTO.setProduto(item.getProduto());
-			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-		}		
-		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
-		}		
-		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
-	}
 	
 	//metodo para pesquisar VENDACOMPRALOJAVIRTUAL entre 2 datas...
 	@ResponseBody
 	@GetMapping(value = "**/consultaVendaDinamicaFaixaData/{data1}/{data2}")
-	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> consultaVendaDinamicaFaixaData(
-			@PathVariable("data1")String data1, @PathVariable("data2") String data2) throws ParseException{
+	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> 
+	                            consultaVendaDinamicaFaixaData(
+	                            		@PathVariable("data1") String data1,
+	                            		@PathVariable("data2") String data2) throws ParseException{
 		
-		
-		//o NOME CORRETO DO OBJ/ATRIBUTO SERIA vendaCompraLojaVirtual...
-		//mas o PROF colocou compralojavirtual...
+		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
+		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
+		//com o nome de VENDACOMPRALOJAVIRTUAL
 		List<VendaCompraLojaVirtual> compraLojaVirtual = null;
-				
+		
 		//passando as datas q recebemos la em cima para o VENDASERVICE
-		compraLojaVirtual = vendaService
-				.consultaVendaFaixaData(data1, data2);
-
+		compraLojaVirtual = vendaService.consultaVendaFaixaData(data1, data2);
 		
 		//se o retorno for uma lista null, dai vamos apenas instanciar
 		//ela para nao dar nullpointerexception
 		//
-		if(compraLojaVirtual == null) {
+		if (compraLojaVirtual == null) {
 			compraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
 		}
 		
+		
 		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
-		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
-		//e NAO COMPRALOJAVIRTUALDTOLIST
-		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		//o nome do obj/atributo o prof deixou o nome 
+		//COMPRALOJAVIRTUALDTOLIST achei mais adequado
+		//VENDACOMPRALOJAVIRTUALDTOLIST
+		//
+         List<VendaCompraLojaVirtualDTO> vendaCompraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
 		
 		//VCL significa VENDACOMPRALOJA
-		for(VendaCompraLojaVirtual vcl : compraLojaVirtual) {
-		//convertendo para DTO		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		
-		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
-		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
-		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
-		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
-		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
-		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
-		compraLojaVirtualDTO.setId(vcl.getId());
-				
-		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
-			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			itemVendaDTO.setQuantidade(item.getQuantidade());
-			itemVendaDTO.setProduto(item.getProduto());
+		for (VendaCompraLojaVirtual vcl : compraLojaVirtual) {
 			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-		}		
-		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
+			//convertendo para DTO		
+			//AQUI O NOME DO OBJ/VAR o prof deixou como COMPRALOJAVIRTUALDTO
+			//mas eu acho mais adequado VENDACOMPRALOJAVIRTUALDTO
+			VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+	
+			vendaCompraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());
+			vendaCompraLojaVirtualDTO.setPessoa(vcl.getPessoa());
+	
+			vendaCompraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());
+			vendaCompraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());
+	
+			vendaCompraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());
+			vendaCompraLojaVirtualDTO.setValorFrete(vcl.getValorFret());
+			vendaCompraLojaVirtualDTO.setId(vcl.getId());
+
+			for (ItemVendaLoja item : vcl.getItemVendaLojas()) {
+	
+				ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+				itemVendaDTO.setQuantidade(item.getQuantidade());
+				itemVendaDTO.setProduto(item.getProduto());
+	
+				vendaCompraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			}
+			
+			vendaCompraLojaVirtualDTOList.add(vendaCompraLojaVirtualDTO);
+		
 		}
+
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(vendaCompraLojaVirtualDTOList, HttpStatus.OK);
 		
-		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
 	}
-		
-	//}
 	
 	
 	//metodo de BUSCA POR CONSULTADINAMICA... Ou seja passando 2 parametros
@@ -471,9 +326,9 @@ public class Vd_Cp_loja_Virt_Controller {
 	@ResponseBody
 	@GetMapping(value = "**/consultaVendaDinamica/{valor}/{tipoconsulta}")
 	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> 
-		consultaVendaDinamica(@PathVariable("valor") String valor,
-				@PathVariable("tipoconsulta") String tipoconsulta){
-				
+						consultaVendaDinamica(@PathVariable("valor") String valor,
+								              @PathVariable("tipoconsulta") String tipoconsulta) {
+
 		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
 		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
 		//com o nome de VENDACOMPRALOJAVIRTUAL
@@ -481,68 +336,179 @@ public class Vd_Cp_loja_Virt_Controller {
 		//OBS o PROF DEIXOU O NOME DE COMPRALOJAVIRTUAL (nome do obj/var)
 		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = null;
 		
-		
 		//verificando SE o tipo da consulta é por IDPRODUTO
-		if(tipoconsulta.equalsIgnoreCase("POR_ID_PROD")) {
-		vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-		.vendaPorProduto(Long.parseLong(valor));
-		} 
-		
+		if (tipoconsulta.equalsIgnoreCase("POR_ID_PROD")) {
+			
+			vendaCompraLojaVirtual =   vd_Cp_Loja_virt_repository.vendaPorProduto(Long.parseLong(valor));
+			
 		//verificando se a consulta e pelo NOMEPRODUTO
-		else if(tipoconsulta.equalsIgnoreCase("POR_NOME_PROD")) {
-			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-					.vendaPorNomeProduto(valor.toUpperCase().trim());
+		}else if (tipoconsulta.equalsIgnoreCase("POR_NOME_PROD")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorNomeProduto(valor.toUpperCase().trim());
 		}
-		
-		else if(tipoconsulta.equalsIgnoreCase("POR_NOME_CLIENTE")) {
-			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-					.vendaPorNomeCliente(valor.toUpperCase().trim());
+		else if (tipoconsulta.equalsIgnoreCase("POR_NOME_CLIENTE")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorNomeCliente(valor.toUpperCase().trim());
 		}
-		
-		else if(tipoconsulta.equalsIgnoreCase("POR_ENDERECO_COBRANCA")) {
-			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-					.vendaPorEnderecoCobranca(valor.toUpperCase().trim());
+		else if (tipoconsulta.equalsIgnoreCase("POR_ENDERECO_COBRANCA")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorEndereCobranca(valor.toUpperCase().trim());
 		}
-		
-		else if(tipoconsulta.equalsIgnoreCase("POR_ENDERECO_ENTREGA")) {
-			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository
-					.vendaPorEnderecoEntrega(valor.toUpperCase().trim());
+		else if (tipoconsulta.equalsIgnoreCase("POR_ENDERECO_ENTREGA")) {
+			vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorEnderecoEntrega(valor.toUpperCase().trim());
 		}
-				
 		
 		if (vendaCompraLojaVirtual == null) {
 			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
-		}		
+		}
 		
 		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
-		//o nome do obj/atributo poderia ser VENDACOMPRALOJAVIRTUALDTO
-		//e NAO COMPRALOJAVIRTUALDTOLIST
-		List<VendaCompraLojaVirtualDTO> compraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		//o nome do obj/atributo o prof deixou o nome 
+		//COMPRALOJAVIRTUALDTOLIST mas eu achei mais adequado
+		//VENDACOMPRALOJAVIRTUALDTOLIST
+		List<VendaCompraLojaVirtualDTO> vendaCompraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
 		
 		//VCL significa VENDACOMPRALOJA
-		for(VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
-		//convertendo para DTO		
-		//AQUI O NOME DO OBJ/VAR poderia ser vendaCompraLojaVirtualDTO
-		VendaCompraLojaVirtualDTO compraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
-		
-		compraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());		
-		compraLojaVirtualDTO.setPessoa(vcl.getPessoa());	
-		compraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());		
-		compraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());				
-		compraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());		
-		compraLojaVirtualDTO.setValorFrete(vcl.getValorFret());		
-		compraLojaVirtualDTO.setId(vcl.getId());
-				
-		for (ItemVendaLoja item: vcl.getItemVendaLojas()) {						
-			ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
-			itemVendaDTO.setQuantidade(item.getQuantidade());
-			itemVendaDTO.setProduto(item.getProduto());
+		for (VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
 			
-			compraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
-		}		
-		compraLojaVirtualDTOList.add(compraLojaVirtualDTO);
-		}		
-		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(compraLojaVirtualDTOList, HttpStatus.OK);
+		//convertendo para DTO		
+		//AQUI O NOME DO OBJ/VAR o prof deixou como COMPRALOJAVIRTUALDTO
+			//mas eu achei maisadequado VENDACOMPRALOJAVIRTUALDTO
+			VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+	
+			vendaCompraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());
+			vendaCompraLojaVirtualDTO.setPessoa(vcl.getPessoa());
+	
+			vendaCompraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());
+			vendaCompraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());
+	
+			vendaCompraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());
+			vendaCompraLojaVirtualDTO.setValorFrete(vcl.getValorFret());
+			vendaCompraLojaVirtualDTO.setId(vcl.getId());
+
+			for (ItemVendaLoja item : vcl.getItemVendaLojas()) {
+	
+				ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+				itemVendaDTO.setQuantidade(item.getQuantidade());
+				itemVendaDTO.setProduto(item.getProduto());
+	
+				vendaCompraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			}
+			
+			vendaCompraLojaVirtualDTOList.add(vendaCompraLojaVirtualDTO);
+		
+		}
+
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(vendaCompraLojaVirtualDTOList, HttpStatus.OK);
+	}
+	
+	//meio q nos passamos o ID de um CLIENTE e vamos ver
+	//quais foram as VENDASCOMPRALOJAVIRTUAL (vendacompra) q
+	//foram para esse CLIENTE
+	@ResponseBody
+	@GetMapping(value = "**/vendaPorCliente/{idCliente}")
+	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> vendaPorCliente(@PathVariable("idCliente") Long idCliente) {
+
+		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
+		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
+		//com o nome de VENDACOMPRALOJAVIRTUAL
+		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorCliente(idCliente);
+		
+		if (vendaCompraLojaVirtual == null) {
+			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
+		}
+	
+		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
+		//o nome do obj/atributo o prof deixou como COMPRALOJAVIRTUALDTOLIST
+		//mas eu achei mais adequado VENDACOMPRALOJAVIRTUALDTOLIST
+		List<VendaCompraLojaVirtualDTO> vendaCompraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		
+		//VCL significa VENDACOMPRALOJA
+		for (VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
+			
+			//convertendo para DTO		
+			//AQUI O NOME DO OBJ/VAR o prof deixou com o nome de 
+			//COMPRALOJAVIRTUALDTO, mas eu achei mais adequado
+			//VENDACOMPRALOJAVIRTUALDTO
+			VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+	
+			vendaCompraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());
+			vendaCompraLojaVirtualDTO.setPessoa(vcl.getPessoa());
+	
+			vendaCompraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());
+			vendaCompraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());
+	
+			vendaCompraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());
+			vendaCompraLojaVirtualDTO.setValorFrete(vcl.getValorFret());
+			vendaCompraLojaVirtualDTO.setId(vcl.getId());
+
+			for (ItemVendaLoja item : vcl.getItemVendaLojas()) {
+	
+				ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+				itemVendaDTO.setQuantidade(item.getQuantidade());
+				itemVendaDTO.setProduto(item.getProduto());
+	
+				vendaCompraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			}
+			
+			vendaCompraLojaVirtualDTOList.add(vendaCompraLojaVirtualDTO);
+		
+		}
+
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(vendaCompraLojaVirtualDTOList, HttpStatus.OK);
+	}
+	
+	
+	
+	//meio q nos passamos o ID de um produto e vamos ver
+	//quais foram as VENDASCOMPRALOJAVIRTUAL (vendacompra) q esses
+	//produto foram vendidos...
+	@ResponseBody
+	@GetMapping(value = "**/consultaVendaPorProdutoId/{id}")
+	public ResponseEntity<List<VendaCompraLojaVirtualDTO>> consultaVendaPorProduto(@PathVariable("id") Long idProd) {
+
+		//OBS: O NOME DO OBJ/VAR O PROF DEIXOU COMO COMPRALOJAVIRTUAL...
+		//MAS COMO E UMA VENDACOMPRALOJAVIRTUAL eu resolvi DEIXAR o OBJ/VAR
+		//com o nome de VENDACOMPRALOJAVIRTUAL
+		List<VendaCompraLojaVirtual> vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.vendaPorProduto(idProd);
+		
+		if (vendaCompraLojaVirtual == null) {
+			vendaCompraLojaVirtual = new ArrayList<VendaCompraLojaVirtual>();
+		}
+		
+		//criando uma LISTA de VENDACOMPRALOJAVIRTUALDTO
+		//o nome do obj/atributo o prof deixou como COMPRALOJAVIRTUALDTOLIST
+		//mas eu achei VENDACOMPRALOJAVIRTUALDTOLIST mais adequado
+		List<VendaCompraLojaVirtualDTO> vendaCompraLojaVirtualDTOList = new ArrayList<VendaCompraLojaVirtualDTO>();
+		
+		//VCL significa VENDACOMPRALOJA
+		for (VendaCompraLojaVirtual vcl : vendaCompraLojaVirtual) {
+			//convertendo para DTO
+			//AQUI O NOME DO OBJ/VAR o prof deixou como COMPRALOJAVIRTUALDTO
+			//mas eu achei mais adequado VENDACOMPRALOJAVIRTUALDTO
+			VendaCompraLojaVirtualDTO vendaCompraLojaVirtualDTO = new VendaCompraLojaVirtualDTO();
+	
+			vendaCompraLojaVirtualDTO.setValorTotal(vcl.getValorTotal());
+			vendaCompraLojaVirtualDTO.setPessoa(vcl.getPessoa());
+	
+			vendaCompraLojaVirtualDTO.setEntrega(vcl.getEnderecoEntrega());
+			vendaCompraLojaVirtualDTO.setCobranca(vcl.getEnderecoCobranca());
+	
+			vendaCompraLojaVirtualDTO.setValorDesc(vcl.getValorDesconto());
+			vendaCompraLojaVirtualDTO.setValorFrete(vcl.getValorFret());
+			vendaCompraLojaVirtualDTO.setId(vcl.getId());
+
+			for (ItemVendaLoja item : vcl.getItemVendaLojas()) {
+	
+				ItemVendaDTO itemVendaDTO = new ItemVendaDTO();
+				itemVendaDTO.setQuantidade(item.getQuantidade());
+				itemVendaDTO.setProduto(item.getProduto());
+	
+				vendaCompraLojaVirtualDTO.getItemVendaLoja().add(itemVendaDTO);
+			}
+			
+			vendaCompraLojaVirtualDTOList.add(vendaCompraLojaVirtualDTO);
+		
+		}
+
+		return new ResponseEntity<List<VendaCompraLojaVirtualDTO>>(vendaCompraLojaVirtualDTOList, HttpStatus.OK);
 	}
 	
 	
@@ -550,7 +516,7 @@ public class Vd_Cp_loja_Virt_Controller {
 	//etiqueta e um papel q nos vamos colar nas caixas
 	//q vao ser buscadas pela transportadora...
 	@ResponseBody
-	@GetMapping(value = "**/cancelaEtiqueta/{idEtiqueta}/{reason_id}/{descricao}")
+	@GetMapping(value = "**/cancelaEtiqueta/{idEtiqueta}/{descricao}")
 	public ResponseEntity<String> cancelaEtiqueta(@PathVariable String idEtiqueta, @PathVariable String reason_id, @PathVariable String descricao) throws IOException{
 	
 		OkHttpClient client = new OkHttpClient().newBuilder() .build();
@@ -562,7 +528,7 @@ public class Vd_Cp_loja_Virt_Controller {
 				  .addHeader("Accept", "application/json")
 				  .addHeader("Content-Type", "application/json")
 				  .addHeader("Authorization", "Bearer "+ ApiTokenIntegracao.TOKEN_MELHOR_ENVIO_SAND_BOX)
-				  .addHeader("User-Agent", "rodrigojosefagundes@gmail.com")
+				  .addHeader("User-Agent", "suporte@jdevtreinamento.com.br")
 				  .build();
 		
 		okhttp3.Response response = client.newCall(request).execute();
@@ -570,8 +536,6 @@ public class Vd_Cp_loja_Virt_Controller {
 		//a resposta da API DO MELHORENVIO
 		return new ResponseEntity<String>(response.body().string(), HttpStatus.OK);
 	}
-	
-	
 	
 	//metodo/endpoint q recebe um codigo de venda
 	@ResponseBody
@@ -614,7 +578,7 @@ public class Vd_Cp_loja_Virt_Controller {
 		envioEtiquetaDTO.getFrom().setCompany_document(compraLojaVirtual.getEmpresa().getCnpj());
 		envioEtiquetaDTO.getFrom().setState_register(compraLojaVirtual.getEmpresa().getInscEstadual());
 		envioEtiquetaDTO.getFrom().setAddress(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getRuaLogra());
-		//envioEtiquetaDTO.getFrom().setComplement(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getComplemento());
+		envioEtiquetaDTO.getFrom().setComplement(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getComplemento());
 		envioEtiquetaDTO.getFrom().setComplement("Empresa");
 		envioEtiquetaDTO.getFrom().setNumber(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getNumero());
 		envioEtiquetaDTO.getFrom().setDistrict(compraLojaVirtual.getEmpresa().getEnderecos().get(0).getEstado());
@@ -624,7 +588,8 @@ public class Vd_Cp_loja_Virt_Controller {
 		envioEtiquetaDTO.getFrom().setNote("Não há");
 
 		//MESMO BLOCO Q O DE CIMA... SO Q DE TESTE ESSE
-
+		//COM O BLOCO DE CODIGO A BAIXO FUNCIONOU
+		//
 		//envioEtiquetaDTO.setService("3");
 		//envioEtiquetaDTO.setAgency("49");
 		//envioEtiquetaDTO.getFrom().setName("Loja Virtual");
@@ -638,7 +603,7 @@ public class Vd_Cp_loja_Virt_Controller {
 		//envioEtiquetaDTO.getFrom().setDistrict("SC");
 		//envioEtiquetaDTO.getFrom().setCity("Tijucas");
 		//envioEtiquetaDTO.getFrom().setCountry_id("BR");
-		//envioEtiquetaDTO.getFrom().setPostal_code("88200000");
+		//envioEtiquetaDTO.getFrom().setPostal_code("88209-999");
 		//envioEtiquetaDTO.getFrom().setNote("Não há");
 		
 		System.out.println(envioEtiquetaDTO.toString());
@@ -660,13 +625,33 @@ public class Vd_Cp_loja_Virt_Controller {
 		envioEtiquetaDTO.getTo().setComplement(compraLojaVirtual.getPessoa().enderecoEntrega().getComplemento());
 		envioEtiquetaDTO.getTo().setNumber(compraLojaVirtual.getPessoa().enderecoEntrega().getNumero());
 		envioEtiquetaDTO.getTo().setDistrict(compraLojaVirtual.getPessoa().enderecoEntrega().getEstado());
+		//envioEtiquetaDTO.getTo().setDistrict("PR");
 		envioEtiquetaDTO.getTo().setCity(compraLojaVirtual.getPessoa().enderecoEntrega().getCidade());
 		envioEtiquetaDTO.getTo().setState_abbr(compraLojaVirtual.getPessoa().enderecoEntrega().getUf());
-		//envioEtiquetaDTO.getTo().setCountry_id(compraLojaVirtual.getPessoa().enderecoEntrega().getUf());
+		envioEtiquetaDTO.getTo().setCountry_id(compraLojaVirtual.getPessoa().enderecoEntrega().getUf());
 		envioEtiquetaDTO.getTo().setCountry_id("BR");
 		envioEtiquetaDTO.getTo().setPostal_code(compraLojaVirtual.getPessoa().enderecoEntrega().getCep());
 		envioEtiquetaDTO.getTo().setNote("Não há");
 
+		//IGUAL O CODIGO ACIMA SO Q NA MAO..
+		//COM O BAIXO FUNCINOU...
+		//
+		//envioEtiquetaDTO.getTo().setName("Pedro");
+		//envioEtiquetaDTO.getTo().setPhone("4899997777");
+		//envioEtiquetaDTO.getTo().setEmail("pedrogenteboa@gmail.com");
+		//envioEtiquetaDTO.getTo().setDocument("55680795019");
+		//envioEtiquetaDTO.getTo().setAddress("Rua Rui Barbosa");
+		//envioEtiquetaDTO.getTo().setComplement("Apartamento");
+		//envioEtiquetaDTO.getTo().setNumber("31");
+		//envioEtiquetaDTO.getTo().setDistrict("PR");
+		//envioEtiquetaDTO.getTo().setCity("Curitiba");
+		//envioEtiquetaDTO.getTo().setState_abbr("PR");
+		//envioEtiquetaDTO.getTo().setCountry_id("BR");
+		//envioEtiquetaDTO.getTo().setPostal_code("75830-112");
+		//envioEtiquetaDTO.getTo().setNote("Não há");
+		
+		
+		System.out.println(envioEtiquetaDTO.toString());
 		
 		//instanciando uma LISTA do tipo PRODUCTSENVIOETIQUETADTO
 		//de nome PRODUCTS
@@ -1054,12 +1039,8 @@ public class Vd_Cp_loja_Virt_Controller {
 								 
 								 statusRastreioRepository.saveAndFlush(rastreio);
 							 }else {
-								 statusRastreioRepository.salvaUrlRastreio("https://www.melhorrastreio.com.br/rastreio/" + idEtiquetaR, idVenda);
+								 statusRastreioRepository.salvaUrlRastreio("https://www.melhorrastreio.com.br/rastreio/" + idTrackingR, idVenda);
 							 }
-
-		
-
-
 							
 		return new ResponseEntity<String>("Sucesso", HttpStatus.OK);
 	}
@@ -1186,7 +1167,21 @@ public class Vd_Cp_loja_Virt_Controller {
 		return new ResponseEntity<List<EmpresaTransporteDTO>>(
 				empresaTransporteDTOs, HttpStatus.OK);
 	}
-		
+	
+	//metodo/endpoint para gerar boleto ou gerar qrcode pix
+	@ResponseBody
+	@PostMapping(value = "**/gerarBoletoPix")
+	public ResponseEntity<String> gerarBoletoPix(@RequestBody @Valid ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception{
+		return  new ResponseEntity<String>(serviceJunoBoleto.gerarCarneApi(objetoPostCarneJuno), HttpStatus.OK);
 	}
 	
+	//metodo/endpoint para cancelar boleto ou qrcode pix
+	@ResponseBody
+	@PostMapping(value = "**/cancelarBoletoPix")
+	public ResponseEntity<String> cancelarBoletoPix(@RequestBody @Valid String code) throws Exception{
+		//chamando o metoto cancelar boleto q ta no nosso obj/var
+		//servicejunoboleto
+		return new ResponseEntity<String>(serviceJunoBoleto.cancelarBoleto(code), HttpStatus.OK);
+	}
 
+}

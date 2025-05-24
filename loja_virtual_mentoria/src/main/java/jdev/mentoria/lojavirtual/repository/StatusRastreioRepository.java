@@ -9,10 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import jdev.mentoria.lojavirtual.model.StatusRastreio;
 
-@Repository
-public interface StatusRastreioRepository extends JpaRepository<StatusRastreio, Long>{
-	
-	
+
 	//cada vendacompralojavirtual vai ter MUITOS STATUSRASTREIO
 	//ex: 1 STATUSRASTREIO disse q saiu de sp
 	//  dps outro STATUSRASTREIO disse q ja ta na transportadora
@@ -27,14 +24,19 @@ public interface StatusRastreioRepository extends JpaRepository<StatusRastreio, 
 	//selecionando os S(STATUSRASTREIO) na TABELA STATUSRASTREIO onde o
 	//VENDACOMPRALOJAVIRTUAL tem o ID q foi passado para var long IDVENDA
 	//
+@Repository
+public interface StatusRastreioRepository extends JpaRepository<StatusRastreio, Long> {
+	
+	
 	@Query(value = "select s from StatusRastreio s where s.vendaCompraLojaVirtual.id = ?1 order by s.id")
 	public List<StatusRastreio> listaRastreioVenda(Long idVenda);
+
+	
 	
 	@Modifying(flushAutomatically = true)
 	@Query(nativeQuery = true, value = "update vd_cp_loja_virt set url_rastreio = ?1 where id = ?2")
 	public void salvaUrlRastreio(String urlRastreio, Long idVenda);
 	
-
-
 	
+
 }

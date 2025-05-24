@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository;
 import jdev.mentoria.lojavirtual.model.Endereco;
 
 @Repository
-public interface EnderecoRepository extends JpaRepository<Endereco, Long>{
+public interface EnderecoRepository extends JpaRepository<Endereco, Long> {
+	
 	
 	@Query(value = "select e from Endereco e where e.empresa.id = ?1")
 	public List<Endereco> enderecoPj(Long idEmpresa);
-	
-	
+
 }

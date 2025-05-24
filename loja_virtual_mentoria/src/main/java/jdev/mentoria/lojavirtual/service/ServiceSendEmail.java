@@ -20,7 +20,17 @@ import org.springframework.stereotype.Service;
 public class ServiceSendEmail {
 
     private String userName = "rodrigojosefagundes8@gmail.com";
+    //SENHA NOVA - tive q fazer isso pq o google disse q eu tava enviando
+    //spam... dai eu coloquei na AWS para enviar alerta de senha com mais
+    //de 140 dias... entao provavelmente daqui alguns dias (hj 25/03/2025)
+    //ele vai enviar um monte de email.. e a conta pd ser bloqueada...
+    //dai eu modifiquei agora para enviar alerta so com mais de 3000 dias
+    //no LOJA_VIRTUAL_MENTORIA q ta no notebook o q ta no da AWS
+    //ta para 140 dias ainda... entao para resolver isso eu alterei a senha
+    //do email
     private String password = "Senha_E-Mail";
+    //ESSA E A SENHA ANTIGA
+    //private String password = "Senha_E-Mail";
 
     @Async
     public void enviarEmailHtml(String assunto, String textoMensagem, String emailDestino) throws MessagingException, UnsupportedEncodingException {

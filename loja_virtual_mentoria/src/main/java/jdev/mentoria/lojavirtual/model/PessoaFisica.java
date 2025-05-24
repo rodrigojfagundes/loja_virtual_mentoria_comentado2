@@ -13,18 +13,18 @@ import org.hibernate.validator.constraints.br.CPF;
 
 //classe/entidade PESSOAFISICA é FILHA(extends) da classe(abstrata) PESSOA
 //e pega seus atributos e metodos...
-
 @Entity
 @Table(name = "pessoa_fisica")
 //informando q o ID de PESSOAFISICA vai ser o ID de PESSOA (class MAE)
 @PrimaryKeyJoinColumn(name = "id")
 public class PessoaFisica extends Pessoa {
+
 	private static final long serialVersionUID = 1L;
-	
-	@CPF(message = "CPF esta invalido")
+
+	@CPF(message = "CPF está inválido")
 	@Column(nullable = false)
 	private String cpf;
-	
+
 	@Temporal(TemporalType.DATE)
 	private Date dataNascimento;
 
@@ -43,6 +43,5 @@ public class PessoaFisica extends Pessoa {
 	public void setDataNascimento(Date dataNascimento) {
 		this.dataNascimento = dataNascimento;
 	}
-		
-	
+
 }

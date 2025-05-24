@@ -29,10 +29,14 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter implements H
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().csrfTokenRepository(
-				CookieCsrfTokenRepository.withHttpOnlyFalse())
+		
+		//permitindo acesso ao metodo/endpoint REQUISICAOJUNOBOLETO(WEBHOOK)
+		//sem precisar ter login no sistema...
+		http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 		.disable().authorizeRequests().antMatchers("/").permitAll()
-		.antMatchers("/index").permitAll()
+		.antMatchers("/index","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
+		.antMatchers(HttpMethod.POST, "/requisicaojunoboleto/**", "/notificacaoapiv2","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
+		.antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**").permitAll()
 		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		
 		//redireciona ou da um retorno para index quando desloga
@@ -42,35 +46,30 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter implements H
 		.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 		
 		//filtra as requisicoes para login de JWT
-		.and().addFilterBefore(new JWTLoginFilter(
-				"/login", authenticationManager()),
+		.and().addFilterAfter(new JWTLoginFilter("/login", authenticationManager()),
 				UsernamePasswordAuthenticationFilter.class)
 		
-		.addFilterBefore(new JwtApiAutenticacaoFilter(),
-				UsernamePasswordAuthenticationFilter.class);
+		.addFilterBefore(new JwtApiAutenticacaoFilter(), UsernamePasswordAuthenticationFilter.class);
 		
 	}
-	
-	
 	
 	//metodo para implementar o servico de autenticacao
 	//ira consultaro user no banco com o SpringSecurity
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(implementacaoUserDetailsService).passwordEncoder(new BCryptPasswordEncoder());
 		
-		auth.userDetailsService(implementacaoUserDetailsService)
-		.passwordEncoder(new BCryptPasswordEncoder());
 	}
 	
 	
-	
+
 	//ignorando URLS no momento para nao autenticar
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-		//web.ignoring().antMatchers(HttpMethod.GET, "/salvarAcesso", "/deleteAcesso")
-		//.antMatchers(HttpMethod.POST, "/salvarAcesso", "/deleteAcesso");
-		
+		web.ignoring().
+		    antMatchers(HttpMethod.GET, "/requisicaojunoboleto/**", "/notificacaoapiv2","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**")
+		   .antMatchers(HttpMethod.POST,"/requisicaojunoboleto/**", "/notificacaoapiv2","/pagamento/**","/resources/**","/static/**","/templates/**","classpath:/static/**","classpath:/resources/**","classpath:/templates/**","/webjars/**","/WEB-INF/classes/static/**");
+		/* Ingnorando URL no momento para nao autenticar */
 	}
-	
-	
+
 }

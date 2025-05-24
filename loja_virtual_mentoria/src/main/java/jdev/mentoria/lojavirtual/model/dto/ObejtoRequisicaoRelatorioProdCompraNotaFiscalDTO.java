@@ -10,15 +10,16 @@ import javax.validation.constraints.NotEmpty;
 //essa classe/entity tem os atributos que vao receber os valores
 //q vem do relatorio
 //
-public class ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto implements Serializable {
-	
+public class ObejtoRequisicaoRelatorioProdCompraNotaFiscalDTO implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private String nomeProduto ="";
-	@NotEmpty(message = "Informe a data inicial")
+	
+	@NotEmpty(message = "Informa a data inicial")
 	private String dataInicial;
 	
-//	@NotEmpty(message = "Informe a data final")
+	@NotEmpty(message = "Informa a data final")
 	private String dataFinal;
 	private String codigoNota ="";
 	private String codigoProduto ="";
@@ -27,69 +28,85 @@ public class ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto implements Seriali
 	private String codigoFornecedor ="";
 	private String nomeFornecedor ="";
 	private String dataCompra ="";
-	
-	
-	
+
 	public String getValorVendaProduto() {
 		return valorVendaProduto;
 	}
+
 	public void setValorVendaProduto(String valorVendaProduto) {
 		this.valorVendaProduto = valorVendaProduto;
 	}
+
 	public String getQuantidadeComprada() {
 		return quantidadeComprada;
 	}
+
 	public void setQuantidadeComprada(String quantidadeComprada) {
 		this.quantidadeComprada = quantidadeComprada;
 	}
+
 	public String getCodigoFornecedor() {
 		return codigoFornecedor;
 	}
+
 	public void setCodigoFornecedor(String codigoFornecedor) {
 		this.codigoFornecedor = codigoFornecedor;
 	}
+
 	public String getNomeFornecedor() {
 		return nomeFornecedor;
 	}
+
 	public void setNomeFornecedor(String nomeFornecedor) {
 		this.nomeFornecedor = nomeFornecedor;
 	}
+
 	public String getDataCompra() {
 		return dataCompra;
 	}
+
 	public void setDataCompra(String dataCompra) {
 		this.dataCompra = dataCompra;
 	}
+
 	public String getNomeProduto() {
 		return nomeProduto;
 	}
+
 	public void setNomeProduto(String nomeProduto) {
 		this.nomeProduto = nomeProduto;
 	}
+
 	public String getDataInicial() {
 		return dataInicial;
 	}
+
 	public void setDataInicial(String dataInicial) {
 		this.dataInicial = dataInicial;
 	}
+
 	public String getDataFinal() {
 		return dataFinal;
 	}
+
 	public void setDataFinal(String dataFinal) {
 		this.dataFinal = dataFinal;
 	}
+
 	public String getCodigoNota() {
 		return codigoNota;
 	}
+
 	public void setCodigoNota(String codigoNota) {
 		this.codigoNota = codigoNota;
 	}
+
 	public String getCodigoProduto() {
 		return codigoProduto;
 	}
+
 	public void setCodigoProduto(String codigoProduto) {
 		this.codigoProduto = codigoProduto;
 	}
-	
-	
+
 }

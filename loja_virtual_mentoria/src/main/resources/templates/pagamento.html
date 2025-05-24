@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<!-- BASICAMENTE e uma PAGINA HTML em q sera utilizada para inserir
+os dados de compra CARTAO ou PIX ou BOLETO para ir para o PAGAMENTOCONTROLLER
+para dps ir para a API da JUNO... Esses dados poderiam ser passados
+sem uma pagina PAGAMENTO.HTML... Mas a api da juno exige q 
+os dados sejam passados por uma pagina web...
+
+LEMBRANDO os dados NOME, CPF, EMAIL do COMPRADOR vao vim de forma
+automatica pelo o ID da VENDACOMPRALOJAVIRTUAL ex...
+pagamento/22(IDVENDACOMPRALOJAVIRTUAL)... vamos passar realmente
+de dado atraves dessa pagina PAGAMENTO.HTML sao as INFO de pagamento
+ -->
+
+
+<!-- Latest compiled and minified CSS para melhorar o desing -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+<!-- Optional theme... para mehorar o desing-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript  -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.map"></script>
+
+<!--o direct-checkout pelo o q eu entendi tem recursos de criptografia do javascript-->
+<script type="text/javascript" src="https://www.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script> 
+
+</head>
+<body>
+
+	<!--container para preencher as info do comprador (serao puxadas
+	automaticamente pelo (ID)  do VENDACOMPRALOJAVIRTUAL) e preencher
+	as INFO relacionadas a pagamento... pix, boleto, cartao -->
+<div class="container">
+
+    <form style="padding-top: 20px; padding-bottom: 20px" id="formcheckout">
+     <input type="hidden" th:value="${venda.id}" id="idVendaCampo">
+    
+	 <!--os campos NOME, EMAIL CPF vao ser puxados automaticamente
+	pelo o ID da VENDACOMPRALOAVJRTUAL... Exemplo 
+	pagamento.html/IDCOMPRALOJAVIRTUAL22 entao vai puxar o NOME
+	do COMPRADOR, o EMAIL e o CPF do COMPRADOR... automaticamente
+	vamos preencher so as INFO relacionadas ao CARTAO ou PIX... boleto-->		
+       <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="nome">Nome:</label>
+            <input th:value=${venda.pessoa.nome} type="text" class="form-control" readonly="readonly" id="nome" required="required" style="height: 40px;">
+          </div>
+          
+         <div class="form-group col-md-6">
+            <label for="email">Email:</label>
+            <input th:value="${venda.pessoa.email}" type="text" class="form-control" readonly="readonly" id="email" required="required" style="height: 40px;">
+          </div>
+       </div>
+       
+		   <!--essas info de pagamento realmente serao preenchidas
+		atraves do PAGAMENTO.HTML...-->
+       <div class="form-row" id="linha1cartao">
+           <div class="form-group col-md-6">
+              <label for="numerocartao">Número do cartão:</label>
+            <input type="text" placeholder="455.454.545454.5454544" class="form-control" id="numerocartao" required="required" style="height: 40px;">
+           </div>
+          
+            <div class="form-group col-md-6">
+              <label for="nomecartao">Nome como escrito no cartão:</label>
+            <input type="text" placeholder="joão da silva" class="form-control" id="nomecartao" required="required" style="height: 40px;">
+           </div> 
+       </div>
+       
+
+       <div class="form-row" id="divcpf">
+         <div class="form-group col-md-12">
+              <label for="cpf">CPF do titular:</label>
+            <input th:value="${venda.pessoa.cpf}" type="text" placeholder="000.000.000-00" class="form-control" id="cpf" required="required" style="height: 40px;">
+         </div>
+       </div>
+       
+	   <!--mes de validade do cartao...-->
+       <div class="form-row" id="linha2cartao">
+           <div class="form-group col-md-4">
+              <label for="mesvalidade">Mês de validade:</label>
+              <select class="form-control" required="required" id="mesvalidade" style="height: 40px;">
+                 <option value="01">01</option>
+                 <option value="02">02</option>
+                 <option value="03">03</option>
+                 <option value="04">04</option>
+                 <option value="05">05</option>
+                 <option value="06">06</option>
+                 <option value="07">07</option>
+                 <option value="08">08</option>
+                 <option value="09">09</option>
+                 <option value="10">10</option>
+                 <option value="11">11</option>
+                 <option value="12">12</option>
+              </select>
+           </div>
+           
+		   <!--aqui e para selecionar o ano de validade do cartao de credito-->
+           <div class="form-group col-md-4">
+              <label for="anovalidade">Ano de validade:</label>
+              <select class="form-control" required="required" id="anovalidade" style="height: 40px;">
+                 <option value="2022">22</option>
+                 <option value="2023">23</option>
+                 <option value="2024">24</option>
+                 <option value="2025">25</option>
+                 <option value="2026">26</option>
+                 <option value="2027">27</option>
+                 <option value="2028">28</option>
+                 <option value="2029">29</option>
+                 <option value="2030">30</option>
+                 <option value="2031">31</option>
+                 <option value="2032">32</option>
+                 <option value="2033">33</option>
+                 <option value="2034">34</option>
+                 <option value="2035">35</option>
+                 <option value="2036">36</option>
+                 <option value="2037">37</option>
+              </select>
+           </div>
+		   <!--codigo cvv do cartao de credito-->
+           <div class="form-group col-md-4">
+           <label for="cvv">Código de segurança ou CVV:</label>
+            <input type="text" style="height: 40px;" placeholder="380" class="form-control" id="cvv" required="required">
+           </div> 
+           
+       </div>
+       
+	   <!--selecione o numero de parcelas-->
+       <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="qtdparcela">Selecione o número de parcela:</label>
+                <select class="form-control" required="required" id="qtdparcela" style="height: 40px;">
+                 <option value="1">1 x</option>
+                 <option value="2">2 x</option>
+                 <option value="3">3 x</option>
+                 <option value="4">4 x</option>
+                 <option value="5">5 x</option>
+                 <option value="6">6 x</option>
+                 <option value="7">7 x</option>
+                 <option value="8">8 x</option>
+                 <option value="9">9 x</option>
+                 <option value="10">10 x</option>
+                 <option value="11">11 x</option>
+                 <option value="12">12 x</option>
+              </select>
+          </div>
+       </div>
+       
+	   <!--campos de endereco a baixo... cep, sera passado
+		pelo usuario atraves da TELA DE pagamento.html...
+		-->
+        <div class="form-row" id="divendereco">
+          <div class="form-group col-md-4">
+             <label for="cep">CEP de cobrança:</label>
+            <input type="text" style="height: 40px;" placeholder="00000-000" class="form-control" id="cep" required="required">
+          </div>
+          
+		  <!--campo de endereco rua...-->
+          <div class="form-group col-md-4">
+             <label for="rua">Rua:</label>
+            <input type="text" style="height: 40px;" class="form-control" id="rua" required="required">
+          </div>
+          
+		  <!--campo de numero da casa/apartamento...-->
+           <div class="form-group col-md-4">
+             <label for="numero">Número:</label>
+            <input type="text" style="height: 40px;" class="form-control" id="numero" required="required">
+          </div>
+        </div>
+        
+        <div class="form-row" id="divendereco2">
+        
+          <div class="form-group col-md-6">
+             <label for="estado">Estado:</label>
+            <input type="text" style="height: 40px;" placeholder="PR" class="form-control" id="estado" required="required">
+          </div>
+          
+         <div class="form-group col-md-6">
+             <label for="cidade">Cidade:</label>
+            <input type="text" style="height: 40px;" placeholder="Maringá" class="form-control" id="cidade" required="required">
+          </div>
+        </div>
+        
+        <div class="form-row">
+         <div class="form-group col-md-12">
+           <input id="buttonrealizarPagamento" onclick="realizarPagamento();" type="button" class="btn btn-primary btn-lg" value="Realizar Pagamento" style="font-size: 23px;height: 50px; width: 100%">
+         </div>
+        </div>
+        
+       <div class="form-row">
+         <div class="form-group col-md-6">
+           <span id="valorParaCompra" style="width: 100%;height: 30px; font-size: 19px;" th:text="@{'TOTAL R$: ' + ${venda.valorTotal}}">TOTAL R$:</span>
+         </div>
+         <div class="form-group col-md-6">
+           <span id="valorParaDesc" style="width: 100%;height: 30px; font-size: 19px;" th:text="@{'DESC. R$: ' + ${venda.valorDesc}}">DESC. R$:</span>
+         </div>
+        </div>
+        
+       <div class="form-row">
+         <div class="form-group col-md-6">
+           <span id="valorFrete" style="width: 100%;height: 30px; font-size: 19px;" th:text="@{'FRETE R$: ' + ${venda.valorFrete}}">FRETE R$:</span>
+         </div>
+        </div>
+        
+        <hr width="96%" style="color: #726868;border-top: 1px solid #726868;">
+        
+		<!--ira acessar automaticamente o 
+			VENDACOMPRALOJAVIRTUAL.ITEMVENDALOJA(venda.itemvendaloja)
+		e vamos mostrar os produtos q estao sendo pagos/comprados...-->
+        <div class="form-row">
+            <div class="form-group col-md-6" style="margin-top: 8px;">
+             <label>Itens adicionados</label>
+              <div th:each="p : ${venda.itemVendaLoja}">
+                 <span style="width: 100%; height: 15px; font-size: 11px;" th:text="@{${p.produto.nome} + ' - Qtd: ' + ${p.quantidade}}"></span>
+              </div>
+            </div>
+        </div>
+       
+    </form>
+</div>
+
+
+
+		
+<!--instanciando um obj do tipo DIRECTCHECKOUT de nome CHECKOUT
+e para ele vamos passar o PUBLICTOKEN geradopela JUNO 
+q basicamente tem o PUBLICTOKEN q a juno gerou para nos
+esse directcheckout pelo o q eu entendi do q o prof disse
+tem algumas funcoes de criptografia... tipo
+deve criptografar as info de cartao de credito e tals
+para poder ir para o backend e dps para a juno... eu acho
+
+tbm tem um codigo q o prof copiou e colou q basicamente
+puxa o endereco(cidade e sua) pelo CEP-->	
+<script type="text/javascript">
+
+       var checkout = new DirectCheckout('10951138DA2E18AA0275F43ACA03649EC406D9F5331D9F78CC4169A965B873AB35FFAEE08E46454E');
+
+        $(document).ready(function() {
+//validando se o e o valor q ta nos campos/var/atributo CPF, CEP, CVV
+//NUMEROCARTAO esta correto com o JQUERYMASK... dai nao vai pd
+//colocar letra sera so numero FOI O Q EU ENTENDI...
+        	$('#cpf').mask('000.000.000-00',{reverse: true});
+        	
+        	$('#cep').mask('00000-000',{reverse: true});
+        	
+        	$('#cvv').mask('000',{reverse: true});
+        	
+        	$('#numerocartao').mask('0000.0000.0000.0000',{reverse: true});
+
+
+
+
+            function limpa_formulário_cep() {
+                // Limpa valores do formulário de cep.
+                $("#rua").val("");
+                $("#numero").val("");
+                $("#cidade").val("");
+                $("#estado").val("");
+            }
+            
+            //Quando o campo cep perde o foco.
+            $("#cep").blur(function() {
+
+                //Nova variável "cep" somente com dígitos.
+                var cep = $(this).val().replace(/\D/g, '');
+
+                //Verifica se campo cep possui valor informado.
+                if (cep != "") {
+
+                    //Expressão regular para validar o CEP.
+                    var validacep = /^[0-9]{8}$/;
+
+                    //Valida o formato do CEP.
+                    if(validacep.test(cep)) {
+
+                        //Preenche os campos com "..." enquanto consulta webservice.
+		                $("#rua").val("...");
+		                $("#cidade").val("...");
+		                $("#estado").val("..");
+
+                        //Consulta o webservice viacep.com.br/
+                        $.getJSON("https://viacep.com.br/ws/"+ cep +"/json/?callback=?", function(dados) {
+                        	
+                        	//console.info(dados);
+
+                            if (!("erro" in dados)) {
+                                //Atualiza os campos com os valores da consulta.
+                                $("#rua").val(dados.logradouro);
+                                $("#cidade").val(dados.localidade);
+                                $("#estado").val(dados.uf);
+                            } //end if.
+                            else {
+                                //CEP pesquisado não foi encontrado.
+                                limpa_formulário_cep();
+                                alert("CEP não encontrado.");
+                            }
+                        });
+                    } //end if.
+                    else {
+                        //cep é inválido.
+                        limpa_formulário_cep();
+                        alert("Formato de CEP inválido.");
+                    }
+                } //end if.
+                else {
+                    //cep sem valor, limpa formulário.
+                    limpa_formulário_cep();
+                }
+            });
+        });
+        
+    
+		//esse metodo/funcao vai pegar todos os dados q estao nos
+		//campos/var/atributos acima (na pagina PAGAMENTO.HTML)
+		//vamos validar se os dados estao corretos
+		//e nao estao nulos  
+  function realizarPagamento(){
+	  
+	  
+	  var idVendaCampo = $('#idVendaCampo').val();
+	  var numerocartao = $('#numerocartao').val();
+	  var nomecartao = $('#nomecartao').val();
+	  var cpf = $('#cpf').val();
+	  var mesvalidade = $('#mesvalidade').val();
+	  var anovalidade = $('#anovalidade').val();
+	  var cvv = $('#cvv').val();
+	  var qtdparcela = $('#qtdparcela').val();
+	  var cep = $('#cep').val();
+	  var rua = $('#rua').val();
+	  var numero = $('#numero').val();
+	  var estado = $('#estado').val();
+	  var cidade = $('#cidade').val();
+	  
+	  //validandoos valores dos campos/var/atributos da pagina PAGAMENTO.HTML
+	  //e mostrando uma mensagem de erro...
+	  if(cidade.trim() == ''){
+		  alert('Informe a Cidade de cobrança do cartão de crédito.');
+		  return;
+	  }
+	  
+	  
+	  if(estado.trim() == ''){
+		  alert('Informe o Estado de cobrança do cartão de crédito.');
+		  return;
+	  }
+	  
+	  if(numero.trim() == ''){
+		  alert('Informe a Número de cobrança do cartão de crédito.');
+		  return;
+	  }
+	  
+	  if(rua.trim() == ''){
+		  alert('Informe a RUA de cobrança do cartão de crédito.');
+		  return;
+	  }
+	  
+	  
+	  if(cep.trim() == ''){
+		  alert('Informe CEP de cobrança do cartão de crédito.');
+		  return;
+	  }
+	  
+	  
+	  if(cvv.trim() == ''){
+		  alert('Informe CVV do cartão de crédito.');
+		  return;
+	  }
+	  
+	  
+	  if(mesvalidade.trim() == ''){
+		  alert('Informe mês de válidade do cartão de crédito.');
+		  return;
+	  }
+	  
+	  if(numerocartao.trim() == ''){
+		  alert('Informe o número do cartão de crédito.');
+		  return;
+	  }
+	  
+	  if(nomecartao.trim() == ''){
+		  alert('Informe o nome como escrito no cartão de crédito.');
+		  return;
+	  }
+	  
+	  if(cpf.trim() == ''){
+		  alert('Informe cpf do responsável pelo cartão de crédito.');
+		  return;
+	  }
+	  
+	//validando os dados do cartao de credito
+	  var cardData = {
+			cardNumber: numerocartao.replaceAll('.',""),
+			holderName: nomecartao,
+			securityCode: cvv,
+			expirationMonth: mesvalidade,
+			expirationYear: anovalidade
+	  };
+	  
+	  //chamando o METODO ISVALIDCARDNUMBER do OBJ/VAR CHECKOUT
+	  //e passando para ele o valor q ta na var/atributo CARDNUMBER
+	  //do obj/var CARDDATA, para validar se e um numero valido
+	  var isValidCardNumber = checkout.isValidCardNumber(cardData.cardNumber);
+	  
+	  if (isValidCardNumber == false){
+		  alert('Número do cartão é inválido');
+		  return;
+	  }
+	  
+	  //validando o codigo de seguranca do cartao
+	  var isValidSecurityCode = checkout.isValidSecurityCode(cardData.cardNumber, cvv);
+	  
+	  if (isValidSecurityCode == false){
+		  alert('Códivo CVV de segurança é inválido.');
+		  return;
+	  }
+	  
+	  //validando a data de validade do cartao
+	  var isValidExpireDate = checkout.isValidExpireDate(cardData.expirationMonth, cardData.expirationYear);
+	  
+	  if (isValidExpireDate == false){
+		  alert('Data de válidade é inválida');
+		  return;
+	  }
+	  
+	  
+	  var isValidCardData = checkout.isValidCardData(cardData, function(error) {
+		  
+		  if (error.toString().includes('Invalid holder name', error)){
+			  alert('Seu nome informado não está igual ao escrito no cartão de crédito.');
+		  }else{
+			  alert('Mensagem de erro: ' + error.toString());
+		  }
+		  
+		  return;
+	  });
+	  
+	  
+	 // console.info('isValidCardData' + isValidCardData);
+	 // console.info('isValidExpireDate' + isValidExpireDate);
+	 // console.info('isValidSecurityCode' + isValidSecurityCode);
+	 // console.info('isValidCardNumber' + isValidCardNumber);
+	
+	 //se os dados do cartao forem validos... vamos gerar um HASH
+	 //do cartao de credito  
+	  if (isValidCardData && isValidExpireDate && isValidSecurityCode && isValidCardNumber){
+		  
+		    checkout.getCardHash(cardData, function(cardHash) {
+		      
+			document.getElementById('buttonrealizarPagamento').disabled = true;
+			document.getElementById('buttonrealizarPagamento').value = 'Efetuando pagamento...';
+		  
+			//aqui basicamente vai pegar todas as INFO q estao nos
+			//campos/var/atributos e enviar elas atraves de um POST
+			//para o metodo FINALIZARCOMPRACARTAO q esta no 
+			//PAGAMENTOCONTROLLER.JAVA
+		   $.ajax({
+			   method: 'POST',
+			   url: 'finalizarCompraCartao',
+			   data: {
+				   cardHash: cardHash,
+				   cardNumber: cardData.cardNumber,
+				   holderName: cardData.holderName,
+				   securityCode: cardData.securityCode,
+				   expirationMonth: cardData.expirationMonth,
+				   expirationYear: cardData.expirationYear,
+				   idVendaCampo: idVendaCampo,
+				   cpf: cpf,
+				   qtdparcela: qtdparcela,
+				   cep: cep,
+				   rua: rua,
+				   numero: numero,
+				   estado: estado,
+				   cidade: cidade
+			   }
+		   }).success(function (response) {
+			 
+			   if (response == 'sucesso') {
+			      document.getElementById('buttonrealizarPagamento').disabled = true;
+			      document.getElementById('buttonrealizarPagamento').value = 'Sucesso, OK... Pago';   
+			   }else {
+				   
+				   document.getElementById('buttonrealizarPagamento').disabled = false;
+				   document.getElementById('buttonrealizarPagamento').value = 'Realizar Pagamento';  
+				   
+				   alert(response);
+			   }
+			   
+		   }).fail(function (xhr, status, errorThrown) {
+			   
+			   document.getElementById('buttonrealizarPagamento').disabled = false;
+			   document.getElementById('buttonrealizarPagamento').value = 'Realizar Pagamento';   
+			   
+			   alert('Erro ao efetuar pagamento: ' + errorThrown);
+			   return;
+		   });
+		  
+		  
+			  
+		 
+		  }, function(error) {
+		      alert('Não foi possível gerar o HASH do cartão de crédito": ' + error);
+			  return;
+			  
+		  });
+		  
+	  }else {
+		  alert('O pagamento não pode ser realizado.');
+		  return;
+	  }
+	  
+	  
+  }      
+
+    </script>	
+
+
+
+</body>
+</html>

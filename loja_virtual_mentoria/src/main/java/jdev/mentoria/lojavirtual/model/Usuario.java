@@ -28,15 +28,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 //criando a class/entidade usuario q tem 1 ou MTAS ROLES/ACESSO
 @Entity
-@Table(name="usuario")
-@SequenceGenerator(name = "seq_usuario", 
-sequenceName = "seq_usuario", allocationSize = 1, initialValue = 1)
+@Table(name = "usuario")
+@SequenceGenerator(name = "seq_usuario", sequenceName = "seq_usuario", allocationSize = 1, initialValue = 1)
 public class Usuario implements UserDetails {
+	
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_usuario")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_usuario")
 	private Long id;
 	
 	@Column(nullable = false, unique = true)
@@ -51,19 +50,25 @@ public class Usuario implements UserDetails {
 	
 	//MTAS USUARIO para 1 PESSOA
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "pessoa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "pessoa_fk"))
+	@JoinColumn(name = "pessoa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
 	private Pessoa pessoa;
-
 	
+	
+	
+	public Pessoa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Pessoa empresa) {
+		this.empresa = empresa;
+	}
+
 	//MTAS USUARIO para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private Pessoa empresa;
-	
 	
 	
 	//1 USUARIO tem  MTAS ACESSO/ROLE, ROLE_DEV, ROLE_ADMIN, etc...
@@ -92,34 +97,17 @@ public class Usuario implements UserDetails {
 	//
 	@OneToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "usuarios_acesso", 
-			uniqueConstraints = @UniqueConstraint(columnNames = {
-			"usuario_id", "acesso_id"},
-			name = "unique_acesso_user"),
-			joinColumns = @JoinColumn(name = "usuario_id",
-			referencedColumnName = "id", table = "usuario", unique = false,
-			foreignKey = @ForeignKey(name = "usuario_fk",
-			value = ConstraintMode.CONSTRAINT)),
-			inverseJoinColumns = @JoinColumn(name = "acesso_id",
-			unique = false, referencedColumnName = "id", table = "acesso",
-			foreignKey = @ForeignKey(name = "acesso_fk",
-			value = ConstraintMode.CONSTRAINT)))
+		uniqueConstraints = @UniqueConstraint (columnNames = {"usuario_id", "acesso_id"} ,
+		name = "unique_acesso_user"),
+	
+	   joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", 
+	   unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)), 
+	   
+	inverseJoinColumns = @JoinColumn(name = "acesso_id", 
+						unique = false, referencedColumnName = "id", table = "acesso",
+						foreignKey = @ForeignKey(name = "acesso_fk", value = ConstraintMode.CONSTRAINT)))
 	private List<Acesso> acessos;
 	
-	
-	public Pessoa getEmpresa() {
-		return empresa;
-	}
-
-	public void setEmpresa(Pessoa empresa) {
-		this.empresa = empresa;
-	}
-
-	//AUTORIDADE são os ACESSOS/ROLE
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// retornando as permissoes de acesso desse usuario
-		return this.acessos;
-	}
 	
 	public void setPessoa(Pessoa pessoa) {
 		this.pessoa = pessoa;
@@ -172,9 +160,16 @@ public class Usuario implements UserDetails {
 		this.acessos = acessos;
 	}
 
+	//AUTORIDADE são os ACESSOS/ROLE
+	/*Autoridades = São os acesso, ou seja ROLE_ADMIN, ROLE_SECRETARIO, ROLE_FINACEIRO*/
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		// retornando as permissoes de acesso desse usuario
+		return this.acessos;
+	}
+
 	@Override
 	public String getPassword() {
-		// retornando a senha desse usuario
 		return this.senha;
 	}
 

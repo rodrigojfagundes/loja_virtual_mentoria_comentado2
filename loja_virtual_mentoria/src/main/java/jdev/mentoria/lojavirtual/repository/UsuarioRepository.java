@@ -12,22 +12,20 @@ import org.springframework.stereotype.Repository;
 import jdev.mentoria.lojavirtual.model.Usuario;
 
 @Repository
-public interface UsuarioRepository extends CrudRepository<Usuario, Long>{
+public interface UsuarioRepository extends CrudRepository<Usuario, Long> {
 	
-	//buscar os usuarios q estao a mais de (110 dias agora hehe) com a mesma senha
-	//para a TarefaAutomatiza enviar uma notificacao para eles
-	@Query(value = "select u from Usuario u where u.dataAtualSenha <= current_date - 110")
-	List<Usuario> usuarioSenhaVencida();
-	
-	
+		
 	//selecionando usuario na class/tabela usuario, onde u.login
 	//e o parametro passado q sera o q estamos procurando na class/tabela
 	//usuario
 	@Query(value = "select u from Usuario u where u.login = ?1")
 	Usuario findUserByLogin(String login);
+	
+	//buscar os usuarios q estao a mais de (3000 dias agora hehe) com a mesma senha
+	//para a TarefaAutomatiza enviar uma notificacao para eles
+	@Query(value = "select u from Usuario u where u.dataAtualSenha <= current_date - 3000")
+	List<Usuario> usuarioSenhaVencida();
 
-	//metodo para verificar se uma pessoa tem usuario
-	//pesquisando pelo ID e pelo e-mail/login
 	@Query(value = "select u from Usuario u where u.pessoa.id = ?1 or u.login =?2")
 	Usuario findUserByPessoa(Long id, String email);
 
@@ -42,16 +40,14 @@ public interface UsuarioRepository extends CrudRepository<Usuario, Long>{
 	@Transactional
 	@Modifying
 	@Query(nativeQuery = true, value = "insert into usuarios_acesso(usuario_id, acesso_id) values (?1, (select id from acesso where descricao = 'ROLE_USER'))")
-	void insereAcessoUser(Long idUser);
-
-
+	void insereAcessoUser(Long iduser);
+	
 	//fazendo um insert na tabela usuarios_acesso passando o ID do usuario
 	//e passando os acessos q esse usuario tem, atraves dos IDs dos acesso
 	//SEMELHANTE AO METODO ACIMA, mas so q com ACESSO DINAMICO
 	@Transactional
 	@Modifying
 	@Query(nativeQuery = true, value = "insert into usuarios_acesso(usuario_id, acesso_id) values (?1, (select id from acesso where descricao = ?2 limit 1))")
-	void insereAcessoUserPj(Long idUser, String acesso);
-	
-	
+	void insereAcessoUserPj(Long iduser, String acesso);
+
 }

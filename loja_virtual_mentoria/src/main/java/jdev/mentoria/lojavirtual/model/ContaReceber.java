@@ -24,55 +24,50 @@ import jdev.mentoria.lojavirtual.enums.StatusContaReceber;
 
 
 //criando a entidade/classe CONTARECEBER
-
 @Entity
-@Table(name="conta_receber")
-@SequenceGenerator(name = "seq_conta_receber", 
-sequenceName = "seq_conta_receber", allocationSize = 1, initialValue = 1)
+@Table(name = "conta_receber")
+@SequenceGenerator(name = "seq_conta_receber", sequenceName = "seq_conta_receber", allocationSize = 1, initialValue = 1)
 public class ContaReceber implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_conta_receber")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_conta_receber")
 	private Long id;
-	
+
 	@Column(nullable = false)
 	private String descricao;
-	
+
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private StatusContaReceber status;
-	
+
 	@Column(nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dtVencimento;
-	
+
 	@Temporal(TemporalType.DATE)
 	private Date dtPagamento;
-	
+
 	@Column(nullable = false)
 	private BigDecimal valorTotal;
+
 	
 	private BigDecimal valorDesconto;
-	
+
 	//1 PESSOA pd ter MTO CONTARECEBER...... e 1 CONTARECEBER tem 1 PESSOA
 	//o TARGETENTITY e pq PESSOA.CLASS é uma class abstrata
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "pessoa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "pessoa_fk"))
+	@JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
 	private Pessoa pessoa;
-	
 	
 	//MTAS CONTARECEBER para 1 EMPRESA (e EMPRESA e uma PESSOA do tipo juridica)
 	@ManyToOne(targetEntity = Pessoa.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private Pessoa empresa;
-
+	
+	
 
 	public Pessoa getEmpresa() {
 		return empresa;
@@ -170,9 +165,5 @@ public class ContaReceber implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
-	
-	
+
 }

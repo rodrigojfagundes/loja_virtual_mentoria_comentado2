@@ -13,7 +13,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
 
 //criando a class/entidade NotaItemProduto
 //basicamente vai ser uma LISTA de NOTAFISCAL
@@ -22,46 +21,39 @@ import javax.validation.constraints.Size;
 //desse TODOS os FORNECEDORES para esse PRODUTO
 //
 @Entity
-@Table(name="nota_item_produto")
-@SequenceGenerator(name = "seq_nota_item_produto", 
-sequenceName = "seq_nota_item_produto", allocationSize = 1, initialValue = 1)
+@Table(name = "nota_item_produto")
+@SequenceGenerator(name = "seq_nota_item_produto", sequenceName = "seq_nota_item_produto", allocationSize = 1, initialValue = 1)
 public class NotaItemProduto implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
-	
-	
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_item_produto")	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_item_produto")
 	private Long id;
-	
-	//@Size(min = 1, message = "Informe a quntidade do produto")
+
+	//@Size(min = 1, message = "Informe a quantidade do produto")
 	@Column(nullable = false)
 	private Double quantidade;
-	
+
 	//MUITAS NOTAITEMPRODUTO para 1 NOTAFISCALCOMPRA
 	@ManyToOne
-	@JoinColumn(name = "nota_fiscal_compra_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "nota_fiscal_compra_fk"))	
+	@JoinColumn(name = "nota_fiscal_compra_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "nota_fiscal_compra_fk"))
 	private NotaFiscalCompra notaFiscalCompra;
-		
+
 	//MUITAS NOTAITEMPRODUTO para 1 PRODUTO
 	//tipo varias compras varias NOTA_ITEM_PRODUTO para o mesmo
 	//PRODUTO de ID 7 (por exemplo) e no caso esse produto e um Iphone
 	@ManyToOne
-	@JoinColumn(name = "produto_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "produto_fk"))
+	@JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
 	private Produto produto;
-
-	
+			
 	//MTAS NOTAITEMPRODUTO para 1 EMPRESA 
 	//(e EMPRESAJURIDICA)
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
+	
 	
 
 	public PessoaJuridica getEmpresa() {
@@ -103,7 +95,6 @@ public class NotaItemProduto implements Serializable {
 	public void setProduto(Produto produto) {
 		this.produto = produto;
 	}
-	
 
 	@Override
 	public int hashCode() {
@@ -129,10 +120,5 @@ public class NotaItemProduto implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
-	
-	
-	
+
 }

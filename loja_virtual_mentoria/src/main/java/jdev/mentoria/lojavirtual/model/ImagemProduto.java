@@ -19,41 +19,35 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 //classe/entidade IMAGEMPRODUTO
 @Entity
-@Table(name="imagem_produto")
-@SequenceGenerator(name = "seq_imagem_produto", 
-sequenceName = "seq_imagem_produto", allocationSize = 1, initialValue = 1)
+@Table(name = "imagem_produto")
+@SequenceGenerator(name = "seq_imagem_produto", sequenceName = "seq_imagem_produto", allocationSize = 1, initialValue = 1)
 public class ImagemProduto implements Serializable {
-	
-	private static final long serialVersionUID = 1L;	
-	
+
+	private static final long serialVersionUID = 1L;
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_imagem_produto")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_imagem_produto")
 	private Long id;
-	
+
 	
 	@Column(columnDefinition = "text", nullable = false)
 	private String imagemOriginal;
-	
-	
+
 	@Column(columnDefinition = "text", nullable = false)
 	private String imagemMiniatura;
-	
+
 	//MUITAS IMAGENS para 1 PRODUTO
 	@JsonIgnoreProperties(allowGetters = true)
 	@ManyToOne
 	@JoinColumn(name = "produto_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "produto_fk"))
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
 	private Produto produto;
-	
 	
 	//MTAS IMAGEMPRODUTO para 1 EMPRESA/PESSOAJURIDICA
 	@JsonIgnoreProperties(allowGetters = true)
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
 	
 
@@ -121,6 +115,5 @@ public class ImagemProduto implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
+
 }

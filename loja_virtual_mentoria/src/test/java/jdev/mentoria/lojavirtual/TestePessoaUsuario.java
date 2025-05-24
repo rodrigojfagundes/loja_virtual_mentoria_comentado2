@@ -1,7 +1,5 @@
 package jdev.mentoria.lojavirtual;
 
-import java.util.Calendar;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,8 +12,7 @@ import jdev.mentoria.lojavirtual.enums.TipoEndereco;
 import jdev.mentoria.lojavirtual.model.Endereco;
 import jdev.mentoria.lojavirtual.model.PessoaFisica;
 import jdev.mentoria.lojavirtual.model.PessoaJuridica;
-import jdev.mentoria.lojavirtual.repository.PessoaRepository;
-import jdev.mentoria.lojavirtual.service.PessoaUserService;
+import jdev.mentoria.lojavirtual.repository.PesssoaRepository;
 import junit.framework.TestCase;
 
 @Profile("test")
@@ -29,7 +26,7 @@ public class TestePessoaUsuario extends TestCase {
 	private PessoaController pessoaController;
 	
 	@Autowired
-	private PessoaRepository pessoaRepository;
+	private PesssoaRepository pessoaRepository;
 	
 	@Autowired
 	private CupDescontoController cupDescontoController;

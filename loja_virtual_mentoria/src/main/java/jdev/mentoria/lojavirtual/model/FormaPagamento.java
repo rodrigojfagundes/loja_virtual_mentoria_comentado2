@@ -17,31 +17,29 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "forma_pagamento")
-@SequenceGenerator(name = "seq_forma_pagamento", 
-sequenceName = "seq_forma_pagamento", allocationSize = 1, initialValue = 1)
+@SequenceGenerator(name = "seq_forma_pagamento", sequenceName = "seq_forma_pagamento", allocationSize = 1, initialValue = 1)
 public class FormaPagamento implements Serializable {
 
+	
 	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_forma_pagamento")
-	private Long id;
-	
 
-	@NotNull(message = "Descricao deve ser informada")
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_forma_pagamento")
+	private Long id;
+
+	@NotNull(message = "Descrição deve ser informada")
 	@Column(nullable = false)
 	private String descricao;
 	
 	//MTAS FORMAPAGAMENTO para 1 EMPRESA/PESSOAJURIDICA
 	@NotNull(message = "A empresa deve ser informada")
 	@ManyToOne(targetEntity = PessoaJuridica.class)
-	@JoinColumn(name = "empresa_id", nullable = false,
-	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
-	name = "empresa_id_fk"))
+	@JoinColumn(name = "empresa_id", nullable = false, 
+	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_id_fk"))
 	private PessoaJuridica empresa;
-
 	
+	
+
 	public PessoaJuridica getEmpresa() {
 		return empresa;
 	}
@@ -49,8 +47,7 @@ public class FormaPagamento implements Serializable {
 	public void setEmpresa(PessoaJuridica empresa) {
 		this.empresa = empresa;
 	}
-	
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -58,7 +55,7 @@ public class FormaPagamento implements Serializable {
 	public void setId(Long id) {
 		this.id = id;
 	}
-		
+
 	public String getDescricao() {
 		return descricao;
 	}
@@ -91,7 +88,5 @@ public class FormaPagamento implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
+
 }
