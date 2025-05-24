@@ -19,6 +19,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 //classe/entidade pessoa sera ABSTRACT pq nos nao vamos trabalhar
 //com a PESSOA em si... Mas sim com as classes FILHAS dela (pessoa)
@@ -39,9 +43,13 @@ public abstract class Pessoa implements Serializable {
 	generator = "seq_pessoa")
 	private Long id;
 	
+	@Size(min = 4, message = "O nome deve ter no minimo 4 letras")
+	@NotBlank(message = "Nome deve ser informado")
+	@NotNull(message = "Nome deve ser informado")
 	@Column(nullable = false)
 	private String nome;
 	
+	@Email
 	@Column(nullable = false)
 	private String email;
 	

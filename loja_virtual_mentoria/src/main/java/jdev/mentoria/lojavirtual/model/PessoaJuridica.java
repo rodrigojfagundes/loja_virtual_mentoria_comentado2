@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
+import org.hibernate.validator.constraints.br.CNPJ;
+
 //classe/entidade PESSOAJURIDICA é FILHA(extends) da classe(abstrata) PESSOA
 //e pega seus atributos e metodos...
 
@@ -16,6 +18,7 @@ public class PessoaJuridica extends Pessoa {
 
 	private static final long serialVersionUID = 1L;
 	
+	@CNPJ(message = "CNPJ esta invalido")
 	@Column(nullable = false)
 	private String cnpj;
 	

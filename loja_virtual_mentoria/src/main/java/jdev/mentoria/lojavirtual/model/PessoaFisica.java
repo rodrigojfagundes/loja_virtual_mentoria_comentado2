@@ -9,6 +9,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.validator.constraints.br.CPF;
+
 //classe/entidade PESSOAFISICA é FILHA(extends) da classe(abstrata) PESSOA
 //e pega seus atributos e metodos...
 
@@ -19,6 +21,7 @@ import javax.persistence.TemporalType;
 public class PessoaFisica extends Pessoa {
 	private static final long serialVersionUID = 1L;
 	
+	@CPF(message = "CPF esta invalido")
 	@Column(nullable = false)
 	private String cpf;
 	
