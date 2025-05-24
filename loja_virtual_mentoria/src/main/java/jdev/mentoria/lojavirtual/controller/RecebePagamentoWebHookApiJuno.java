@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,13 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import jdev.mentoria.lojavirtual.model.BoletoJuno;
 import jdev.mentoria.lojavirtual.model.dto.AttibutesNotificaoPagaApiJuno;
 import jdev.mentoria.lojavirtual.model.dto.DataNotificacaoApiJunotPagamento;
+import jdev.mentoria.lojavirtual.model.dto.NotificacaoPagamentoApiAsaas;
 import jdev.mentoria.lojavirtual.repository.BoletoJunoRepository;
 
 
 //criando o CONTROLLER RECEBEPAGAMENTOWEBHOOKAPIJUNO...
 //q basicamente é um METODO/ENDPOINT q vai RECEBER informacoes
-//da JUNO, informacoes tipo SE O PAGAMENTO DO CLIENTE DA LOJAVIRTUAL
-//deu CERTO...
+//da JUNO(ASAAS), informacoes tipo SE O PAGAMENTO DO CLIENTE DA LOJAVIRTUAL
+//deu CERTO... 
 @Controller
 @RequestMapping(value = "/requisicaojunoboleto")
 public class RecebePagamentoWebHookApiJuno implements Serializable {
@@ -31,6 +33,52 @@ public class RecebePagamentoWebHookApiJuno implements Serializable {
 	//BOLETOJUNOREPOSITORY
 	@Autowired
 	private BoletoJunoRepository boletoJunoRepository; 
+	
+
+	
+	//
+	//criando o metodo RECEBENOTIFICACAOPAGAMENTOAPIASAAS q ficara
+	//disponivel pela url /NOTIFICACAOAPIASAAS em q a asaas vai
+	//enviar um OBJ do tipo NOTIFICACAOPAGAMENTOAPIASAAS
+	//para nos informando q uma determinada
+	//VENDACOMPRALOJAVIRTUAL teve o pagamento feito...
+	//
+	@ResponseBody
+	@RequestMapping(value = "/notificacaoapiasaas", consumes = {"application/json;charset=UTF-8"},
+	headers = "Content-Type=application/json;charset=UTF-8", method = RequestMethod.POST)
+	public ResponseEntity<String> recebeNotificacaoPagamentoApiAsaas(@RequestBody NotificacaoPagamentoApiAsaas notificacaoPagamentoApiAsaas) {
+		
+		
+		BoletoJuno boletoJuno = boletoJunoRepository.findByCode(notificacaoPagamentoApiAsaas.idFatura());
+		
+		if (boletoJuno == null) {
+			return new ResponseEntity<String>("Boleto/Fatura não encontrada no banco de dados", HttpStatus.OK);
+		}
+		
+		
+		if (boletoJuno != null 
+				&& notificacaoPagamentoApiAsaas.boletoPixFaturaPaga()
+				&& !boletoJuno.isQuitado()) {
+			 
+			 boletoJunoRepository.quitarBoletoById(boletoJuno.getId());
+			 System.out.println("Boleto: " + boletoJuno.getCode() + " foi quitado ");
+			 /**Fazendo qualquer regra de negocio que vc queira*/
+			 
+			 return new ResponseEntity<String>("Recebido do Asaas, boleto id: " + boletoJuno.getId(),HttpStatus.OK);
+		}else {
+			System.out.println("Fatura :"  
+		          + notificacaoPagamentoApiAsaas.idFatura() 
+		          + " não foi processada, quitada: " 
+		          + notificacaoPagamentoApiAsaas.boletoPixFaturaPaga() 
+		          + " valor quitado : "+ boletoJuno.isQuitado());
+		}
+		
+		return new ResponseEntity<String>("Não foi processado a fatura : " + notificacaoPagamentoApiAsaas.idFatura(), HttpStatus.OK);
+	}
+	
+	
+	
+	
 	
 	
 	//metodo de nome RECEBENOTIFICACAOPAGAMENTOJUNOAPIV2
