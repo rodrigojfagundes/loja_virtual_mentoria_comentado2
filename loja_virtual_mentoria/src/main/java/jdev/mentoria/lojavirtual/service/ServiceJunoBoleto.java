@@ -30,6 +30,7 @@ import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
 import jdev.mentoria.lojavirtual.model.dto.AsaasApiPagamentoStatus;
 import jdev.mentoria.lojavirtual.model.dto.BoletoGeradoApiJuno;
 import jdev.mentoria.lojavirtual.model.dto.ClienteAsaasApiPagamento;
+import jdev.mentoria.lojavirtual.model.dto.CobrancaApiAsaas;
 import jdev.mentoria.lojavirtual.model.dto.CobrancaJunoAPI;
 import jdev.mentoria.lojavirtual.model.dto.ConteudoBoletoJuno;
 import jdev.mentoria.lojavirtual.model.dto.CriarWebHook;
@@ -308,6 +309,74 @@ public class ServiceJunoBoleto implements Serializable {
 		return clientResponse.getEntity(String.class);
 		
 	}
+	
+	
+	
+	//gerar carne/boleto/cobranca no ASAAS...
+	//q recebe um OBJETOPOSTCARNEJUNO do tipo OBJETOPOSTCARNEJUNO
+	//q tem atributos onde tem as informacoes relacionadas
+	//a qm ta cobrando o cpf, telefone, parcelas, etc...
+	//
+	//embora esteja JUNO (OBJETOPOSTCARNEJUNO) sera usado pelo ASAAS
+	//
+	public String gerarCarneApiAsaas(ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception {
+		
+		//procurando o ID da venda do objetoPostCarneJuno no nosso BANCO	
+		VendaCompraLojaVirtual vendaCompraLojaVirtual = vd_Cp_Loja_virt_repository.findById(objetoPostCarneJuno.getIdVenda()).get();
+
+		
+		//
+		//criando um OBJ/VAR de nome COBRANCAAPIASAAS do tipo
+		//COBRANCAAPIASAAS q basicamente vai receber
+		//as informacoes do CONSUMER... ou seja do CLIENTE/PESSOA
+		//q ta comprando, a pessoa q vai pagar a cobranca
+		//
+		//SE o CUSTOMER/CLIENTE nao existir na ASAAS... Dai
+		//a ASAAS vai receber o NOME, CPF, EMAIL, etc...
+		//e a ASAAS vai criar esse CLIENTE, para a ASAAS pd
+		//associar uma COBRANCA a PESSOA... tipo Boleto ABC foi
+		//gerado para o CLIENTE FULANO...
+		//
+		//Tipo se a pessoa tiver conta na LOJAVIRTUALMENTORIA
+		//mas nao tiver na ASAAS dai a LOJAVIRUTUALMENTORIA
+		//vai pegar as INFO e-mail/cpf/nome, etc... e passar
+		//para a ASAAS pd criar uma conta na asaas tbm...
+		CobrancaApiAsaas cobrancaApiAsaas = new CobrancaApiAsaas();
+		cobrancaApiAsaas.setCustomer(this.buscaClientePessoaApiAsaas(objetoPostCarneJuno));
+		
+		
+		
+		
+		/*PIX, BOLETO OU UNDEFINED*/
+		//tipo do pagamento, boleto, pix...
+		cobrancaApiAsaas.setBillingType("UNDEFINED"); /*Gerando tanto PIX quanto Boleto*/
+		cobrancaApiAsaas.setDescription("Pix ou Boleto gerado para ao cobrança, cód: " + vendaCompraLojaVirtual.getId());
+		//passando para o obj, cobrancaapiasaas o valor da compra
+		//q esta sendo feita na lojavirtualmentoria
+		cobrancaApiAsaas.setInstallmentValue(vendaCompraLojaVirtual.getValorTotal().floatValue());
+		cobrancaApiAsaas.setInstallmentCount(1);
+		
+		//instanciando um OBJ/VAR de nome DAVENCIMENTO
+		//do tipo CALENDAR
+		//q basicamente vai receber a DATA de HJ + 7 DIAS
+		//ou seja esse e o TEMPO q o CLIENTE tem para pagar
+		//a cobranca
+		Calendar daVencimento = Calendar.getInstance();
+		daVencimento.add(Calendar.DAY_OF_MONTH, 7);
+		cobrancaApiAsaas.setDueDate(
+				new SimpleDateFormat("yyyy-MM-dd")
+				.format(daVencimento.getTime()));
+		
+		
+		//passando para o nosso VAR/OBJ COBRANCAAPIASAAS
+		//se tem DESCONTO ou JUROS...
+		cobrancaApiAsaas.getInterest().setValue(1F);
+		cobrancaApiAsaas.getFine().setValue(1F);
+		
+		return "";
+		
+	}
+	
 	
 	
 	

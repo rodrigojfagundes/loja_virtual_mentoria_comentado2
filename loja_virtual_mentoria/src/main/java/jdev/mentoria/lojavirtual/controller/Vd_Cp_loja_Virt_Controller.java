@@ -1169,11 +1169,16 @@ public class Vd_Cp_loja_Virt_Controller {
 	}
 	
 	//metodo/endpoint para gerar boleto ou gerar qrcode pix
+	//com a JUNO
 	@ResponseBody
 	@PostMapping(value = "**/gerarBoletoPix")
 	public ResponseEntity<String> gerarBoletoPix(@RequestBody @Valid ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception{
 		return  new ResponseEntity<String>(serviceJunoBoleto.gerarCarneApi(objetoPostCarneJuno), HttpStatus.OK);
 	}
+	
+	
+	
+	
 	
 	//metodo/endpoint para cancelar boleto ou qrcode pix
 	@ResponseBody
