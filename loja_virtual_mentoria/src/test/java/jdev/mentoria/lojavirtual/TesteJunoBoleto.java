@@ -11,10 +11,26 @@ import junit.framework.TestCase;
 
 @Profile("dev")
 @SpringBootTest(classes = LojaVirtualMentoriaApplication.class)
-public class TesteJunoBoleto extends TestCase {
+public class ServiceJunoBoleto extends TestCase {
 	
 	@Autowired
 	private ServiceJunoBoleto serviceJunoBoleto;
+	
+	//testar passando um cliente para ver se busca
+	@Test
+	public void testbuscaClientePessoaApiAsaas()  throws Exception{
+		
+		ObjetoPostCarneJuno dados = new ObjetoPostCarneJuno();
+		dados.setEmail("alex.fernando.egidio@gmail.com");
+		dados.setPayerName("alex fernando egidio");
+		dados.setPayerCpfCnpj("05916564937");
+		dados.setPayerPhone("45999795800");
+		
+		String  customer_id =serviceJunoBoleto.buscaClientePessoaApiAsaas(dados);
+		
+		assertEquals("cus_000055741916", customer_id);
+	}
+	
 	
 	@Test
 	public void testcriarChavePixAsaas() throws Exception {

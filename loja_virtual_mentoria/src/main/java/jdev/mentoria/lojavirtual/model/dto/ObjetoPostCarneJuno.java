@@ -3,8 +3,8 @@ package jdev.mentoria.lojavirtual.model.dto;
 import java.io.Serializable;
 
 //class/entity do tipo DTO q sera utilizado para ENVIAR os dados
-//para a API JUNO para poder gerar uma forma de pagamento
-//tipo BOLETO por exemplo... entao basicamente para a API da JUNO
+//para a API JUNO e ASAAS para poder gerar uma forma de pagamento
+//tipo BOLETO por exemplo... entao basicamente para a API da JUNO e ASAAS
 //pd gerar um BOLETO ou PIX, precisamos de uma CLASS/ENTITY
 //com os atributos a baixo... Dai enviamos ela para API JUNO e ela
 //vai gerar o BOLETO/PIX etc...

@@ -5,11 +5,13 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +57,84 @@ public class ServiceJunoBoleto implements Serializable {
 	private BoletoJunoRepository boletoJunoRepository;
 	
 	
+	
+	//
+	//metodo para verificar se tem um cliente para associar
+	//a cobranca a um cliente/customer
+	//
+	//esse metodo BUSCACLIENTEPESSOAAPIASAAS recebe um OBJ/VAR
+	//do tipo OBJETOPOSTCARNEJUNO de nome DADOS q 
+	//tem algumas informacoes descricao da compra, e informacoes
+	//do cliente (qm vai pagar o boleto/pix/cartao, etc...)
+	/**
+	 * retorna o id do customer/cliente/pessoa
+	 * @throws Exception 
+	 * */
+	public String buscaClientePessoaApiAsaas(ObjetoPostCarneJuno dados) throws Exception {
+		
+		/*id do cliente para ligar com a cobranca*/
+		String customer_id = "";
+		
+		/*criando/iniciando consultando o cliente*/
+		
+		
+		// instanciando um CLIENT do tipo CLIENT
+		//
+		// informando q a url da API do ASAAS nao precisa de certificado ssl
+		Client client = new HostIgnoringCliente(AsaasApiPagamentoStatus.URL_API_ASAAS).hostIgnoringCliente();
+		
+		// criando um var/obj dotipo WEBRESOURCE de nome WEBRESORUCE
+		// q recebe a URL/LINK de onde deve ser feita a solicitacao
+		//
+		//e vamos buscar pelo o e-mail, e-mail esse q vai vim no
+		//nosso OBJ/VAR de nome DADOS do tipo OBJETOPOSTCARNEJUNO
+		WebResource webResource = client.resource(
+				AsaasApiPagamentoStatus.URL_API_ASAAS + "customers?email="+dados.getEmail());
+		
+		
+		// criando um CLIENTRESPONSE do tipo CLIENTRESPONSE
+		// q vai receber o retorno do metodo ACCEPT do WEBRESOURCE
+		// metodo no qual passamos
+		// informando o tipo de formatacao, e montando o cabecalho
+		// para fazer as requisicoes a API da Asaas
+		// tbm informando o nosso token gerado pela asaas e tals
+		// NAOSEI SE e um BEARER_TOKEN, mas e um token q a ASAAS GEROU
+		// e tbm informamos para qual URL da asaas vai ser feita a
+		// requisicao do tipo GET
+		//
+		// o retorno sera uma chave pix aleartoria gerada pela asaas
+		ClientResponse clientResponse = webResource.accept("application/json;charset=UTF-8")
+				.header("Content-Type", "application/json")
+				.header("access_token", AsaasApiPagamentoStatus.API_KEY)
+				.get(ClientResponse.class);
+		
+		//criando um LINKEDHAHMAP q vai retornar uma CHAVE e um OBJECT
+		//para gente... Uma lista com chaves e valores
+		//
+		LinkedHashMap<String, Object> parser = new JSONParser(
+				clientResponse.getEntity(String.class)).parseObject();
+		
+		//pegamos o valor da resposta
+		clientResponse.close();
+		
+		//integer de nome total para dizer se retornou o cliente ou nao
+		//ou seja se o cliente existe ou nao
+		//
+		Integer total = Integer.parseInt(
+				parser.get("totalParser").toString());
+		
+		//se o total de cliente com esse e-mail for MENOR OU IGUAL A 0
+		//entao tem q criar esse CLIENTE
+		
+		/*criar cliente*/
+		if(total <= 0) {
+			
+		}
+		
+		return customer_id;
+		
+	}
+	
 	//metodo de nomeCRIARCHAVEPIXASAAS... para criar CHAVEPIX
 	//na API de PAGAMENTO ASAAS...
 	/**
@@ -95,14 +175,7 @@ public class ServiceJunoBoleto implements Serializable {
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 	
 	//metodo para cancelar boleto e qrcode pix gerado... 
