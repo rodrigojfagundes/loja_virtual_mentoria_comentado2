@@ -10,12 +10,73 @@ import org.springframework.stereotype.Service;
 
 import jdev.mentoria.lojavirtual.model.dto.ObejtoRequisicaoRelatorioProdCompraNotaFiscalDto;
 import jdev.mentoria.lojavirtual.model.dto.ObejtoRequisicaoRelatorioProdutoAlertaEstoque;
+import jdev.mentoria.lojavirtual.model.dto.ObjetoRelatorioStatusCompra;
 
 @Service
 public class NotaFiscalCompraService {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+	
+	
+	
+	//meio q em resumo, o ID do VD_CP_LOJA_VIRT aparece dentro do ITEM_VENDA_LOJA pq quando e feito uma venda nos precisamos saber quais q sao os ITEMS_VENDA_LOJA q
+	//e onde fica os produtos... Dai com o INNERJOIN nos JUNTAMOS os CAMPO/COLUNA/ATRIBUTO DE VD_CP_LOJA_VIRT do ITEM_VENDA_LOJA dai nos vamos saber QUAIS
+	//q sao os ITEM_VENDA_LOJA(com os produtos) de cada VD_CP_LOJA_VIRT
+	//
+	//inner join nota_item_produto as ntp on cfc.id = nota_fiscal_compra_id
+	//
+	//e estamos LIGANDO com PRODUTOS, se o PRODUTO.ID esta PRESENTE no ID de ITEMS_VENDA
+	//inner join produto as p on p.id = ntp.produto_id
+	//
+	//tenho q melhorar o comentario acima...
+	//mas em resumo e para saber qual o STATUS dos CARRINHO de COMPRA
+	//e assim saber o status da venda
+	//	
+	public List<ObjetoRelatorioStatusCompra> relatorioStatusVendaLojaVirtual(ObjetoRelatorioStatusCompra objetoRelatorioStatusCompra){
+		
+		
+		List<ObjetoRelatorioStatusCompra> retorno = new ArrayList<ObjetoRelatorioStatusCompra>();
+		
+		String sql = "select p.id as codigoProduto, "
+				+ " p.nome as nomeProduto, "
+				+ " p.valor_venda as valorVendaProduto, "
+				+ " pf.id as codigoCliente, "
+				+ " pf.nome as nomeCliente, "
+				+ " pf.email as emailCliente, "
+				+ " pf.telefone as foneCliente, "
+				+ " p.qtd_estoque as qtdEstoque, "
+				+ " cfc.id as codigoVenda, "
+				+ " cfc.status_venda_loja_virtual as statusVenda "
+				+ " from vd_cp_loja_virt as cfc "
+				+ " inner join item_venda_loja as ntp on ntp.venda_compra_loja_virtu_id = cfc.id "
+				+ " inner join produto as p on p.id = ntp.produto_id "
+				+ " inner join pessoa_fisica as pf on pf.id =  cfc.pessoa_id ";
+		
+		sql+= " where cfc.data_venda >= '"+objetoRelatorioStatusCompra.getDataInicial()+"' and cfc.data_venda  <= '"+objetoRelatorioStatusCompra.getDataFinal()+"' ";
+		
+		if(!objetoRelatorioStatusCompra.getNomeProduto().isEmpty()) {		
+		  sql += " and upper(p.nome) like upper('%"+objetoRelatorioStatusCompra.getNomeProduto()+"%') ";
+		}
+		
+		if (!objetoRelatorioStatusCompra.getStatusVenda().isEmpty()) {
+		 sql+= " and cfc.status_venda_loja_virtual in ('"+objetoRelatorioStatusCompra.getStatusVenda()+"') ";
+		}
+		
+		if (!objetoRelatorioStatusCompra.getNomeCliente().isEmpty()) {
+		 sql += " and pf.nome like '%"+objetoRelatorioStatusCompra.getNomeCliente()+"%' ";
+		}
+
+
+retorno = jdbcTemplate.query(sql, new BeanPropertyRowMapper(ObjetoRelatorioStatusCompra.class));
+		
+return retorno;
+
+
+		
+	}
+	
+	
 	
 	/**
 	 * Title: Historio de compras de produtos para a loja

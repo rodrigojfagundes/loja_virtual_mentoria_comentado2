@@ -14,9 +14,9 @@ import jdev.mentoria.lojavirtual.model.Usuario;
 @Repository
 public interface UsuarioRepository extends CrudRepository<Usuario, Long>{
 	
-	//buscar os usuarios q estao a mais de 90 dias com a mesma senha
+	//buscar os usuarios q estao a mais de (100 dias agora hehe) com a mesma senha
 	//para a TarefaAutomatiza enviar uma notificacao para eles
-	@Query(value = "select u from Usuario u where u.dataAtualSenha <= current_date - 90")
+	@Query(value = "select u from Usuario u where u.dataAtualSenha <= current_date - 100")
 	List<Usuario> usuarioSenhaVencida();
 	
 	
