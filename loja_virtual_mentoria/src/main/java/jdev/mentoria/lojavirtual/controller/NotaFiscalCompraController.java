@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jdev.mentoria.lojavirtual.ExceptionMentoriaJava;
 import jdev.mentoria.lojavirtual.model.MarcaProduto;
 import jdev.mentoria.lojavirtual.model.NotaFiscalCompra;
+import jdev.mentoria.lojavirtual.model.NotaFiscalVenda;
 import jdev.mentoria.lojavirtual.repository.NotaFiscalCompraRepository;
+import jdev.mentoria.lojavirtual.repository.NotaFiscalVendaRepository;
 
 @RestController
 public class NotaFiscalCompraController {
@@ -26,7 +28,8 @@ public class NotaFiscalCompraController {
 	@Autowired
 	private NotaFiscalCompraRepository notaFiscalCompraRepository;
 	
-	
+	@Autowired
+	private NotaFiscalVendaRepository notaFiscalVendaRepository;
 	
 	
 	@ResponseBody
@@ -108,6 +111,44 @@ public class NotaFiscalCompraController {
 		return new ResponseEntity<NotaFiscalCompra>(notaFiscalCompra, HttpStatus.OK);
 
 	}
+	
+	//metodo para trazer uma LISTA de NOTAFISCALVENDA q faz parte de uma
+	//VENDACOMPRALOJAVIRTUAL
+	@ResponseBody
+	@GetMapping(value = "**/obterNotaFiscalCompraDaVenda/{idvenda}")
+	public ResponseEntity<List<NotaFiscalVenda>> obterNotaFiscalCompraDaVenda(@PathVariable("idvenda") Long idvenda) throws ExceptionMentoriaJava {
+
+		//OBS: o PROF DEIXOU O NOME DO OBJ/VAR como NOTAFISCALCOMPRA...
+		//mas o CORRETO para o nome do OBJ/VAR e NOTAFISCALVENDA
+		List<NotaFiscalVenda> notaFiscalVenda = notaFiscalVendaRepository.buscaNotaPorVenda(idvenda);
+
+		if (notaFiscalVenda == null) {
+			throw new ExceptionMentoriaJava("Não encontrou Nota Venda Compra com codigo da venda: " + idvenda);
+		}
+
+		return new ResponseEntity<List<NotaFiscalVenda>>(notaFiscalVenda, HttpStatus.OK);
+
+	}
+
+	
+	//metodo para trazer uma de NOTAFISCALVENDA q faz parte de uma
+	//VENDACOMPRALOJAVIRTUAL
+	@ResponseBody
+	@GetMapping(value = "**/obterNotaFiscalCompraDaVendaUnico/{idvenda}")
+	public ResponseEntity<NotaFiscalVenda> obterNotaFiscalCompraDaVendaUnico(@PathVariable("idvenda") Long idvenda) throws ExceptionMentoriaJava {
+
+		//OBS: o PROF DEIXOU O NOME DO OBJ/VAR como NOTAFISCALCOMPRA...
+		//mas o CORRETO para o nome do OBJ/VAR e NOTAFISCALVENDA
+		NotaFiscalVenda notaFiscalVenda = notaFiscalVendaRepository.buscaNotaPorVendaUnica(idvenda);
+
+		if (notaFiscalVenda == null) {
+			throw new ExceptionMentoriaJava("Não encontrou Nota Venda Compra com codigo da venda: " + idvenda);
+		}
+
+		return new ResponseEntity<NotaFiscalVenda>(notaFiscalVenda, HttpStatus.OK);
+
+	}
+	
 	
 	
 	@ResponseBody

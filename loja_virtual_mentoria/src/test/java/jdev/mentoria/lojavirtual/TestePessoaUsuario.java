@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 
+import jdev.mentoria.lojavirtual.controller.CupDescontoController;
+import jdev.mentoria.lojavirtual.controller.FormaPagamentoController;
 import jdev.mentoria.lojavirtual.controller.PessoaController;
 import jdev.mentoria.lojavirtual.enums.TipoEndereco;
 import jdev.mentoria.lojavirtual.model.Endereco;
@@ -21,10 +23,31 @@ import junit.framework.TestCase;
 public class TestePessoaUsuario extends TestCase {
 	
 	@Autowired
+	private FormaPagamentoController formaPagamentoController;
+	
+	@Autowired
 	private PessoaController pessoaController;
 	
 	@Autowired
 	private PessoaRepository pessoaRepository;
+	
+	@Autowired
+	private CupDescontoController cupDescontoController;
+	
+	@Test
+	public void testCupDesconto() {
+		cupDescontoController.listaCupomDesc();
+		cupDescontoController.listaCupomDesc(1L);
+	}
+	
+	
+	@Test
+	public void testFormaPagamento() {
+		formaPagamentoController.listaFormaPagamento();
+		formaPagamentoController.listaFormaPagamentoidEmpresa(1L);
+	}
+	
+	
 	
 //	@Autowired
 //	private PessoaUserService pessoaUserService;
