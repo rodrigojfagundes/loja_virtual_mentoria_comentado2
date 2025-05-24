@@ -1,4 +1,4 @@
-package jdev.mentoria.lojavirtual;
+package lojavirtual;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

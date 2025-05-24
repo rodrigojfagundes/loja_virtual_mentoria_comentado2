@@ -1,7 +1,5 @@
 package lojavirtual;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +35,7 @@ public class TesteJunoBoleto extends TestCase {
 	
 	@Test
 	public void testcriarChavePixAsaas() throws Exception {
-		String chaveApi = serviceJunoBoleto.criarChavePixAsaas();
+		String chaveApi = serviceJunoBoleto.testcriarChavePixAsaas();;
 		
 		System.out.println("Chave Asaas API" + chaveApi);
 		
