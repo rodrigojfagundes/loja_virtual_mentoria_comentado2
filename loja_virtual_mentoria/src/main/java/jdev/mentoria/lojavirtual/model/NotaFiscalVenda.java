@@ -46,19 +46,18 @@ public class NotaFiscalVenda implements Serializable{
 	
 	//1 NOTAFISCALVENDA para 1 VENDACOMPRALOJAVIRTUAL
 	@OneToOne
-	@JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false,
+	@JoinColumn(name = "venda_compra_loja_virt_id", nullable = true,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "venda_compra_loja_virtual_fk"))	
 	private VendaCompraLojaVirtual vendaCompraLojaVirtual;
 	
 	
-	//MTAS NOTAFISCALVENDA para 1 EMPRESA 
-	//(e EMPRESA e uma PESSOA do tipo juridica)
-	@ManyToOne(targetEntity = Pessoa.class)
+	//MTAS NOTAFISCALVENDA para 1 EMPRESA/PESSOAJURIDICA
+	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "empresa_id_fk"))
-	private Pessoa empresa;
+	private PessoaJuridica empresa;
 
 	
 	public VendaCompraLojaVirtual getVendaCompraLojaVirtual() {
@@ -67,10 +66,10 @@ public class NotaFiscalVenda implements Serializable{
 	public void setVendaCompraLojaVirtual(VendaCompraLojaVirtual vendaCompraLojaVirtual) {
 		this.vendaCompraLojaVirtual = vendaCompraLojaVirtual;
 	}
-	public Pessoa getEmpresa() {
+	public PessoaJuridica getEmpresa() {
 		return empresa;
 	}
-	public void setEmpresa(Pessoa empresa) {
+	public void setEmpresa(PessoaJuridica empresa) {
 		this.empresa = empresa;
 	}
 	public Long getId() {

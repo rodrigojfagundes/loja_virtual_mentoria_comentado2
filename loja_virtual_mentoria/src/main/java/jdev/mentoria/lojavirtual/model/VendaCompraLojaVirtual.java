@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
@@ -18,6 +19,11 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 //entidade/class VendaCompraLojaVirtual (e a class da tela de venda
@@ -35,32 +41,39 @@ public class VendaCompraLojaVirtual implements Serializable {
 	generator = "seq_vd_cp_loja_virt")
 	private Long id;
 	
-	//MUITAS VENDACOMPRALOJAVIRTUAL para 1 PESSOA
-	@ManyToOne(targetEntity = Pessoa.class)
+	//MUITAS VENDACOMPRALOJAVIRTUAL para 1 PESSOA do TIPO PESSOAFISICA
+	@NotNull(message = "A pessoa compradora deve ser informado")
+	@ManyToOne(targetEntity = PessoaFisica.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "pessoa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "pessoa_fk"))
-	private Pessoa pessoa;
+	private PessoaFisica pessoa;
 
 	//MUITAS VENDACOMPRALOJAVIRTUAL para 1 ENDERECOENTREGA
-	@ManyToOne
+	@NotNull(message = "O endereco de entrega deve ser informado")
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "endereco_entrega_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "endereco_entrega_fk"))
 	private Endereco enderecoEntrega;
 	
 	//MUITAS VENDACOMPRALOJAVIRTUAL para 1 ENDERECOCOBRANCA
-	@ManyToOne
+	@NotNull(message = "O endereco de cobranca deve ser informado")
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "endereco_cobranca_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "endereco_cobranca_fk"))
 	private Endereco enderecoCobranca;
 	
+	@Min(value = 1, message = "Valor total da venda é invalida")
 	@Column(nullable = false)
 	private BigDecimal valorTotal;
+	
+	
 	private BigDecimal valorDesconto;
 	
 	//MUITAS VENDACOMPRALOJAVIRTUAL para 1 FORMAPAGAMENTO
+	@NotNull(message = "A forma de pagamento deve ser informada")
 	@ManyToOne
 	@JoinColumn(name = "forma_pagamento_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
@@ -68,8 +81,10 @@ public class VendaCompraLojaVirtual implements Serializable {
 	private FormaPagamento formaPagamento;
 	
 	//1 VENDACOMPRALOJAVIRTUAL para 1 NOTAFISCALVENDA
-	@OneToOne
-	@JoinColumn(name = "nota_fiscal_venda_id", nullable = false,
+	@JsonIgnoreProperties(allowGetters = true)
+	@NotNull(message = "A nota fiscal de venda deve ser informada")
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "nota_fiscal_venda_id", nullable = true,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "nota_fiscal_venda_fk"))	
 	private NotaFiscalVenda notaFiscalVenda;
@@ -81,35 +96,41 @@ public class VendaCompraLojaVirtual implements Serializable {
 	name = "cupom_desc_fk"))
 	private CupDesc cupDesc;
 	
+	@Min(value = 5, message = "Valor do frete e invalido")
+	@NotNull(message = "O valor do frete deve ser informado")
 	@Column(nullable = false)
 	private BigDecimal valorFret;
 	
+	
+	@Min(value = 1, message = "Dia de entrega e invalido")
 	@Column(nullable = false)
 	private Integer diaEntrega;
 	
+	@NotNull(message = "Data da venda deve ser informada")
 	@Column(nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dataVenda;
 	
+	@NotNull(message = "Data da entrega deve ser informada")
 	@Column(nullable = false)
 	@Temporal(TemporalType.DATE)
 	private Date dataEntrega;
 	
 	
-	//MTAS VENDACOMPRALOJAVIRTUAL para 1 EMPRESA 
-	//(e EMPRESA e uma PESSOA do tipo juridica)
-	@ManyToOne(targetEntity = Pessoa.class)
+	//MTAS VENDACOMPRALOJAVIRTUAL para 1 EMPRESA/PESSOAJURIDICA
+	@NotNull(message = "A empresa dona do registro deve ser informada")
+	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
 	name = "empresa_id_fk"))
-	private Pessoa empresa;
+	private PessoaJuridica empresa;
 	
 	
 	
-	public Pessoa getEmpresa() {
+	public PessoaJuridica getEmpresa() {
 		return empresa;
 	}
-	public void setEmpresa(Pessoa empresa) {
+	public void setEmpresa(PessoaJuridica empresa) {
 		this.empresa = empresa;
 	}
 	public Long getId() {
@@ -118,10 +139,10 @@ public class VendaCompraLojaVirtual implements Serializable {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public Pessoa getPessoa() {
+	public PessoaFisica getPessoa() {
 		return pessoa;
 	}
-	public void setPessoa(Pessoa pessoa) {
+	public void setPessoa(PessoaFisica pessoa) {
 		this.pessoa = pessoa;
 	}
 	public Endereco getEnderecoEntrega() {
