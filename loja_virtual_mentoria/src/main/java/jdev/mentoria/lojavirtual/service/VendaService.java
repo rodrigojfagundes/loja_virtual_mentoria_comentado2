@@ -1,6 +1,8 @@
 package jdev.mentoria.lojavirtual.service;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import jdev.mentoria.lojavirtual.model.VendaCompraLojaVirtual;
+import jdev.mentoria.lojavirtual.repository.Vd_Cp_Loja_virt_repository;
 
 
 @Service
@@ -24,6 +27,10 @@ public class VendaService {
 	
 	@PersistenceContext
 	private EntityManager entityManager;
+	
+	@Autowired
+	private Vd_Cp_Loja_virt_repository vd_Cp_Loja_virt_repository;
+	
 	
 	
 	public void exclusaoTotalVendaBanco2(Long idVenda) {
@@ -70,25 +77,19 @@ public class VendaService {
 	}
 
 	
-	//metodo q recebe 2 datas e pesquisa as VENDACOMPRALOJAVIRTUAL
+	//metodo q recebe 2 datas e e passa para o VD_CP_LOJA_VIRT_REPOSITORY
+	//pesquisa as VENDACOMPRALOJAVIRTUAL
 	//q aconteceram entre essas datas...
 	//
-	//recebendo 2 datas e pesquisamos dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL
-	//em q a DATA da COMPRA é MAIOR q a DATA1 e MENOR q a DATA2...
-	//
-	//meio q estamos selecionando a COLUNA/var/obj VENDACOMPRALOJAVIRTUAL
-	//q ta dentro da TABELA/CLASS ITEMVENDALOJA... Aonde o EXCLUIDO  e FALSE
-	//e a DATAVENDA dessa VENDACOMPRALOJAVIRTUAL da entre o valor da
-	//DATA1 e DATA2...
-	//
-	//codigo em JPQL...
-	@SuppressWarnings("unchecked")
-	public List<VendaCompraLojaVirtual> consultaVendaFaixaData(String data1, String data2){
-	String sql = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
-			+ " where i.vendaCompraLojaVirtual.excluido = false "
-			+ " and i.vendaCompraLojaVirtual.dataVenda >= '" + data1 + "'"
-			+ " and i.vendaCompraLojaVirtual.dataVenda <= '" + data2 + "' ";
+	public List<VendaCompraLojaVirtual> consultaVendaFaixaData(String data1, String data2) throws ParseException{
 		
-	return entityManager.createQuery(sql).getResultList();
+		//convertendo as DATA1 e DATA2 de STRING para DATE
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		
+		Date date1 = dateFormat.parse(data1);
+		Date date2 = dateFormat.parse(data2);
+		
+		
+	return vd_Cp_Loja_virt_repository.consultaVendaFaixaData(date1, date2);
 	}
 }

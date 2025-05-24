@@ -310,10 +310,10 @@ public class Vd_Cp_loja_Virt_Controller {
 		//mas o PROF colocou compralojavirtual...
 		List<VendaCompraLojaVirtual> compraLojaVirtual = null;
 				
-		//passando as datas q recebemos la em cima
+		//passando as datas q recebemos la em cima para o VENDASERVICE
 		compraLojaVirtual = vendaService
 				.consultaVendaFaixaData(data1, data2);
-		
+
 		
 		//se o retorno for uma lista null, dai vamos apenas instanciar
 		//ela para nao dar nullpointerexception

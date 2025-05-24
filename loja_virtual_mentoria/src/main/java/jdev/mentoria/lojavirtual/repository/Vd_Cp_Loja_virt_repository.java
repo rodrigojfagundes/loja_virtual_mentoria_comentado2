@@ -43,8 +43,17 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i where "
 			+ " i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.produto.nome)) like %?1%")
 	List<VendaCompraLojaVirtual> vendaPorNomeProduto(String valor);
-
-
+	
+	
+	//metodo q recebe o ID de um CLIENTE e com o ID desse CLIENTE nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE
+	//tenha o ID q foi PASSADO PARA Long IDCLIENTE
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i where "
+			+ " i.vendaCompraLojaVirtual.excluido = false and i.vendaCompraLojaVirtual.pessoa.id = ?1")
+	List<VendaCompraLojaVirtual> vendaPorCliente(Long idCliente);
+	
+		
 	//metodo q recebe o NOME de um CLIENTE/PESSOA e com o NOME desse CLIENTE/PESSOA nos buscamos
 	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE/PESSOA
 	//tenha o NOME q foi PASSADO PARA String NOMEPESSOA
@@ -53,6 +62,36 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.pessoa.nome)) like %?1%")
 	List<VendaCompraLojaVirtual> vendaPorNomeCliente(String nomepessoa);
 
+	
+	//metodo q recebe o NOME e CPF de um CLIENTE/PESSOA e com o NOME e CPF desse CLIENTE/PESSOA nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE/PESSOA
+	//tenha o NOME e CPF q foi PASSADO PARA String NOMEPESSOA e STRING CPF
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false "
+			+ " and upper(trim(i.vendaCompraLojaVirtual.pessoa.nome)) like %?1% "
+			+ " and i.vendaCompraLojaVirtual.pessoa.cpf = ?2")
+	List<VendaCompraLojaVirtual> vendaPorNomeCliente(String nomepessoa, String cpf);
+	
+	
+	//metodo q recebe o CPF de um CLIENTE/PESSOA e com o CPF desse CLIENTE/PESSOA nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE/PESSOA
+	//tenha um CPF PARECIDO((LIKE)) q foi PASSADO PARA String CPF 
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.pessoa.cpf)) like %?1%")
+	List<VendaCompraLojaVirtual> vendaPorCpfClienteLike(String cpf);
+
+
+	//metodo q recebe o CPF de um CLIENTE/PESSOA e com o CPF desse CLIENTE/PESSOA nos buscamos
+	//dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL em q o CLIENTE/PESSOA
+	//tenha o CPF q foi PASSADO PARA String CPF 
+	//
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.pessoa.cpf)) = ?1")
+	List<VendaCompraLojaVirtual> vendaPorCpfClienteIgual(String cpf);
+
+	
 
 	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
 			+ " where i.vendaCompraLojaVirtual.excluido = false and upper(trim(i.vendaCompraLojaVirtual.enderecoCobranca.ruaLogra)) "
@@ -74,11 +113,11 @@ public interface Vd_Cp_Loja_virt_repository extends JpaRepository<VendaCompraLoj
 	//
 	//recebendo 2 datas e pesquisamos dentro do ITEMVENDALOJA as VENDACOMPRALOJAVIRTUAL
 	//em q a DATA da COMPRA é MAIOR q a DATA1 e MENOR q a DATA2...
-	//@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
-	//		+ " where i.vendaCompraLojaVirtual.excluido = false "
-	//		+ " and i.vendaCompraLojaVirtual.dataVenda >= ?1 "
-	//		+ " and i.vendaCompraLojaVirtual.dataVenda <= ?2 ")
-	//List<VendaCompraLojaVirtual> consultaVendaFaixaData(Date data1, Date data2);
+	@Query(value = "select distinct (i.vendaCompraLojaVirtual) from ItemVendaLoja i "
+			+ " where i.vendaCompraLojaVirtual.excluido = false "
+			+ " and i.vendaCompraLojaVirtual.dataVenda >= ?1 "
+			+ " and i.vendaCompraLojaVirtual.dataVenda <= ?2 ")
+	List<VendaCompraLojaVirtual> consultaVendaFaixaData(Date data1, Date data2);
 	
 	
 }
