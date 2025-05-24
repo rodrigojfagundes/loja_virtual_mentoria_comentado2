@@ -81,7 +81,7 @@ public class Usuario implements UserDetails {
 	//ACESSO e a ANNOTATION @FOREIGNKEY nos informamos o nome q esse ID vai
 	//ter no caso ACESSO_FK
 	//
-	@OneToMany(fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "usuarios_acesso", 
 			uniqueConstraints = @UniqueConstraint(columnNames = {
 			"usuario_id", "acesso_id"},
