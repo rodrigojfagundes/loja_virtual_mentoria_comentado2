@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 //criando a class/entidade StatusRastreio
 @Entity
 @Table(name="status_rastreio")
@@ -34,6 +36,7 @@ public class StatusRastreio implements Serializable {
 	private String status;
 	
 	//MUITOS STATUSRASTREIO para 1 VENDACOMPRALOJAVIRTUAL
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "venda_compra_loja_virt_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
@@ -42,6 +45,7 @@ public class StatusRastreio implements Serializable {
 	
 	
 	//MTAS STATUSRASTREIO para 1 EMPRESA/PESSOAJURIDICA
+	@JsonIgnore
 	@ManyToOne(targetEntity = PessoaJuridica.class)
 	@JoinColumn(name = "empresa_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
