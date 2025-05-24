@@ -13,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 //criando a class/entidade NotaItemProduto
 @Entity
@@ -25,13 +26,12 @@ public class NotaItemProduto implements Serializable {
 	
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE,
-	generator = "seq_nota_item_produto")
-	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_item_produto")	
 	private Long id;
 	
+	//@Size(min = 1, message = "Informe a quntidade do produto")
 	@Column(nullable = false)
-	private Double quantity;
+	private Double quantidade;
 	
 	//MUITAS NOTAITEMPRODUTO para 1 NOTAFISCALCOMPRA
 	@ManyToOne
@@ -41,6 +41,8 @@ public class NotaItemProduto implements Serializable {
 	private NotaFiscalCompra notaFiscalCompra;
 		
 	//MUITAS NOTAITEMPRODUTO para 1 PRODUTO
+	//tipo varias compras varias NOTA_ITEM_PRODUTO para o mesmo
+	//PRODUTO de ID 7 (por exemplo) e no caso esse produto e um Iphone
 	@ManyToOne
 	@JoinColumn(name = "produto_id", nullable = false,
 	foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, 
@@ -73,12 +75,12 @@ public class NotaItemProduto implements Serializable {
 		this.id = id;
 	}
 
-	public Double getQuantity() {
-		return quantity;
+	public Double getQuantidade() {
+		return quantidade;
 	}
 
-	public void setQuantity(Double quantity) {
-		this.quantity = quantity;
+	public void setQuantidade(Double quantidade) {
+		this.quantidade = quantidade;
 	}
 
 	public NotaFiscalCompra getNotaFiscalCompra() {
