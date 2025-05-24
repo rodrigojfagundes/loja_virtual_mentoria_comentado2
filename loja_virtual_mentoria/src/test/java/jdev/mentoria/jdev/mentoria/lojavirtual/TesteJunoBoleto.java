@@ -1,6 +1,6 @@
-package lojavirtual;
+package jdev.mentoria.lojavirtual;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
@@ -27,7 +27,7 @@ public class TesteJunoBoleto extends TestCase {
 		dados.setPayerCpfCnpj("05916564937");
 		dados.setPayerPhone("45999795800");
 		
-		String  customer_id =serviceJunoBoleto.buscaClientePessoaApiAsaas(dados);
+		String  customer_id =serviceJunoBoleto.testbuscaClientePessoaApiAsaas();;
 		
 		assertEquals("cus_000055741916", customer_id);
 	}
